@@ -1,0 +1,769 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic & Mayhem: The Detective Agency</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        .game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+            display: block;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #FF6347;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #FFD700, #FFA500);
+            color: #8B0000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            pointer-events: auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(to bottom, #FFEC8B, #FFA500);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .magic-effect {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 12px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div class="ui-overlay">
+            <div class="stats">
+                <div class="stat">Score: <span id="score">0</span></div>
+                <div class="stat">Lives: <span id="lives">3</span></div>
+                <div class="stat">Level: <span id="level">1</span></div>
+            </div>
+            
+            <div id="startScreen" class="screen">
+                <h1>Magic & Mayhem</h1>
+                <h2>The Detective Agency</h2>
+                <p>Navigate through magical obstacles and solve puzzles to complete your cases!</p>
+                <p>Use arrow keys or WASD to move. Avoid goblins, spinning runes, and other hazards.</p>
+                <div class="instructions">
+                    <p>Controls: <span class="key">←</span> <span class="key">→</span> Move | <span class="key">SPACE</span> Jump | <span class="key">X</span> Use Magic</p>
+                </div>
+                <button id="startBtn" class="btn">Start Adventure</button>
+            </div>
+            
+            <div id="gameOverScreen" class="screen hidden">
+                <h2>Case Closed!</h2>
+                <p>You've completed the detective agency case.</p>
+                <p>Final Score: <span id="finalScore">0</span></p>
+                <button id="restartBtn" class="btn">Try Again</button>
+            </div>
+            
+            <div id="levelCompleteScreen" class="screen hidden">
+                <h2>Level Complete!</h2>
+                <p>You solved the case with style!</p>
+                <p>Score: <span id="levelScore">0</span></p>
+                <button id="nextLevelBtn" class="btn">Next Case</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI Elements
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const levelCompleteScreen = document.getElementById('levelCompleteScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const levelElement = document.getElementById('level');
+        const finalScoreElement = document.getElementById('finalScore');
+        const levelScoreElement = document.getElementById('levelScore');
+        
+        // Game state
+        let gameState = 'start'; // start, playing, gameOver, levelComplete
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameSpeed = 2;
+        let gravity = 0.5;
+        let jumpForce = -12;
+        
+        // Player object
+        const player = {
+            x: 100,
+            y: 400,
+            width: 50,
+            height: 80,
+            speed: 5,
+            velX: 0,
+            velY: 0,
+            jumping: false,
+            grounded: false,
+            magicPower: 'none', // none, shield, freeze, teleport
+            magicCooldown: 0,
+            color: '#FF6347'
+        };
+        
+        // Platforms
+        let platforms = [];
+        
+        // Obstacles
+        let obstacles = [];
+        
+        // Collectibles
+        let collectibles = [];
+        
+        // Magic effects
+        let magicEffects = [];
+        
+        // Initialize game
+        function initGame() {
+            gameState = 'playing';
+            score = 0;
+            lives = 3;
+            level = 1;
+            gameSpeed = 2;
+            
+            updateUI();
+            
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            levelCompleteScreen.classList.add('hidden');
+            
+            generateLevel();
+            gameLoop();
+        }
+        
+        // Generate level
+        function generateLevel() {
+            platforms = [];
+            obstacles = [];
+            collectibles = [];
+            magicEffects = [];
+            
+            // Ground platform
+            platforms.push({
+                x: 0,
+                y: canvas.height - 50,
+                width: canvas.width,
+                height: 50,
+                color: '#8B4513'
+            });
+            
+            // Add some platforms
+            for (let i = 0; i < 8; i++) {
+                const width = Math.random() * 200 + 100;
+                const x = Math.random() * (canvas.width - width);
+                const y = Math.random() * 400 + 100;
+                
+                platforms.push({
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: 20,
+                    color: '#654321'
+                });
+            }
+            
+            // Add some obstacles
+            for (let i = 0; i < 5; i++) {
+                const type = Math.random() > 0.5 ? 'goblin' : 'spinning';
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * 300 + 100;
+                
+                obstacles.push({
+                    x: x,
+                    y: y,
+                    width: type === 'goblin' ? 40 : 60,
+                    height: type === 'goblin' ? 60 : 60,
+                    type: type,
+                    speed: Math.random() * 2 + 1
+                });
+            }
+            
+            // Add collectibles
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * 300 + 100;
+                
+                collectibles.push({
+                    x: x,
+                    y: y,
+                    width: 30,
+                    height: 30,
+                    collected: false
+                });
+            }
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+            levelElement.textContent = level;
+        }
+        
+        // Draw player
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            
+            // Body
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Hat
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(player.x - 5, player.y - 10, player.width + 10, 15);
+            
+            // Eyes
+            ctx.fillStyle = 'white';
+            ctx.fillRect(player.x + 10, player.y + 20, 8, 8);
+            ctx.fillRect(player.x + 32, player.y + 20, 8, 8);
+            
+            // Pupils
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x + 12, player.y + 22, 4, 4);
+            ctx.fillRect(player.x + 34, player.y + 22, 4, 4);
+            
+            // Magic effect if active
+            if (player.magicPower !== 'none') {
+                ctx.fillStyle = player.magicPower === 'shield' ? 'rgba(0, 191, 255, 0.5)' : 
+                               player.magicPower === 'freeze' ? 'rgba(0, 255, 255, 0.5)' : 
+                               'rgba(255, 255, 0, 0.5)';
+                ctx.beginPath();
+                ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw platforms
+        function drawPlatforms() {
+            platforms.forEach(platform => {
+                ctx.fillStyle = platform.color;
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                
+                // Platform top (grass)
+                ctx.fillStyle = '#32CD32';
+                ctx.fillRect(platform.x, platform.y, platform.width, 5);
+            });
+        }
+        
+        // Draw obstacles
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                if (obstacle.type === 'goblin') {
+                    // Goblin body
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                    
+                    // Goblin eyes
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(obstacle.x + 5, obstacle.y + 10, 8, 8);
+                    ctx.fillRect(obstacle.x + 27, obstacle.y + 10, 8, 8);
+                    
+                    // Goblin pupils
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(obstacle.x + 7, obstacle.y + 12, 4, 4);
+                    ctx.fillRect(obstacle.x + 29, obstacle.y + 12, 4, 4);
+                    
+                    // Goblin hat
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(obstacle.x - 5, obstacle.y - 10, obstacle.width + 10, 10);
+                } else if (obstacle.type === 'spinning') {
+                    // Spinning runes
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, obstacle.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Rune symbols
+                    ctx.fillStyle = '#8B0000';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.fillText('★', obstacle.x + 15, obstacle.y + 30);
+                    ctx.fillText('✦', obstacle.x + 40, obstacle.y + 30);
+                }
+            });
+        }
+        
+        // Draw collectibles
+        function drawCollectibles() {
+            collectibles.forEach(collectible => {
+                if (!collectible.collected) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(collectible.x + collectible.width/2, collectible.y + collectible.height/2, collectible.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Sparkle effect
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.arc(collectible.x + collectible.width/2, collectible.y + collectible.height/2, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Draw magic effects
+        function drawMagicEffects() {
+            magicEffects.forEach(effect => {
+                if (effect.type === 'teleport') {
+                    ctx.fillStyle = `rgba(255, 255, 0, ${effect.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(effect.x, effect.y, effect.radius - 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (effect.type === 'freeze') {
+                    ctx.fillStyle = `rgba(0, 255, 255, ${effect.alpha})`;
+                    ctx.fillRect(effect.x, effect.y, effect.width, effect.height);
+                    
+                    ctx.strokeStyle = '#00FFFF';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(effect.x, effect.y, effect.width, effect.height);
+                }
+            });
+        }
+        
+        // Update game state
+        function update() {
+            // Apply gravity
+            player.velY += gravity;
+            
+            // Update position
+            player.x += player.velX;
+            player.y += player.velY;
+            
+            // Boundary checks
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+            
+            // Ground collision
+            player.grounded = false;
+            platforms.forEach(platform => {
+                const direction = collisionCheck(player, platform);
+                
+                if (direction === "left" || direction === "right") {
+                    player.velX = 0;
+                } else if (direction === "bottom") {
+                    player.grounded = true;
+                    player.jumping = false;
+                    player.velY = 0;
+                } else if (direction === "top") {
+                    player.velY *= -0.5;
+                }
+            });
+            
+            // Apply friction
+            player.velX *= 0.9;
+            
+            // Update obstacles
+            obstacles.forEach(obstacle => {
+                obstacle.x -= gameSpeed;
+                
+                // Reset obstacle when it goes off screen
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacle.x = canvas.width;
+                    obstacle.y = Math.random() * 300 + 100;
+                }
+            });
+            
+            // Update magic effects
+            for (let i = magicEffects.length - 1; i >= 0; i--) {
+                const effect = magicEffects[i];
+                effect.alpha -= 0.02;
+                
+                if (effect.alpha <= 0) {
+                    magicEffects.splice(i, 1);
+                }
+            }
+            
+            // Check collisions with obstacles
+            obstacles.forEach(obstacle => {
+                if (collisionCheck(player, obstacle)) {
+                    if (player.magicPower === 'shield') {
+                        // Shield absorbs the hit
+                        player.magicPower = 'none';
+                        createMagicEffect('freeze', obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                    } else {
+                        // Lose a life
+                        lives--;
+                        updateUI();
+                        
+                        if (lives <= 0) {
+                            gameOver();
+                        } else {
+                            // Reset player position
+                            player.x = 100;
+                            player.y = 400;
+                            player.velX = 0;
+                            player.velY = 0;
+                        }
+                    }
+                }
+            });
+            
+            // Check collisions with collectibles
+            collectibles.forEach(collectible => {
+                if (!collectible.collected && collisionCheck(player, collectible)) {
+                    collectible.collected = true;
+                    score += 100;
+                    updateUI();
+                    
+                    // Create collection effect
+                    createMagicEffect('teleport', collectible.x, collectible.y, 50, 50);
+                }
+            });
+            
+            // Update magic cooldown
+            if (player.magicCooldown > 0) {
+                player.magicCooldown--;
+            }
+        }
+        
+        // Collision detection
+        function collisionCheck(obj1, obj2) {
+            const vX = (obj1.x + obj1.width / 2) - (obj2.x + obj2.width / 2);
+            const vY = (obj1.y + obj1.height / 2) - (obj2.y + obj2.height / 2);
+            
+            // Combine half widths and half heights
+            const hWidths = (obj1.width / 2) + (obj2.width / 2);
+            const hHeights = (obj1.height / 2) + (obj2.height / 2);
+            
+            let direction = null;
+            
+            // Check if collision occurred
+            if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+                // Calculate the overlap on each axis
+                const oX = hWidths - Math.abs(vX);
+                const oY = hHeights - Math.abs(vY);
+                
+                // Determine which axis has the smallest overlap
+                if (oX >= oY) {
+                    if (vY > 0) {
+                        direction = "top";
+                        obj1.y += oY;
+                    } else {
+                        direction = "bottom";
+                        obj1.y -= oY;
+                    }
+                } else {
+                    if (vX > 0) {
+                        direction = "left";
+                        obj1.x += oX;
+                    } else {
+                        direction = "right";
+                        obj1.x -= oX;
+                    }
+                }
+            }
+            
+            return direction;
+        }
+        
+        // Create magic effect
+        function createMagicEffect(type, x, y, width, height) {
+            magicEffects.push({
+                type: type,
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+                radius: 0,
+                alpha: 1
+            });
+            
+            if (type === 'teleport') {
+                magicEffects[magicEffects.length - 1].radius = 50;
+            }
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background elements
+            drawPlatforms();
+            drawCollectibles();
+            drawObstacles();
+            drawMagicEffects();
+            drawPlayer();
+            
+            // Draw magic power indicator
+            if (player.magicPower !== 'none') {
+                ctx.fillStyle = player.magicPower === 'shield' ? '#00BFFF' : 
+                               player.magicPower === 'freeze' ? '#00FFFF' : 
+                               '#FFFF00';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText(`Magic: ${player.magicPower}`, 20, 50);
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (gameState !== 'playing') return;
+            
+            update();
+            draw();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Start game
+        startBtn.addEventListener('click', initGame);
+        
+        // Restart game
+        restartBtn.addEventListener('click', initGame);
+        
+        // Next level
+        nextLevelBtn.addEventListener('click', () => {
+            level++;
+            gameSpeed += 0.5;
+            generateLevel();
+            levelCompleteScreen.classList.add('hidden');
+            updateUI();
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (gameState !== 'playing') return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    player.velX = -player.speed;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    player.velX = player.speed;
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                case ' ':
+                    if (player.grounded) {
+                        player.velY = jumpForce;
+                        player.jumping = true;
+                        player.grounded = false;
+                    }
+                    break;
+                case 'x':
+                case 'X':
+                    if (player.magicCooldown <= 0) {
+                        // Use magic power
+                        if (player.magicPower === 'none') {
+                            // Randomly select a magic power
+                            const powers = ['shield', 'freeze', 'teleport'];
+                            player.magicPower = powers[Math.floor(Math.random() * powers.length)];
+                            player.magicCooldown = 100;
+                            
+                            // Create visual effect
+                            createMagicEffect('teleport', player.x, player.y, 50, 50);
+                        } else {
+                            // Cancel current magic power
+                            player.magicPower = 'none';
+                            player.magicCooldown = 0;
+                        }
+                    }
+                    break;
+            }
+        });
+        
+        // Touch controls for mobile
+        let touchStartX = 0;
+        
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            if (gameState !== 'playing') return;
+            
+            const touchX = e.touches[0].clientX;
+            const diff = touchX - touchStartX;
+            
+            if (Math.abs(diff) > 10) {
+                player.velX = diff * 0.2;
+                touchStartX = touchX;
+            }
+            
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            player.velX = 0;
+            e.preventDefault();
+        });
+        
+        // Game over
+        function gameOver() {
+            gameState = 'gameOver';
+            finalScoreElement.textContent = score;
+            gameOverScreen.classList.remove('hidden');
+        }
+        
+        // Level complete
+        function levelComplete() {
+            gameState = 'levelComplete';
+            levelScoreElement.textContent = score;
+            levelCompleteScreen.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
