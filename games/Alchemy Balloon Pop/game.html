@@ -1,0 +1,268 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alchemy Balloon Pop</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #fff;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="720"><rect width="1024" height="720" fill="%231e3a8a"/></svg>');
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Game state
+    let gameState = 'start'; // 'start', 'playing', 'gameOver'
+    let score = 0;
+    let lives = 3;
+    let timeLeft = 60;
+    let alchemyPoints = 0;
+
+    // Player and elements
+    const player = {
+        x: canvas.width / 2,
+        y: canvas.height - 150,
+        width: 124,
+        height: 212,
+        element: 'fire',
+        speed: 5
+    };
+
+    // Balloons array
+    let balloons = [];
+    let elements = [];
+    let effects = [];
+
+    // Preload images
+    const images = {};
+    const imagePaths = [
+        'images/379x317_air.png', 'images/124x212_alchemist.png', 'images/380x346_alchemy-point.png',
+        'images/25x303_background.png', 'images/469x457_balloon-ghost.png', 'images/366x459_balloon.png',
+        'images/281x266_earth.png', 'images/415x442_element-icon-air.png', 'images/310x302_element-icon-earth.png',
+        'images/350x333_element-icon-fire.png', 'images/230x135_element-icon-water.png', 'images/418x431_fire.png',
+        'images/432x408_game-over.png', 'images/306x372_level-up.png', 'images/512x512_pop-effect.png',
+        'images/427x428_power-up.png', 'images/369x377_scoreboard.png', 'images/512x512_start-screen.png',
+        'images/136x155_timer.png', 'images/185x134_water.png'
+    ];
+
+    imagePaths.forEach(path => {
+        images[path] = new Image();
+        images[path].src = path;
+    });
+
+    // Load start screen
+    const startScreen = images['images/512x512_start-screen.png'];
+
+    // Game loop
+    function gameLoop() {
+        update();
+        render();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Update game state
+    function update() {
+        if (gameState === 'playing') {
+            timeLeft -= 0.016; // Approx 60fps
+
+            // Move balloons
+            balloons.forEach(b => {
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Bounce off walls
+                if (b.x < 0 || b.x > canvas.width - b.width) b.vx *= -1;
+                if (b.y < 0 || b.y > canvas.height - b.height) b.vy *= -1;
+            });
+
+            // Update elements
+            elements.forEach(e => {
+                e.x += e.vx;
+                e.y += e.vy;
+
+                // Remove off-screen elements
+                if (e.x < -50 || e.x > canvas.width + 50 || e.y < -50 || e.y > canvas.height + 50) {
+                    elements = elements.filter(el => el !== e);
+                }
+            });
+
+            // Update effects
+            effects.forEach(e => {
+                e.life--;
+                if (e.life <= 0) {
+                    effects = effects.filter(el => el !== e);
+                }
+            });
+        }
+
+        // Check win condition
+        if (timeLeft <= 0 && gameState === 'playing') {
+            gameState = 'gameOver';
+        }
+    }
+
+    // Render game
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (gameState === 'start') {
+            ctx.drawImage(startScreen, 0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.font = '32px monospace';
+            ctx.fillText('Alchemy Balloon Pop', canvas.width/2 - 150, 100);
+            ctx.fillText('Press SPACE to start', canvas.width/2 - 130, 150);
+        } else if (gameState === 'playing') {
+            // Draw background
+            ctx.fillStyle = '#1e3a8a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player
+            ctx.drawImage(images['images/124x212_alchemist.png'], player.x - player.width/2, player.y - player.height/2);
+
+            // Draw balloons
+            balloons.forEach(b => {
+                ctx.drawImage(images['images/366x459_balloon.png'], b.x, b.y);
+            });
+
+            // Draw elements
+            elements.forEach(e => {
+                let img = images[`images/${e.type}-icon.png`];
+                if (img) ctx.drawImage(img, e.x, e.y);
+            });
+
+            // Draw effects
+            effects.forEach(e => {
+                ctx.globalAlpha = e.life / 30;
+                ctx.drawImage(images['images/512x512_pop-effect.png'], e.x - 64, e.y - 64);
+                ctx.globalAlpha = 1;
+            });
+
+            // Draw UI
+            ctx.fillStyle = 'white';
+            ctx.font = '24px monospace';
+            ctx.fillText(`Score: ${score}`, 20, 30);
+            ctx.fillText(`Time: ${Math.ceil(timeLeft)}`, 20, 60);
+            ctx.fillText(`Alchemy Points: ${alchemyPoints}`, 20, 90);
+        } else if (gameState === 'gameOver') {
+            // Draw game over screen
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.font = '48px monospace';
+            ctx.fillText('Game Over', canvas.width/2 - 100, 200);
+            ctx.font = '32px monospace';
+            ctx.fillText(`Final Score: ${score}`, canvas.width/2 - 90, 250);
+            ctx.fillText('Press R to restart', canvas.width/2 - 100, 300);
+        }
+    }
+
+    // Spawn balloon
+    function spawnBalloon() {
+        if (gameState !== 'playing') return;
+        balloons.push({
+            x: Math.random() * (canvas.width - 100),
+            y: Math.random() * (canvas.height - 200),
+            width: 366,
+            height: 459,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2
+        });
+    }
+
+    // Spawn element
+    function spawnElement(type) {
+        if (gameState !== 'playing') return;
+        elements.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            type: type,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4
+        });
+    }
+
+    // Pop balloon
+    function popBalloon(balloon) {
+        score += 10;
+        alchemyPoints += 1;
+        effects.push({
+            x: balloon.x + 183,
+            y: balloon.y + 229,
+            life: 30
+        });
+        balloons = balloons.filter(b => b !== balloon);
+    }
+
+    // Handle input
+    document.addEventListener('keydown', (e) => {
+        if (gameState === 'start' && e.code === 'Space') {
+            gameState = 'playing';
+            timeLeft = 60;
+            score = 0;
+            alchemyPoints = 0;
+            balloons = [];
+            elements = [];
+            effects = [];
+            for (let i = 0; i < 5; i++) spawnBalloon();
+        } else if (gameState === 'gameOver' && e.code === 'KeyR') {
+            gameState = 'start';
+        } else if (gameState === 'playing') {
+            switch(e.key) {
+                case 'f':
+                    player.element = 'fire';
+                    break;
+                case 'w':
+                    player.element = 'water';
+                    break;
+                case 'e':
+                    player.element = 'earth';
+                    break;
+                case 'a':
+                    player.element = 'air';
+                    break;
+            }
+        }
+    });
+
+    // Mouse controls
+    canvas.addEventListener('click', (e) => {
+        if (gameState !== 'playing') return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Spawn element on click
+        spawnElement(player.element);
+    });
+
+    // Game loop start
+    gameLoop();
+
+    // Periodic balloon spawning
+    setInterval(() => {
+        if (gameState === 'playing') spawnBalloon();
+    }, 2000);
+
+    // Periodic element spawning
+    setInterval(() => {
+        if (gameState === 'playing') spawnElement(['fire', 'water', 'earth', 'air'][Math.floor(Math.random() * 4)]);
+    }, 5000);
+</script>
+</body>
+</html>

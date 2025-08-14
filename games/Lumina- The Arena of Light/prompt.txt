@@ -1,0 +1,96 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/489x489_arena_grid.png description: A simple, pixel-art gladiator character facing right
+path: images/512x512_background_dark.png description: A basic light switch with a toggle mechanism
+path: images/512x439_collapsing_floor.png description: A glowing light source emitting a soft circle of light
+path: images/391x404_enemy.png description: A solid, pixel-art wall block
+path: images/426x430_exit_portal.png description: A plain, dark floor tile
+path: images/328x322_floor.png description: A glowing exit portal with a circular design
+path: images/247x358_gladiator.png description: A dark floor tile with a crack indicating a trap
+path: images/512x512_gladiator_dark.png description: A simple enemy sprite with a menacing look
+path: images/278x496_gladiator_light.png description: A dark, empty arena background
+path: images/479x440_level_complete.png description: A beam of light radiating from a light source
+path: images/512x512_light_beam.png description: A light switch in the 'on' position
+path: images/512x512_light_beam_outline.png description: A light switch in the 'off' position
+path: images/250x203_light_outline.png description: A dark, shadowy version of the gladiator
+path: images/492x492_light_source.png description: A tile that is illuminated by light
+path: images/512x452_light_switch.png description: A glowing outline of a light tile
+path: images/440x428_light_tile.png description: A level complete screen with a glowing light effect
+path: images/384x429_switch_off.png description: A gladiator with a glowing aura
+path: images/407x448_switch_on.png description: A grid-based arena layout with walls and floor tiles
+path: images/129x267_trap_indicator.png description: A red indicator showing a trap location
+path: images/432x512_wall.png description: A glowing outline of a light beam
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Lumina: The Arena of Light"**
+
+**Concept Overview:**
+"Lumina: The Arena of Light" is a simple, light-switch puzzle game set in a gladiator arena. Players control a gladiator who must navigate through a dark arena by flipping switches that turn on light sources. The goal is to illuminate all the paths to escape the arena or reach a specific goal.
+
+**Gameplay Mechanics:**
+- The player controls a gladiator who can move in four directions (up, down, left, right).
+- The arena is a grid-based environment with walls, light switches, and light sources.
+- Light sources are initially off. When a switch is toggled (clicked), it turns on the light, revealing a path forward.
+- The gladiator can only move through lit tiles. Dark tiles are impassable.
+- The player must strategically toggle switches to reveal the correct path and avoid traps like collapsing floors or enemies.
+
+**Objectives:**
+- Reach the exit portal located at the end of the arena.
+- Complete each level by illuminating all necessary paths and avoiding obstacles.
+- Each level has a unique arrangement of switches and light sources.
+
+**Unique Features:**
+- **Minimalist Art Style:** Uses only 20 simple .png images (gladiator, light switch, light source, walls, floor, exit portal, etc.) for a clean and engaging look.
+- **Light Switch Puzzles:** Players must think logically to determine which switches to toggle first to reveal the correct path.
+- **No Complex Animations:** All movement and interactions are simple and rely on pixel-perfect collision detection.
+- **Progressive Difficulty:** Each level introduces new mechanics like multiple switches, hidden traps, and multi-step logic puzzles.
+
+**Engagement & Suitability:**
+- The game is designed to be easy to pick up and play, making it ideal for casual players and puzzle enthusiasts.
+- The clear objective and intuitive controls ensure a fun and satisfying experience for a wide audience.
+- The use of light and darkness as a puzzle mechanic adds a unique twist to the gladiator theme, offering a fresh take on traditional arena gameplay.
+
+**Implementation Notes:**
+- All elements are built using single .png images, with no sprite sheets or complex animations.
+- The game can be coded in pure JavaScript with HTML5 Canvas, requiring only basic event handling and collision detection.
+- The small number of images and simple mechanics ensure the game can be implemented within 500 lines of code.

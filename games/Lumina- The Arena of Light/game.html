@@ -1,0 +1,750 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina: The Arena of Light</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            overflow: hidden;
+            color: #e6e6e6;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            background-color: #0d0d1a;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #start-screen, #game-over, #level-complete {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(13, 13, 26, 0.9);
+            text-align: center;
+            padding: 20px;
+            pointer-events: auto;
+        }
+        
+        #game-over, #level-complete {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #ff9900;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #ff9900, #ffcc00);
+            color: #0d0d1a;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 153, 0, 0.4);
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 153, 0, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #level-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+        }
+        
+        .highlight {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="score-display">Score: <span id="score">0</span></div>
+            <div id="level-display">Level: <span id="level">1</span></div>
+            
+            <div id="start-screen">
+                <h1>LUMINA: THE ARENA OF LIGHT</h1>
+                <p>Navigate the dark arena by flipping switches to illuminate paths. Reach the exit portal to complete each level!</p>
+                <p>Use <span class="highlight">WASD</span> or <span class="highlight">Arrow Keys</span> to move. Click on light switches to toggle them.</p>
+                <button id="start-btn" class="btn pulse">START GAME</button>
+            </div>
+            
+            <div id="game-over">
+                <h2>GAME OVER</h2>
+                <p>You were caught in the darkness...</p>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <button id="restart-btn" class="btn">PLAY AGAIN</button>
+            </div>
+            
+            <div id="level-complete">
+                <h2>LEVEL COMPLETE!</h2>
+                <p>You've illuminated the path to freedom!</p>
+                <p>Score: <span id="complete-score">0</span></p>
+                <button id="next-level-btn" class="btn">NEXT LEVEL</button>
+            </div>
+            
+            <div id="controls">
+                <p>CONTROLS: WASD / Arrow Keys to move | Click switches to toggle</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const TILE_SIZE = 64;
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const GRID_WIDTH = CANVAS_WIDTH / TILE_SIZE;
+        const GRID_HEIGHT = CANVAS_HEIGHT / TILE_SIZE;
+        
+        // Game state
+        let gameState = {
+            currentLevel: 1,
+            score: 0,
+            lives: 3,
+            isRunning: false,
+            player: { x: 0, y: 0, width: TILE_SIZE, height: TILE_SIZE },
+            switches: [],
+            lights: [],
+            walls: [],
+            floorTiles: [],
+            exit: null,
+            traps: [],
+            gameOver: false,
+            levelComplete: false
+        };
+        
+        // Game elements
+        const images = {};
+        const imageNames = [
+            '489x489_arena_grid.png',
+            '512x512_background_dark.png',
+            '512x439_collapsing_floor.png',
+            '391x404_enemy.png',
+            '426x430_exit_portal.png',
+            '328x322_floor.png',
+            '247x358_gladiator.png',
+            '512x512_gladiator_dark.png',
+            '278x496_gladiator_light.png',
+            '479x440_level_complete.png',
+            '512x512_light_beam.png',
+            '512x512_light_beam_outline.png',
+            '250x203_light_outline.png',
+            '492x492_light_source.png',
+            '512x512_light_switch.png',
+            '440x428_light_tile.png',
+            '384x429_switch_off.png',
+            '407x448_switch_on.png',
+            '129x267_trap_indicator.png',
+            '432x512_wall.png'
+        ];
+        
+        // Level definitions
+        const levels = [
+            {
+                // Level 1: Basic puzzle
+                playerStart: { x: 1, y: 1 },
+                walls: [
+                    { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 },
+                    { x: 0, y: 1 }, { x: 4, y: 1 },
+                    { x: 0, y: 2 }, { x: 4, y: 2 },
+                    { x: 0, y: 3 }, { x: 4, y: 3 },
+                    { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }
+                ],
+                switches: [
+                    { x: 2, y: 1, active: false }
+                ],
+                lights: [
+                    { x: 2, y: 2, active: false }
+                ],
+                exit: { x: 3, y: 3 },
+                traps: []
+            },
+            {
+                // Level 2: More complex
+                playerStart: { x: 1, y: 1 },
+                walls: [
+                    { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 },
+                    { x: 0, y: 1 }, { x: 4, y: 1 },
+                    { x: 0, y: 2 }, { x: 4, y: 2 },
+                    { x: 0, y: 3 }, { x: 4, y: 3 },
+                    { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }
+                ],
+                switches: [
+                    { x: 2, y: 1, active: false },
+                    { x: 3, y: 2, active: false }
+                ],
+                lights: [
+                    { x: 2, y: 2, active: false },
+                    { x: 3, y: 3, active: false }
+                ],
+                exit: { x: 4, y: 3 },
+                traps: [
+                    { x: 1, y: 2 }
+                ]
+            },
+            {
+                // Level 3: Final challenge
+                playerStart: { x: 1, y: 1 },
+                walls: [
+                    { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 },
+                    { x: 0, y: 1 }, { x: 4, y: 1 },
+                    { x: 0, y: 2 }, { x: 4, y: 2 },
+                    { x: 0, y: 3 }, { x: 4, y: 3 },
+                    { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }
+                ],
+                switches: [
+                    { x: 1, y: 1, active: false },
+                    { x: 3, y: 1, active: false },
+                    { x: 2, y: 3, active: false }
+                ],
+                lights: [
+                    { x: 1, y: 2, active: false },
+                    { x: 3, y: 2, active: false },
+                    { x: 2, y: 2, active: false }
+                ],
+                exit: { x: 4, y: 4 },
+                traps: [
+                    { x: 1, y: 3 },
+                    { x: 3, y: 3 }
+                ]
+            }
+        ];
+        
+        // DOM Elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const levelCompleteScreen = document.getElementById('level-complete');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const completeScoreDisplay = document.getElementById('complete-score');
+        
+        // Initialize game
+        function init() {
+            loadImages();
+            setupEventListeners();
+            resetGame();
+        }
+        
+        // Load all images
+        function loadImages() {
+            imageNames.forEach(name => {
+                const img = new Image();
+                img.src = `images/${name}`;
+                images[name] = img;
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', resetGame);
+            nextLevelBtn.addEventListener('click', nextLevel);
+            
+            document.addEventListener('keydown', handleKeyDown);
+            canvas.addEventListener('click', handleClick);
+        }
+        
+        // Start the game
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameState.isRunning = true;
+            gameState.gameOver = false;
+            gameState.levelComplete = false;
+            loadLevel(gameState.currentLevel);
+            gameLoop();
+        }
+        
+        // Reset the game state
+        function resetGame() {
+            gameState.currentLevel = 1;
+            gameState.score = 0;
+            gameState.lives = 3;
+            updateUI();
+            startScreen.style.display = 'flex';
+            gameOverScreen.style.display = 'none';
+            levelCompleteScreen.style.display = 'none';
+            gameState.isRunning = false;
+        }
+        
+        // Load a level
+        function loadLevel(level) {
+            const levelData = levels[level - 1];
+            if (!levelData) {
+                endGame();
+                return;
+            }
+            
+            // Reset player position
+            gameState.player.x = levelData.playerStart.x * TILE_SIZE;
+            gameState.player.y = levelData.playerStart.y * TILE_SIZE;
+            
+            // Load level data
+            gameState.switches = levelData.switches.map(s => ({ ...s }));
+            gameState.lights = levelData.lights.map(l => ({ ...l }));
+            gameState.walls = levelData.walls.map(w => ({ ...w }));
+            gameState.exit = { ...levelData.exit };
+            gameState.traps = levelData.traps.map(t => ({ ...t }));
+            
+            // Initialize lights to inactive
+            gameState.lights.forEach(light => {
+                light.active = false;
+            });
+            
+            updateUI();
+        }
+        
+        // Next level
+        function nextLevel() {
+            gameState.currentLevel++;
+            if (gameState.currentLevel > levels.length) {
+                endGame();
+                return;
+            }
+            
+            levelCompleteScreen.style.display = 'none';
+            loadLevel(gameState.currentLevel);
+            gameState.isRunning = true;
+            gameLoop();
+        }
+        
+        // Handle keyboard input
+        function handleKeyDown(e) {
+            if (!gameState.isRunning || gameState.gameOver || gameState.levelComplete) return;
+            
+            let moved = false;
+            const player = gameState.player;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    player.y -= TILE_SIZE;
+                    moved = true;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    player.y += TILE_SIZE;
+                    moved = true;
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    player.x -= TILE_SIZE;
+                    moved = true;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    player.x += TILE_SIZE;
+                    moved = true;
+                    break;
+            }
+            
+            if (moved) {
+                checkCollisions();
+                updateUI();
+            }
+        }
+        
+        // Handle mouse clicks
+        function handleClick(e) {
+            if (!gameState.isRunning || gameState.gameOver || gameState.levelComplete) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if click is on a switch
+            for (let i = 0; i < gameState.switches.length; i++) {
+                const sw = gameState.switches[i];
+                const switchX = sw.x * TILE_SIZE;
+                const switchY = sw.y * TILE_SIZE;
+                
+                if (x >= switchX && x < switchX + TILE_SIZE && 
+                    y >= switchY && y < switchY + TILE_SIZE) {
+                    
+                    // Toggle switch
+                    sw.active = !sw.active;
+                    
+                    // Activate corresponding light
+                    for (let j = 0; j < gameState.lights.length; j++) {
+                        const light = gameState.lights[j];
+                        if (light.x === sw.x && light.y === sw.y) {
+                            light.active = true;
+                            break;
+                        }
+                    }
+                    
+                    checkCollisions();
+                    updateUI();
+                    return;
+                }
+            }
+        }
+        
+        // Check for collisions
+        function checkCollisions() {
+            const player = gameState.player;
+            
+            // Check wall collisions
+            for (const wall of gameState.walls) {
+                if (player.x === wall.x * TILE_SIZE && player.y === wall.y * TILE_SIZE) {
+                    // Revert movement
+                    player.x += TILE_SIZE; // This is a simple fix - in real game would need to track last position
+                    return;
+                }
+            }
+            
+            // Check trap collisions
+            for (const trap of gameState.traps) {
+                if (player.x === trap.x * TILE_SIZE && player.y === trap.y * TILE_SIZE) {
+                    // Player hit trap
+                    gameState.lives--;
+                    updateUI();
+                    
+                    if (gameState.lives <= 0) {
+                        endGame();
+                        return;
+                    }
+                    
+                    // Reset player position
+                    const levelData = levels[gameState.currentLevel - 1];
+                    player.x = levelData.playerStart.x * TILE_SIZE;
+                    player.y = levelData.playerStart.y * TILE_SIZE;
+                    return;
+                }
+            }
+            
+            // Check exit collision
+            if (player.x === gameState.exit.x * TILE_SIZE && player.y === gameState.exit.y * TILE_SIZE) {
+                gameState.levelComplete = true;
+                gameState.isRunning = false;
+                completeScoreDisplay.textContent = gameState.score;
+                levelCompleteScreen.style.display = 'flex';
+                return;
+            }
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            scoreDisplay.textContent = gameState.score;
+            levelDisplay.textContent = gameState.currentLevel;
+        }
+        
+        // End the game
+        function endGame() {
+            gameState.isRunning = false;
+            gameState.gameOver = true;
+            finalScoreDisplay.textContent = gameState.score;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameState.isRunning) return;
+            
+            update();
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update game state
+        function update() {
+            // Simple update logic - in a real game this would be more complex
+            gameState.score += 0.1;
+        }
+        
+        // Render the game
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw walls
+            drawWalls();
+            
+            // Draw lights
+            drawLights();
+            
+            // Draw switches
+            drawSwitches();
+            
+            // Draw traps
+            drawTraps();
+            
+            // Draw exit
+            drawExit();
+            
+            // Draw player
+            drawPlayer();
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Draw dark background
+            ctx.fillStyle = '#0d0d1a';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw grid pattern
+            ctx.strokeStyle = 'rgba(40, 40, 70, 0.3)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < CANVAS_WIDTH; x += TILE_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, CANVAS_HEIGHT);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < CANVAS_HEIGHT; y += TILE_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(CANVAS_WIDTH, y);
+                ctx.stroke();
+            }
+        }
+        
+        // Draw walls
+        function drawWalls() {
+            gameState.walls.forEach(wall => {
+                const x = wall.x * TILE_SIZE;
+                const y = wall.y * TILE_SIZE;
+                
+                if (images['432x512_wall.png']) {
+                    ctx.drawImage(images['432x512_wall.png'], x, y, TILE_SIZE, TILE_SIZE);
+                } else {
+                    // Fallback if image not loaded
+                    ctx.fillStyle = '#3a3a5a';
+                    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                }
+            });
+        }
+        
+        // Draw lights
+        function drawLights() {
+            gameState.lights.forEach(light => {
+                const x = light.x * TILE_SIZE;
+                const y = light.y * TILE_SIZE;
+                
+                if (light.active) {
+                    if (images['512x512_light_beam.png']) {
+                        ctx.drawImage(images['512x512_light_beam.png'], x, y, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback for light beam
+                        ctx.fillStyle = 'rgba(255, 204, 0, 0.3)';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                    }
+                } else {
+                    if (images['512x512_light_beam_outline.png']) {
+                        ctx.drawImage(images['512x512_light_beam_outline.png'], x, y, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback for light outline
+                        ctx.fillStyle = 'rgba(100, 100, 150, 0.3)';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+            });
+        }
+        
+        // Draw switches
+        function drawSwitches() {
+            gameState.switches.forEach(sw => {
+                const x = sw.x * TILE_SIZE;
+                const y = sw.y * TILE_SIZE;
+                
+                if (sw.active) {
+                    if (images['407x448_switch_on.png']) {
+                        ctx.drawImage(images['407x448_switch_on.png'], x, y, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback for active switch
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.fillRect(x + 10, y + 10, TILE_SIZE - 20, TILE_SIZE - 20);
+                    }
+                } else {
+                    if (images['384x429_switch_off.png']) {
+                        ctx.drawImage(images['384x429_switch_off.png'], x, y, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback for inactive switch
+                        ctx.fillStyle = '#555';
+                        ctx.fillRect(x + 10, y + 10, TILE_SIZE - 20, TILE_SIZE - 20);
+                    }
+                }
+            });
+        }
+        
+        // Draw traps
+        function drawTraps() {
+            gameState.traps.forEach(trap => {
+                const x = trap.x * TILE_SIZE;
+                const y = trap.y * TILE_SIZE;
+                
+                if (images['129x267_trap_indicator.png']) {
+                    ctx.drawImage(images['129x267_trap_indicator.png'], x + 10, y + 10, TILE_SIZE - 20, TILE_SIZE - 20);
+                } else {
+                    // Fallback for trap indicator
+                    ctx.fillStyle = '#ff3333';
+                    ctx.beginPath();
+                    ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Draw exit portal
+        function drawExit() {
+            const x = gameState.exit.x * TILE_SIZE;
+            const y = gameState.exit.y * TILE_SIZE;
+            
+            if (images['426x430_exit_portal.png']) {
+                ctx.drawImage(images['426x430_exit_portal.png'], x, y, TILE_SIZE, TILE_SIZE);
+            } else {
+                // Fallback for exit portal
+                ctx.fillStyle = '#00ccff';
+                ctx.beginPath();
+                ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, TILE_SIZE/2 - 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#0066ff';
+                ctx.beginPath();
+                ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, TILE_SIZE/4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw player (gladiator)
+        function drawPlayer() {
+            const x = gameState.player.x;
+            const y = gameState.player.y;
+            
+            if (images['247x358_gladiator.png']) {
+                ctx.drawImage(images['247x358_gladiator.png'], x, y, TILE_SIZE, TILE_SIZE);
+            } else {
+                // Fallback for player
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                
+                ctx.fillStyle = '#ffcc00';
+                ctx.beginPath();
+                ctx.arc(x + TILE_SIZE/2, y + TILE_SIZE/2, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Initialize the game when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
