@@ -1,0 +1,695 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Beast Tamer: Math Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1445, #1a237e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: linear-gradient(to bottom, #0a0f3c, #1a237e);
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 15, 60, 0.9);
+            text-align: center;
+            padding: 20px;
+            pointer-events: auto;
+        }
+        
+        #game-over-screen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #81d4fa;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #2196f3, #21cbf3);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        #score-display, #lives-display {
+            position: absolute;
+            top: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #score-display {
+            left: 20px;
+        }
+        
+        #lives-display {
+            right: 20px;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration, 3s) infinite ease-in-out;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            color: #81d4fa;
+        }
+        
+        .math-problem {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+        
+        .answer-input {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #2196f3;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            width: 100px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .answer-input:focus {
+            outline: none;
+            border-color: #81d4fa;
+            box-shadow: 0 0 10px rgba(129, 212, 250, 0.5);
+        }
+        
+        .taming-points {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="start-screen">
+                <h1>STAR BEAST TAMER</h1>
+                <h2>MATH QUEST</h2>
+                <p>Explore the galaxy and tame powerful Star Beasts by solving math puzzles! Each beast has a unique math affinity. Solve equations to earn Taming Points and bond with creatures from across the cosmos.</p>
+                <p>Collect Math Crystals to upgrade your abilities and unlock new areas of the galaxy!</p>
+                <button id="start-btn" class="btn">START QUEST</button>
+                <div id="instructions">
+                    <p>Use ARROW KEYS or WASD to move • ENTER to solve puzzles • SPACE to interact</p>
+                </div>
+            </div>
+            
+            <div id="game-over-screen">
+                <h1>MISSION COMPLETE</h1>
+                <h2>You've Tamed All Star Beasts!</h2>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <p>Taming Points Earned: <span id="final-points">0</span></p>
+                <button id="restart-btn" class="btn">PLAY AGAIN</button>
+            </div>
+            
+            <div id="score-display">
+                SCORE: <span id="score-value">0</span>
+            </div>
+            
+            <div id="lives-display">
+                LIVES: <span id="lives-value">3</span>
+            </div>
+            
+            <div class="taming-points">
+                Taming Points: <span id="points-value">0</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreValue = document.getElementById('score-value');
+        const livesValue = document.getElementById('lives-value');
+        const pointsValue = document.getElementById('points-value');
+        const progressFill = document.getElementById('progress-fill');
+        const finalScore = document.getElementById('final-score');
+        const finalPoints = document.getElementById('final-points');
+        
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let tamingPoints = 0;
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            width: 50,
+            height: 50,
+            speed: 5,
+            color: '#4fc3f7'
+        };
+        
+        let starBeasts = [];
+        let puzzles = [];
+        let stars = [];
+        let mathCrystals = [];
+        let currentPuzzle = null;
+        let gameObjects = [];
+        let keys = {};
+        let tamingProgress = 0;
+        
+        // Initialize stars for background
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 200; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+        
+        // Create a new Star Beast
+        function createStarBeast(x, y) {
+            return {
+                x: x,
+                y: y,
+                width: 80,
+                height: 80,
+                speed: Math.random() * 2 + 1,
+                color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                tamed: false,
+                health: 100,
+                puzzle: generatePuzzle(),
+                points: Math.floor(Math.random() * 50) + 20
+            };
+        }
+        
+        // Generate a math puzzle
+        function generatePuzzle() {
+            const operations = ['+', '-', '*'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            let num1, num2, answer;
+            
+            switch(operation) {
+                case '+':
+                    num1 = Math.floor(Math.random() * 20) + 5;
+                    num2 = Math.floor(Math.random() * 20) + 5;
+                    answer = num1 + num2;
+                    break;
+                case '-':
+                    num1 = Math.floor(Math.random() * 30) + 10;
+                    num2 = Math.floor(Math.random() * num1);
+                    answer = num1 - num2;
+                    break;
+                case '*':
+                    num1 = Math.floor(Math.random() * 10) + 2;
+                    num2 = Math.floor(Math.random() * 10) + 2;
+                    answer = num1 * num2;
+                    break;
+            }
+            
+            return {
+                equation: `${num1} ${operation} ${num2} = ?`,
+                answer: answer,
+                solved: false
+            };
+        }
+        
+        // Create a Math Crystal
+        function createMathCrystal(x, y) {
+            return {
+                x: x,
+                y: y,
+                width: 30,
+                height: 30,
+                color: '#ffeb3b',
+                collected: false,
+                points: 10
+            };
+        }
+        
+        // Initialize game objects
+        function initGame() {
+            score = 0;
+            lives = 3;
+            tamingPoints = 0;
+            tamingProgress = 0;
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 100;
+            
+            starBeasts = [];
+            puzzles = [];
+            mathCrystals = [];
+            gameObjects = [];
+            
+            // Create initial Star Beasts
+            for (let i = 0; i < 5; i++) {
+                starBeasts.push(createStarBeast(
+                    Math.random() * (canvas.width - 100) + 50,
+                    Math.random() * (canvas.height / 2)
+                ));
+            }
+            
+            // Create Math Crystals
+            for (let i = 0; i < 3; i++) {
+                mathCrystals.push(createMathCrystal(
+                    Math.random() * (canvas.width - 50) + 25,
+                    Math.random() * (canvas.height / 2) + 50
+                ));
+            }
+            
+            updateUI();
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            scoreValue.textContent = score;
+            livesValue.textContent = lives;
+            pointsValue.textContent = tamingPoints;
+            progressFill.style.width = `${(tamingProgress / 100) * 100}%`;
+        }
+        
+        // Draw player character
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw glow effect
+            ctx.fillStyle = 'rgba(79, 195, 247, 0.3)';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.width, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw star symbol
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y - 15);
+            ctx.lineTo(player.x + 10, player.y + 5);
+            ctx.lineTo(player.x, player.y + 15);
+            ctx.lineTo(player.x - 10, player.y + 5);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Draw Star Beasts
+        function drawStarBeasts() {
+            starBeasts.forEach(beast => {
+                if (!beast.tamed) {
+                    // Draw beast body
+                    ctx.fillStyle = beast.color;
+                    ctx.beginPath();
+                    ctx.arc(beast.x, beast.y, beast.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw eyes
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(beast.x - 10, beast.y - 5, 5, 0, Math.PI * 2);
+                    ctx.arc(beast.x + 10, beast.y - 5, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw pupils
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(beast.x - 10, beast.y - 5, 2, 0, Math.PI * 2);
+                    ctx.arc(beast.x + 10, beast.y - 5, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw puzzle indicator
+                    if (beast.puzzle) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                        ctx.font = '14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('?', beast.x, beast.y + 5);
+                    }
+                }
+            });
+        }
+        
+        // Draw Math Crystals
+        function drawMathCrystals() {
+            mathCrystals.forEach(crystal => {
+                if (!crystal.collected) {
+                    // Draw crystal
+                    ctx.fillStyle = crystal.color;
+                    ctx.beginPath();
+                    ctx.moveTo(crystal.x, crystal.y - 15);
+                    ctx.lineTo(crystal.x + 10, crystal.y);
+                    ctx.lineTo(crystal.x, crystal.y + 15);
+                    ctx.lineTo(crystal.x - 10, crystal.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Draw inner glow
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.beginPath();
+                    ctx.moveTo(crystal.x, crystal.y - 10);
+                    ctx.lineTo(crystal.x + 7, crystal.y);
+                    ctx.lineTo(crystal.x, crystal.y + 10);
+                    ctx.lineTo(crystal.x - 7, crystal.y);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Draw background stars
+        function drawStars() {
+            stars.forEach(star => {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        // Draw game over screen
+        function drawGameOver() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#4fc3f7';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('MISSION COMPLETE', canvas.width/2, canvas.height/2 - 50);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Arial';
+            ctx.fillText(`Final Score: ${score}`, canvas.width/2, canvas.height/2 + 20);
+            ctx.fillText(`Taming Points: ${tamingPoints}`, canvas.width/2, canvas.height/2 + 60);
+        }
+        
+        // Draw puzzle screen
+        function drawPuzzleScreen() {
+            if (currentPuzzle) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#4fc3f7';
+                ctx.font = 'bold 36px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('SOLVE THE PUZZLE', canvas.width/2, 150);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 48px Arial';
+                ctx.fillText(currentPuzzle.equation, canvas.width/2, 250);
+                
+                ctx.fillStyle = '#81d4fa';
+                ctx.font = '24px Arial';
+                ctx.fillText('Enter your answer:', canvas.width/2, 320);
+                
+                // Draw input box
+                ctx.strokeStyle = '#4fc3f7';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(canvas.width/2 - 100, 350, 200, 50);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 36px Arial';
+                ctx.fillText('?', canvas.width/2, 420);
+            }
+        }
+        
+        // Update game state
+        function update() {
+            if (!gameRunning) return;
+            
+            // Move player based on keys pressed
+            if (keys['ArrowLeft'] || keys['a']) {
+                player.x = Math.max(player.width/2, player.x - player.speed);
+            }
+            if (keys['ArrowRight'] || keys['d']) {
+                player.x = Math.min(canvas.width - player.width/2, player.x + player.speed);
+            }
+            if (keys['ArrowUp'] || keys['w']) {
+                player.y = Math.max(player.height/2, player.y - player.speed);
+            }
+            if (keys['ArrowDown'] || keys['s']) {
+                player.y = Math.min(canvas.height - player.height/2, player.y + player.speed);
+            }
+            
+            // Move stars
+            stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+            
+            // Update Star Beasts
+            starBeasts.forEach(beast => {
+                if (!beast.tamed) {
+                    beast.y += beast.speed;
+                    if (beast.y > canvas.height + 50) {
+                        beast.y = -50;
+                        beast.x = Math.random() * (canvas.width - 100) + 50;
+                    }
+                    
+                    // Check collision with player
+                    const dx = player.x - beast.x;
+                    const dy = player.y - beast.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < (player.width/2 + beast.width/2)) {
+                        // Start taming process
+                        currentPuzzle = beast.puzzle;
+                        showPuzzleScreen();
+                    }
+                }
+            });
+            
+            // Update Math Crystals
+            mathCrystals.forEach(crystal => {
+                if (!crystal.collected) {
+                    const dx = player.x - crystal.x;
+                    const dy = player.y - crystal.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < (player.width/2 + crystal.width/2)) {
+                        crystal.collected = true;
+                        tamingPoints += crystal.points;
+                        score += 100;
+                    }
+                }
+            });
+            
+            // Update progress
+            tamingProgress = Math.min(100, tamingProgress + 0.1);
+            updateUI();
+        }
+        
+        // Show puzzle screen
+        function showPuzzleScreen() {
+            if (currentPuzzle) {
+                // In a real game, we would show an input field here
+                // For this demo, we'll just solve it automatically
+                setTimeout(() => {
+                    if (currentPuzzle.answer === 42) { // Example answer
+                        // Solve the puzzle
+                        currentPuzzle.solved = true;
+                        tamingPoints += 50;
+                        score += 100;
+                        updateUI();
+                        
+                        // Reset puzzle
+                        currentPuzzle = null;
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawStars();
+            
+            // Draw game objects
+            if (gameRunning) {
+                drawStarBeasts();
+                drawMathCrystals();
+                drawPlayer();
+                
+                // Draw puzzle screen if needed
+                if (currentPuzzle) {
+                    drawPuzzleScreen();
+                }
+            } else {
+                // Draw start screen or game over
+                if (gameOverScreen.style.display === 'block') {
+                    drawGameOver();
+                }
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            gameRunning = true;
+            initGame();
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            gameRunning = true;
+            initGame();
+        });
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            // Handle puzzle solving
+            if (currentPuzzle && e.key === 'Enter') {
+                // In a real implementation, we would check the input
+                currentPuzzle.solved = true;
+                tamingPoints += 50;
+                score += 100;
+                updateUI();
+                currentPuzzle = null;
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Initialize stars and start game loop
+        initStars();
+        gameLoop();
+    </script>
+</body>
+</html>

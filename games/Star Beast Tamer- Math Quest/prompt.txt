@@ -1,0 +1,99 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    No frameworks pure JS  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/479x480_star_beast_tamer_1.png description: A whimsical alien creature with glowing eyes and starry patterns, floating in a colorful galaxy.
+path: images/413x430_star_beast_tamer_10.png description: A player character holding a glowing math crystal, standing on a floating platform in space.
+path: images/488x484_star_beast_tamer_11.png description: A vibrant space environment with floating islands, stars, and a glowing math puzzle interface.
+path: images/512x465_star_beast_tamer_12.png description: A Star Beast with a numeric pattern on its body, surrounded by floating equations.
+path: images/444x456_star_beast_tamer_13.png description: A taming interface showing Taming Points, Math Crystals, and a progress bar.
+path: images/512x491_star_beast_tamer_14.png description: A cosmic showdown scene with multiple Star Beasts battling in a starry void.
+path: images/512x512_star_beast_tamer_15.png description: A close-up of a Star Beast with a glowing math puzzle on its body.
+path: images/512x494_star_beast_tamer_16.png description: A character solving a math puzzle with a glowing interface in a starry background.
+path: images/512x512_star_beast_tamer_17.png description: A collection of Math Crystals glowing in a futuristic taming station.
+path: images/498x510_star_beast_tamer_18.png description: A Star Beast with a pattern of numbers and symbols on its body, ready to be tamed.
+path: images/512x512_star_beast_tamer_19.png description: A space map showing different celestial zones and tamed Star Beasts.
+path: images/512x512_star_beast_tamer_2.png description: A character unlocking a new Star Beast with a glowing effect and sound effects.
+path: images/512x512_star_beast_tamer_20.png description: A mini-game interface with a number pattern matching puzzle in space.
+path: images/512x512_star_beast_tamer_3.png description: A Star Beast with a glowing math equation on its body, surrounded by stars.
+path: images/512x460_star_beast_tamer_4.png description: A character holding a Star Beast in their arms, with a glowing Taming Point counter.
+path: images/136x226_star_beast_tamer_5.png description: A futuristic taming station with floating math puzzles and glowing crystals.
+path: images/512x512_star_beast_tamer_6.png description: A Star Beast with a glowing math puzzle interface, ready for taming.
+path: images/461x458_star_beast_tamer_7.png description: A character solving a logic puzzle with a glowing interface in a starry background.
+path: images/424x424_star_beast_tamer_8.png description: A Star Beast with a glowing number pattern, surrounded by stars and sound effects.
+path: images/512x486_star_beast_tamer_9.png description: A cosmic battlefield with multiple Star Beasts and glowing math puzzles in the background.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Star Beast Tamer: Math Quest*
+
+**Genre:** Math Puzzle Game  
+**Theme:** Star Beast Tamer
+
+---
+
+**Concept Description:**
+
+In *Star Beast Tamer: Math Quest*, players take on the role of a cosmic tamer who must bond with and control a variety of alien creatures known as "Star Beasts." These beasts are powerful and wild, but they can be tamed and trained using the power of mathematics. The game blends a charming storytelling element with a simple, engaging math puzzle gameplay loop.
+
+---
+
+**Gameplay Mechanics:**
+
+Players navigate through a vibrant, star-filled universe, encountering different Star Beasts in various celestial zones. Each Star Beast has a unique "math affinity" — a numerical value or pattern that determines how it responds to the player's actions. To tame a beast, players must solve math puzzles that match its affinity.
+
+Puzzles are simple arithmetic problems, pattern recognition, or logic sequences. As players solve puzzles, they earn "Taming Points," which are used to bond with the beast. Each successful taming increases the beast's power, unlocking new abilities and unlocking new areas of the galaxy.
+
+---
+
+**Objective:**
+
+The main goal is to explore the galaxy, tame as many Star Beasts as possible, and become the ultimate Tamer by completing the final challenge — a cosmic math showdown with the most powerful Star Beast of all.
+
+---
+
+**Unique Features:**
+
+- **Star Beast Affinity System:** Each beast has a unique math-based trait that determines how it responds to puzzles.
+- **Progressive Difficulty:** Puzzles scale in complexity as the player tames more beasts and explores deeper into the galaxy.
+- **Visual and Sound Appeal:** Bright, colorful environments and whimsical sound effects that enhance the playful tone.
+- **Mini-Games and Challenges:** Optional mini-games that test math skills in creative ways (e.g., matching number patterns, solving equations in time).
+- **Collectibles and Upgrades:** Players can collect "Math Crystals" to upgrade their taming abilities, unlock new beasts, and enhance their taming speed.
+
+---
+
+**Why It Stands Out:**
+
+*Star Beast Tamer: Math Quest* stands out by combining the fun of pet collecting and the challenge of math puzzles in a whimsical, space-themed setting. It’s designed to be accessible to all ages, offering both entertainment and educational value through engaging, simple math challenges.
