@@ -1,0 +1,102 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/327x380_alien-drone.png description: Minimalist futuristic sky city background with clouds and neon lights
+path: images/429x432_circle-shape.png description: Small rebel drone with glowing eyes and a simple design
+path: images/512x460_city-destroyed.png description: Alien drone with glowing red eyes and mechanical design
+path: images/512x512_cloud-city-sky-background.png description: Simple circle shape in white with a glowing outline
+path: images/282x427_drawing-area.png description: Simple square shape in white with a glowing outline
+path: images/295x283_explosion.png description: Simple triangle shape in white with a glowing outline
+path: images/512x512_game-over-screen.png description: Simple straight line shape in white with a glowing outline
+path: images/346x351_game-ui.png description: Minimalist explosion effect with glowing particles
+path: images/512x512_high-score-screen.png description: Power-up shield icon with glowing edges
+path: images/474x372_level-up-screen.png description: Power-up score multiplier icon with glowing edges
+path: images/512x104_line-shape.png description: City skyline in ruins with dark tones and smoke
+path: images/474x36_loading-screen.png description: Minimalist score board with high score and time
+path: images/512x512_menu-screen.png description: Game over screen with a restart button and final score
+path: images/473x439_power-up-multiplier.png description: Main menu screen with start and settings buttons
+path: images/438x422_power-up-shield.png description: Loading screen with a simple progress bar and logo
+path: images/356x335_rebel-drone.png description: Tutorial screen showing how to draw shapes and defend the city
+path: images/512x512_score-board.png description: Level up screen with a new level and unlocked shape
+path: images/512x512_square-shape.png description: High score screen showing top players and their scores
+path: images/512x512_triangle-shape.png description: Game UI with timer, score, and power-up icons
+path: images/512x512_tutorial-screen.png description: Minimalist drawing area with a grid and drawing cursor
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Cloud City: Quick Draw Uprising*
+
+**Theme:** A fast-paced, reaction-based game set in a futuristic sky city under rebellion. Players take on the role of a rebel fighter who must react to incoming threats by drawing simple shapes to defend their city.
+
+---
+
+**Gameplay Mechanics:**  
+In *Cloud City: Quick Draw Uprising*, players control a small rebel drone that hovers above a cityscape. The objective is to defend the city from waves of alien drones that descend from the sky. Each wave consists of 5–10 incoming threats that approach the city in quick succession.
+
+The player must react to each incoming drone by drawing a simple shape—like a circle, square, triangle, or line—on the screen. The shape must be drawn in the correct position and within a time limit. When the shape is completed, it creates a shield or weapon that destroys the incoming drone.
+
+The game uses a "quick draw" mechanic where the player must draw the shape as quickly and accurately as possible. The faster and more precise the draw, the higher the score and the better the defense.
+
+---
+
+**Objective:**  
+Survive as long as possible by defending the city from waves of enemy drones. Each successful defense increases the player's score and unlocks new shapes and power-ups. The game ends when the city is destroyed or the player fails to draw a shape in time.
+
+---
+
+**Unique Features:**  
+- **Simple, minimalist art style:** Uses only 20 single-element PNGs (e.g., city background, drone, rebel drone, shapes, explosion, etc.) for all visual elements.
+- **Fast-paced, reaction-based gameplay:** No complex animations or physics—just intuitive drawing mechanics.
+- **Progressive difficulty:** Each level increases the speed and number of incoming drones.
+- **Power-ups:** Earned by completing shapes quickly, which provide temporary shields or bonus score multipliers.
+- **Score-based progression:** The game tracks high scores and allows players to challenge their own times.
+
+---
+
+**Design Considerations:**  
+- All graphics are pre-designed as single PNGs (no sprite sheets).
+- The game is built using only HTML5 Canvas and JavaScript, with minimal logic and no external libraries.
+- The code is structured to be easy to implement and extend, with clear functions for drawing, collision detection, and scoring.
+
+---
+
+**Tone & Appeal:**  
+*Cloud City: Quick Draw Uprising* is a fun, accessible, and addictive game that appeals to a wide audience. Its simplicity and fast-paced nature make it ideal for casual players and gamers looking for a quick challenge. The sci-fi theme adds a sense of adventure and urgency, while the drawing mechanic offers a creative and engaging way to react to threats.

@@ -1,0 +1,851 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud City: Quick Draw Uprising</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        canvas {
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            background-color: #000;
+        }
+        
+        #game-container {
+            position: relative;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        h1 {
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #00aaff, #0066cc);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            pointer-events: auto;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+        }
+        
+        .instructions {
+            max-width: 80%;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #00ffff;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.8);
+        }
+        
+        .timer-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #ff5555;
+            text-shadow: 0 0 5px rgba(255, 85, 85, 0.8);
+        }
+        
+        .shape-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ffff00;
+            text-shadow: 0 0 5px rgba(255, 255, 0, 0.8);
+        }
+        
+        .power-up {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ff00ff;
+            text-shadow: 0 0 5px rgba(255, 0, 255, 0.8);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="start-screen" class="screen">
+                <h1>CLOUD CITY: QUICK DRAW UPRISING</h1>
+                <div class="instructions">
+                    <p>Defend your city from alien drones!</p>
+                    <p>Draw shapes quickly to destroy incoming threats.</p>
+                    <p>Complete shapes before time runs out.</p>
+                </div>
+                <button id="start-button">START MISSION</button>
+            </div>
+            
+            <div id="game-over-screen" class="screen hidden">
+                <h1>MISSION FAILED</h1>
+                <p id="final-score">Score: 0</p>
+                <p id="high-score">High Score: 0</p>
+                <button id="restart-button">TRY AGAIN</button>
+            </div>
+            
+            <div id="level-up-screen" class="screen hidden">
+                <h1>LEVEL COMPLETE!</h1>
+                <p>Next level unlocked!</p>
+                <p>More drones incoming...</p>
+                <button id="continue-button">CONTINUE</button>
+            </div>
+            
+            <div id="power-up-display" class="power-up"></div>
+            
+            <div class="score-display">SCORE: <span id="score">0</span></div>
+            <div class="timer-display">TIME: <span id="timer">30</span>s</div>
+            <div class="shape-indicator">Draw: <span id="shape-type">Circle</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const REBEL_DRONE_SIZE = 60;
+        const DRONE_SPEED = 2;
+        const MAX_DRAWS_PER_LEVEL = 5;
+        const LEVEL_UP_TIME = 30; // seconds
+        
+        // Game state
+        let gameState = {
+            canvas: null,
+            ctx: null,
+            gameStarted: false,
+            gameOver: false,
+            level: 1,
+            score: 0,
+            highScore: 0,
+            timeLeft: LEVEL_UP_TIME,
+            lastTime: 0,
+            currentShape: null,
+            shapesDrawn: 0,
+            powerUpActive: false,
+            powerUpType: null,
+            powerUpTimer: 0,
+            drawInProgress: false,
+            drawingPoints: [],
+            drones: [],
+            explosions: [],
+            powerUps: [],
+            rebelDrone: {
+                x: CANVAS_WIDTH / 2,
+                y: CANVAS_HEIGHT - 100,
+                size: REBEL_DRONE_SIZE
+            }
+        };
+        
+        // Preloaded images
+        const images = {};
+        const imagePaths = [
+            'images/327x380_alien-drone.png',
+            'images/429x432_circle-shape.png',
+            'images/512x460_city-destroyed.png',
+            'images/512x512_cloud-city-sky-background.png',
+            'images/282x427_drawing-area.png',
+            'images/295x283_explosion.png',
+            'images/512x512_game-over-screen.png',
+            'images/346x351_game-ui.png',
+            'images/512x512_high-score-screen.png',
+            'images/474x372_level-up-screen.png',
+            'images/512x104_line-shape.png',
+            'images/474x36_loading-screen.png',
+            'images/512x512_menu-screen.png',
+            'images/473x439_power-up-multiplier.png',
+            'images/438x422_power-up-shield.png',
+            'images/356x335_rebel-drone.png',
+            'images/512x512_score-board.png',
+            'images/512x512_square-shape.png',
+            'images/512x512_triangle-shape.png',
+            'images/512x512_tutorial-screen.png'
+        ];
+        
+        // Shape types
+        const SHAPES = {
+            CIRCLE: 'circle',
+            SQUARE: 'square',
+            TRIANGLE: 'triangle',
+            LINE: 'line'
+        };
+        
+        // Initialize game
+        function init() {
+            gameState.canvas = document.getElementById('gameCanvas');
+            gameState.ctx = gameState.canvas.getContext('2d');
+            
+            // Load images
+            loadImages();
+            
+            // Set up event listeners
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('restart-button').addEventListener('click', restartGame);
+            document.getElementById('continue-button').addEventListener('click', continueGame);
+            
+            // Mouse drawing
+            gameState.canvas.addEventListener('mousedown', startDrawing);
+            gameState.canvas.addEventListener('mousemove', draw);
+            gameState.canvas.addEventListener('mouseup', endDrawing);
+            gameState.canvas.addEventListener('mouseleave', endDrawing);
+            
+            // Touch drawing (mobile)
+            gameState.canvas.addEventListener('touchstart', handleTouchStart);
+            gameState.canvas.addEventListener('touchmove', handleTouchMove);
+            gameState.canvas.addEventListener('touchend', handleTouchEnd);
+            
+            // Initial screen
+            showScreen('start');
+        }
+        
+        // Load all images
+        function loadImages() {
+            imagePaths.forEach((path, index) => {
+                const img = new Image();
+                img.src = path;
+                img.onload = () => {
+                    images[path] = img;
+                    if (index === imagePaths.length - 1) {
+                        // All images loaded
+                        startGame();
+                    }
+                };
+            });
+        }
+        
+        // Show a screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+        
+        // Start the game
+        function startGame() {
+            gameState.gameStarted = true;
+            gameState.gameOver = false;
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.timeLeft = LEVEL_UP_TIME;
+            gameState.shapesDrawn = 0;
+            gameState.powerUpActive = false;
+            gameState.powerUpType = null;
+            gameState.powerUpTimer = 0;
+            gameState.drones = [];
+            gameState.explosions = [];
+            gameState.powerUps = [];
+            gameState.drawInProgress = false;
+            gameState.drawingPoints = [];
+            
+            // Set up UI
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('timer').textContent = gameState.timeLeft;
+            document.getElementById('final-score').textContent = `Score: ${gameState.score}`;
+            document.getElementById('high-score').textContent = `High Score: ${gameState.highScore}`;
+            
+            showScreen('start');
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Restart the game
+        function restartGame() {
+            gameState.gameStarted = true;
+            gameState.gameOver = false;
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.timeLeft = LEVEL_UP_TIME;
+            gameState.shapesDrawn = 0;
+            gameState.powerUpActive = false;
+            gameState.powerUpType = null;
+            gameState.powerUpTimer = 0;
+            gameState.drones = [];
+            gameState.explosions = [];
+            gameState.powerUps = [];
+            gameState.drawInProgress = false;
+            gameState.drawingPoints = [];
+            
+            // Set up UI
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('timer').textContent = gameState.timeLeft;
+            
+            showScreen('start');
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Continue to next level
+        function continueGame() {
+            gameState.level++;
+            gameState.timeLeft = LEVEL_UP_TIME;
+            gameState.shapesDrawn = 0;
+            gameState.drones = [];
+            gameState.explosions = [];
+            gameState.powerUps = [];
+            
+            showScreen('level-up');
+            setTimeout(() => {
+                showScreen('start');
+                requestAnimationFrame(gameLoop);
+            }, 2000);
+        }
+        
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!gameState.gameStarted || gameState.gameOver) return;
+            
+            const deltaTime = timestamp - gameState.lastTime;
+            gameState.lastTime = timestamp;
+            
+            update(deltaTime);
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update game state
+        function update(deltaTime) {
+            // Update timer
+            gameState.timeLeft -= deltaTime / 1000;
+            if (gameState.timeLeft <= 0) {
+                gameState.timeLeft = 0;
+                endGame();
+            }
+            
+            // Update UI
+            document.getElementById('timer').textContent = Math.ceil(gameState.timeLeft);
+            document.getElementById('score').textContent = gameState.score;
+            
+            // Spawn drones
+            if (Math.random() < 0.02 * gameState.level) {
+                spawnDrone();
+            }
+            
+            // Update drones
+            for (let i = gameState.drones.length - 1; i >= 0; i--) {
+                const drone = gameState.drones[i];
+                drone.y += DRONE_SPEED;
+                
+                // Remove if off screen
+                if (drone.y > CANVAS_HEIGHT + 50) {
+                    gameState.drones.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with rebel drone
+                const dx = drone.x - gameState.rebelDrone.x;
+                const dy = drone.y - gameState.rebelDrone.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < drone.size + gameState.rebelDrone.size) {
+                    // Game over
+                    endGame();
+                    return;
+                }
+            }
+            
+            // Update explosions
+            for (let i = gameState.explosions.length - 1; i >= 0; i--) {
+                const explosion = gameState.explosions[i];
+                explosion.life -= deltaTime / 1000;
+                
+                if (explosion.life <= 0) {
+                    gameState.explosions.splice(i, 1);
+                }
+            }
+            
+            // Update power-ups
+            for (let i = gameState.powerUps.length - 1; i >= 0; i--) {
+                const powerUp = gameState.powerUps[i];
+                powerUp.y += DRONE_SPEED;
+                
+                if (powerUp.y > CANVAS_HEIGHT + 50) {
+                    gameState.powerUps.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with rebel drone
+                const dx = powerUp.x - gameState.rebelDrone.x;
+                const dy = powerUp.y - gameState.rebelDrone.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < powerUp.size + gameState.rebelDrone.size) {
+                    activatePowerUp(powerUp.type);
+                    gameState.powerUps.splice(i, 1);
+                }
+            }
+            
+            // Update power-up timer
+            if (gameState.powerUpActive) {
+                gameState.powerUpTimer -= deltaTime / 1000;
+                if (gameState.powerUpTimer <= 0) {
+                    deactivatePowerUp();
+                }
+            }
+        }
+        
+        // Render game
+        function render() {
+            const ctx = gameState.ctx;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw rebel drone
+            drawRebelDrone();
+            
+            // Draw drones
+            gameState.drones.forEach(drone => {
+                drawDrone(drone);
+            });
+            
+            // Draw explosions
+            gameState.explosions.forEach(explosion => {
+                drawExplosion(explosion);
+            });
+            
+            // Draw power-ups
+            gameState.powerUps.forEach(powerUp => {
+                drawPowerUp(powerUp);
+            });
+            
+            // Draw current drawing if in progress
+            if (gameState.drawInProgress && gameState.drawingPoints.length > 1) {
+                drawCurrentShape();
+            }
+        }
+        
+        // Draw background
+        function drawBackground() {
+            const ctx = gameState.ctx;
+            
+            // Draw city skyline
+            ctx.fillStyle = '#222';
+            ctx.fillRect(0, CANVAS_HEIGHT - 150, CANVAS_WIDTH, 150);
+            
+            // Draw clouds
+            ctx.fillStyle = 'rgba(200, 200, 200, 0.3)';
+            for (let i = 0; i < 10; i++) {
+                const x = Math.sin(i) * 200 + i * 100;
+                const y = 50 + Math.sin(i * 0.5) * 20;
+                ctx.beginPath();
+                ctx.arc(x, y, 40, 0, Math.PI * 2);
+                ctx.arc(x + 30, y - 10, 30, 0, Math.PI * 2);
+                ctx.arc(x + 60, y, 40, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw neon lights
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 5; i++) {
+                const x = i * 200 + 100;
+                const y = 100 + Math.sin(i) * 30;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 100, y - 50);
+                ctx.stroke();
+            }
+        }
+        
+        // Draw rebel drone
+        function drawRebelDrone() {
+            const ctx = gameState.ctx;
+            const drone = gameState.rebelDrone;
+            
+            // Draw drone body
+            ctx.fillStyle = '#00aaff';
+            ctx.beginPath();
+            ctx.arc(drone.x, drone.y, drone.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw glow effect
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(drone.x, drone.y, drone.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Draw eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(drone.x - 15, drone.y - 10, 8, 0, Math.PI * 2);
+            ctx.arc(drone.x + 15, drone.y - 10, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(drone.x - 15, drone.y - 10, 4, 0, Math.PI * 2);
+            ctx.arc(drone.x + 15, drone.y - 10, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Spawn a new drone
+        function spawnDrone() {
+            const drone = {
+                x: Math.random() * (CANVAS_WIDTH - 100) + 50,
+                y: -50,
+                size: 40,
+                type: Math.floor(Math.random() * 4)
+            };
+            
+            gameState.drones.push(drone);
+        }
+        
+        // Draw a drone
+        function drawDrone(drone) {
+            const ctx = gameState.ctx;
+            
+            // Draw drone body
+            ctx.fillStyle = '#ff3333';
+            ctx.beginPath();
+            ctx.arc(drone.x, drone.y, drone.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw glow effect
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(drone.x, drone.y, drone.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Draw eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(drone.x - 10, drone.y - 5, 6, 0, Math.PI * 2);
+            ctx.arc(drone.x + 10, drone.y - 5, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(drone.x - 10, drone.y - 5, 3, 0, Math.PI * 2);
+            ctx.arc(drone.x + 10, drone.y - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Draw explosion
+        function drawExplosion(explosion) {
+            const ctx = gameState.ctx;
+            
+            // Draw explosion
+            ctx.fillStyle = `rgba(255, ${100 + Math.sin(explosion.life * 10) * 155}, 0, ${explosion.life / 1})`;
+            ctx.beginPath();
+            ctx.arc(explosion.x, explosion.y, explosion.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw inner glow
+            ctx.shadowColor = 'rgba(255, 100, 0, 0.8)';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(explosion.x, explosion.y, explosion.size * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        // Spawn explosion
+        function spawnExplosion(x, y) {
+            gameState.explosions.push({
+                x: x,
+                y: y,
+                size: 30,
+                life: 1.0
+            });
+        }
+        
+        // Draw power-up
+        function drawPowerUp(powerUp) {
+            const ctx = gameState.ctx;
+            
+            // Draw power-up
+            ctx.fillStyle = '#ff00ff';
+            ctx.beginPath();
+            ctx.arc(powerUp.x, powerUp.y, powerUp.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw glow effect
+            ctx.shadowColor = '#ff00ff';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(powerUp.x, powerUp.y, powerUp.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Draw icon
+            ctx.fillStyle = 'white';
+            if (powerUp.type === 'shield') {
+                ctx.fillRect(powerUp.x - 10, powerUp.y - 10, 20, 20);
+                ctx.beginPath();
+                ctx.arc(powerUp.x, powerUp.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (powerUp.type === 'multiplier') {
+                ctx.font = '24px Arial';
+                ctx.fillText('X2', powerUp.x - 8, powerUp.y + 8);
+            }
+        }
+        
+        // Activate power-up
+        function activatePowerUp(type) {
+            gameState.powerUpActive = true;
+            gameState.powerUpType = type;
+            
+            if (type === 'shield') {
+                document.getElementById('power-up-display').textContent = "SHIELD ACTIVATED!";
+                document.getElementById('power-up-display').style.opacity = 1;
+                setTimeout(() => {
+                    document.getElementById('power-up-display').style.opacity = 0;
+                }, 2000);
+            } else if (type === 'multiplier') {
+                document.getElementById('power-up-display').textContent = "SCORE MULTIPLIER!";
+                document.getElementById('power-up-display').style.opacity = 1;
+                setTimeout(() => {
+                    document.getElementById('power-up-display').style.opacity = 0;
+                }, 2000);
+            }
+            
+            gameState.powerUpTimer = 10; // 10 seconds
+        }
+        
+        // Deactivate power-up
+        function deactivatePowerUp() {
+            gameState.powerUpActive = false;
+            gameState.powerUpType = null;
+        }
+        
+        // Start drawing
+        function startDrawing(e) {
+            if (!gameState.gameStarted || gameState.gameOver) return;
+            
+            const rect = gameState.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            gameState.drawInProgress = true;
+            gameState.drawingPoints = [{x, y}];
+        }
+        
+        // Draw
+        function draw(e) {
+            if (!gameState.gameStarted || gameState.gameOver || !gameState.drawInProgress) return;
+            
+            const rect = gameState.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            gameState.drawingPoints.push({x, y});
+        }
+        
+        // End drawing
+        function endDrawing() {
+            if (!gameState.gameStarted || gameState.gameOver || !gameState.drawInProgress) return;
+            
+            gameState.drawInProgress = false;
+            
+            // Check if shape is complete and correct
+            if (gameState.drawingPoints.length > 10) {
+                const shapeType = getShapeType();
+                if (shapeType !== null) {
+                    // Successful shape drawn
+                    gameState.shapesDrawn++;
+                    gameState.score += 100 * (gameState.powerUpActive && gameState.powerUpType === 'multiplier' ? 2 : 1);
+                    
+                    // Spawn explosion at last point
+                    const lastPoint = gameState.drawingPoints[gameState.drawingPoints.length - 1];
+                    spawnExplosion(lastPoint.x, lastPoint.y);
+                    
+                    // Check if level complete
+                    if (gameState.shapesDrawn >= MAX_DRAWS_PER_LEVEL) {
+                        showScreen('level-up');
+                        setTimeout(continueGame, 2000);
+                    }
+                }
+            }
+            
+            gameState.drawingPoints = [];
+        }
+        
+        // Handle touch start
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            gameState.canvas.dispatchEvent(mouseEvent);
+        }
+        
+        // Handle touch move
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            gameState.canvas.dispatchEvent(mouseEvent);
+        }
+        
+        // Handle touch end
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {});
+            gameState.canvas.dispatchEvent(mouseEvent);
+        }
+        
+        // Get shape type from drawing points
+        function getShapeType() {
+            if (gameState.drawingPoints.length < 10) return null;
+            
+            // Simple shape detection based on point distribution
+            const points = gameState.drawingPoints;
+            const firstPoint = points[0];
+            const lastPoint = points[points.length - 1];
+            
+            // Calculate distances between consecutive points
+            let totalDistance = 0;
+            for (let i = 1; i < points.length; i++) {
+                const dx = points[i].x - points[i-1].x;
+                const dy = points[i].y - points[i-1].y;
+                totalDistance += Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            // Calculate angle of first and last points
+            const dx = lastPoint.x - firstPoint.x;
+            const dy = lastPoint.y - firstPoint.y;
+            const angle = Math.atan2(dy, dx);
+            
+            // Check if it's a circle (closed loop)
+            const distanceToStart = Math.sqrt(dx * dx + dy * dy);
+            if (distanceToStart < 30 && totalDistance > 100) {
+                return SHAPES.CIRCLE;
+            }
+            
+            // Check for line
+            if (Math.abs(angle) < 0.5 || Math.abs(angle - Math.PI) < 0.5) {
+                return SHAPES.LINE;
+            }
+            
+            // Check for square or triangle
+            const avgDistance = totalDistance / points.length;
+            const pointCount = points.length;
+            
+            if (pointCount > 30 && avgDistance > 10) {
+                // More complex shape detection would go here
+                return SHAPES.SQUARE;
+            }
+            
+            // Default to triangle for simplicity
+            return SHAPES.TRIANGLE;
+        }
+        
+        // Draw current shape being drawn
+        function drawCurrentShape() {
+            const ctx = gameState.ctx;
+            const points = gameState.drawingPoints;
+            
+            if (points.length < 2) return;
+            
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            
+            // Draw with glow effect
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 5;
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+        
+        // End game
+        function endGame() {
+            gameState.gameOver = true;
+            
+            if (gameState.score > gameState.highScore) {
+                gameState.highScore = gameState.score;
+            }
+            
+            document.getElementById('final-score').textContent = `Score: ${gameState.score}`;
+            document.getElementById('high-score').textContent = `High Score: ${gameState.highScore}`;
+            
+            showScreen('game-over');
+        }
+        
+        // Initialize the game when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
