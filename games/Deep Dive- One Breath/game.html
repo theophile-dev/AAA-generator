@@ -1,0 +1,689 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Dive: One Breath</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to bottom, #0a1929, #1e3a5f);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="720"><rect width="1024" height="720" fill="%230a1929"/></svg>');
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+        
+        #score-display, #oxygen-display, #time-display {
+            font-size: 20px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            margin-bottom: 5px;
+        }
+        
+        #start-screen, #game-over-screen, #win-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 10, 30, 0.9);
+            z-index: 10;
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        #game-over-screen, #win-screen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+        
+        h2 {
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: #ff9800;
+        }
+        
+        p {
+            font-size: 20px;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #4fc3f7, #0288d1);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 22px;
+            font-family: 'Courier New', monospace;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .controls {
+            margin-top: 30px;
+            background: rgba(0, 30, 60, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 500px;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        #instructions {
+            max-width: 800px;
+            margin-top: 20px;
+            background: rgba(0, 30, 60, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="score-display">Score: 0</div>
+            <div id="oxygen-display">Oxygen: <span id="oxygen-value">100</span>%</div>
+            <div id="time-display">Time: <span id="time-value">60</span>s</div>
+        </div>
+        
+        <div id="start-screen">
+            <h1>DEEP DIVE: ONE BREATH</h1>
+            <p>Navigate the dark underwater cave, collect oxygen bubbles, and escape before time runs out!</p>
+            
+            <div class="controls">
+                <p>Controls:</p>
+                <p><span class="key">←</span> <span class="key">→</span> Move | <span class="key">SPACE</span> Dive/Ascend</p>
+            </div>
+            
+            <button id="start-button">START GAME</button>
+            
+            <div id="instructions">
+                <h2>How to Play</h2>
+                <p>• Collect oxygen bubbles to refill your air supply</p>
+                <p>• Avoid falling rocks and dangerous creatures</p>
+                <p>• Navigate currents that push you left or right</p>
+                <p>• Reach the exit sign before time runs out!</p>
+            </div>
+        </div>
+        
+        <div id="game-over-screen">
+            <h1>GAME OVER</h1>
+            <h2>You ran out of oxygen!</h2>
+            <p>Your final score: <span id="final-score">0</span></p>
+            <button id="restart-button">PLAY AGAIN</button>
+        </div>
+        
+        <div id="win-screen">
+            <h1>YOU ESCAPED!</h1>
+            <h2>Congratulations, Diver!</h2>
+            <p>You made it out with <span id="escaped-score">0</span> oxygen remaining!</p>
+            <button id="win-restart-button">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const winScreen = document.getElementById('win-screen');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const winRestartButton = document.getElementById('win-restart-button');
+        const scoreDisplay = document.getElementById('score-display');
+        const oxygenDisplay = document.getElementById('oxygen-value');
+        const timeDisplay = document.getElementById('time-value');
+        const finalScore = document.getElementById('final-score');
+        const escapedScore = document.getElementById('escaped-score');
+        
+        // Game state
+        let gameState = 'start'; // start, playing, gameOver, win
+        let score = 0;
+        let oxygen = 100;
+        let timeLeft = 60;
+        let gameSpeed = 1;
+        let gravity = 0.5;
+        let keys = {};
+        
+        // Player object
+        const player = {
+            x: 100,
+            y: 300,
+            width: 40,
+            height: 60,
+            speed: 5,
+            jumpForce: -12,
+            velocityY: 0,
+            isJumping: false,
+            isDiving: false,
+            direction: 'right',
+            draw: function() {
+                // Draw diver (simple rectangle for now)
+                ctx.fillStyle = '#4fc3f7';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // Draw diving suit details
+                ctx.fillStyle = '#0288d1';
+                ctx.fillRect(this.x + 5, this.y + 5, this.width - 10, 10);
+                ctx.fillRect(this.x + 5, this.y + 20, this.width - 10, 5);
+                
+                // Draw oxygen bubble indicator
+                ctx.fillStyle = '#ff9800';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width/2, this.y - 10, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        };
+        
+        // Game objects arrays
+        const platforms = [];
+        const bubbles = [];
+        const rocks = [];
+        const currents = [];
+        const creatures = [];
+        const exit = { x: 950, y: 600, width: 60, height: 100 };
+        
+        // Initialize game objects
+        function initGame() {
+            // Reset player
+            player.x = 100;
+            player.y = 300;
+            player.velocityY = 0;
+            player.isJumping = false;
+            
+            // Reset game state
+            score = 0;
+            oxygen = 100;
+            timeLeft = 60;
+            gameSpeed = 1;
+            
+            // Clear arrays
+            platforms.length = 0;
+            bubbles.length = 0;
+            rocks.length = 0;
+            currents.length = 0;
+            creatures.length = 0;
+            
+            // Create platforms
+            platforms.push({x: 0, y: 650, width: 200, height: 70});
+            platforms.push({x: 250, y: 580, width: 150, height: 40});
+            platforms.push({x: 450, y: 500, width: 150, height: 40});
+            platforms.push({x: 650, y: 420, width: 150, height: 40});
+            platforms.push({x: 850, y: 350, width: 150, height: 40});
+            
+            // Add some floating platforms
+            for (let i = 0; i < 10; i++) {
+                platforms.push({
+                    x: Math.random() * 800 + 100,
+                    y: Math.random() * 400 + 100,
+                    width: 100,
+                    height: 20
+                });
+            }
+            
+            // Create bubbles
+            for (let i = 0; i < 15; i++) {
+                bubbles.push({
+                    x: Math.random() * 900 + 60,
+                    y: Math.random() * 500 + 50,
+                    width: 30,
+                    height: 30,
+                    collected: false
+                });
+            }
+            
+            // Create rocks
+            for (let i = 0; i < 5; i++) {
+                rocks.push({
+                    x: Math.random() * 800 + 100,
+                    y: -50,
+                    width: 40,
+                    height: 40,
+                    speed: Math.random() * 3 + 2
+                });
+            }
+            
+            // Create currents
+            for (let i = 0; i < 3; i++) {
+                currents.push({
+                    x: Math.random() * 800 + 100,
+                    y: Math.random() * 500 + 50,
+                    width: 100,
+                    height: 40,
+                    direction: Math.random() > 0.5 ? 'left' : 'right',
+                    speed: Math.random() * 2 + 1
+                });
+            }
+            
+            // Create creatures
+            for (let i = 0; i < 3; i++) {
+                creatures.push({
+                    x: Math.random() * 800 + 100,
+                    y: Math.random() * 400 + 100,
+                    width: 50,
+                    height: 50,
+                    speed: Math.random() * 2 + 1
+                });
+            }
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Draw dark water background
+            ctx.fillStyle = '#0a1929';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw some bubbles in background
+            ctx.fillStyle = 'rgba(79, 195, 247, 0.2)';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 5 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw platforms
+        function drawPlatforms() {
+            ctx.fillStyle = '#4a6b8c';
+            platforms.forEach(platform => {
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                
+                // Add platform details
+                ctx.fillStyle = '#3a5775';
+                ctx.fillRect(platform.x, platform.y, platform.width, 5);
+                ctx.fillStyle = '#4a6b8c';
+            });
+        }
+        
+        // Draw bubbles
+        function drawBubbles() {
+            bubbles.forEach(bubble => {
+                if (!bubble.collected) {
+                    ctx.fillStyle = '#4fc3f7';
+                    ctx.beginPath();
+                    ctx.arc(bubble.x, bubble.y, bubble.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add bubble highlight
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(bubble.x - 5, bubble.y - 5, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Draw rocks
+        function drawRocks() {
+            rocks.forEach(rock => {
+                ctx.fillStyle = '#795548';
+                ctx.beginPath();
+                ctx.ellipse(rock.x, rock.y, rock.width/2, rock.height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add rock details
+                ctx.fillStyle = '#5d4037';
+                ctx.beginPath();
+                ctx.arc(rock.x - 10, rock.y - 5, 8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        // Draw currents
+        function drawCurrents() {
+            currents.forEach(current => {
+                // Draw water current effect
+                ctx.fillStyle = 'rgba(79, 195, 247, 0.3)';
+                ctx.fillRect(current.x, current.y, current.width, current.height);
+                
+                // Draw current direction indicator
+                ctx.fillStyle = '#4fc3f7';
+                if (current.direction === 'left') {
+                    for (let i = 0; i < 5; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(current.x + 10 + i * 15, current.y + 20);
+                        ctx.lineTo(current.x + 10 + i * 15 - 10, current.y + 15);
+                        ctx.lineTo(current.x + 10 + i * 15 - 10, current.y + 25);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                } else {
+                    for (let i = 0; i < 5; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(current.x + current.width - 10 - i * 15, current.y + 20);
+                        ctx.lineTo(current.x + current.width - 10 - i * 15 + 10, current.y + 15);
+                        ctx.lineTo(current.x + current.width - 10 - i * 15 + 10, current.y + 25);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            });
+        }
+        
+        // Draw creatures
+        function drawCreatures() {
+            creatures.forEach(creature => {
+                // Draw creature body
+                ctx.fillStyle = '#ff9800';
+                ctx.beginPath();
+                ctx.arc(creature.x, creature.y, creature.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add eyes
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(creature.x - 10, creature.y - 5, 5, 0, Math.PI * 2);
+                ctx.arc(creature.x + 10, creature.y - 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(creature.x - 10, creature.y - 5, 2, 0, Math.PI * 2);
+                ctx.arc(creature.x + 10, creature.y - 5, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        // Draw exit
+        function drawExit() {
+            // Draw exit sign
+            ctx.fillStyle = '#4caf50';
+            ctx.fillRect(exit.x, exit.y, exit.width, exit.height);
+            
+            // Add exit details
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 30px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT', exit.x + exit.width/2, exit.y + exit.height/2 + 10);
+        }
+        
+        // Update game state
+        function update() {
+            if (gameState !== 'playing') return;
+            
+            // Handle player movement
+            if (keys['ArrowLeft'] || keys['a']) {
+                player.x -= player.speed;
+                player.direction = 'left';
+            }
+            if (keys['ArrowRight'] || keys['d']) {
+                player.x += player.speed;
+                player.direction = 'right';
+            }
+            
+            // Handle jumping
+            if ((keys[' '] || keys['w'] || keys['ArrowUp']) && !player.isJumping) {
+                player.velocityY = player.jumpForce;
+                player.isJumping = true;
+                player.isDiving = false;
+            }
+            
+            // Apply gravity
+            player.velocityY += gravity;
+            player.y += player.velocityY;
+            
+            // Platform collision
+            let onPlatform = false;
+            platforms.forEach(platform => {
+                if (player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y + player.height <= platform.y + 10 &&
+                    player.y + player.height + player.velocityY >= platform.y) {
+                    
+                    player.y = platform.y - player.height;
+                    player.velocityY = 0;
+                    player.isJumping = false;
+                    onPlatform = true;
+                }
+            });
+            
+            // Ground collision
+            if (player.y > canvas.height - player.height) {
+                player.y = canvas.height - player.height;
+                player.velocityY = 0;
+                player.isJumping = false;
+                onPlatform = true;
+            }
+            
+            // Boundary checks
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            
+            // Update oxygen
+            oxygen -= 0.05;
+            
+            // Update time
+            timeLeft -= 1/60;
+            
+            // Check bubble collection
+            bubbles.forEach(bubble => {
+                if (!bubble.collected && 
+                    player.x < bubble.x + bubble.width &&
+                    player.x + player.width > bubble.x &&
+                    player.y < bubble.y + bubble.height &&
+                    player.y + player.height > bubble.y) {
+                    
+                    bubble.collected = true;
+                    oxygen = Math.min(100, oxygen + 20);
+                    score += 10;
+                }
+            });
+            
+            // Update rocks
+            rocks.forEach(rock => {
+                rock.y += rock.speed;
+                
+                // Reset rock if it goes off screen
+                if (rock.y > canvas.height) {
+                    rock.y = -50;
+                    rock.x = Math.random() * 800 + 100;
+                }
+                
+                // Rock collision with player
+                if (player.x < rock.x + rock.width &&
+                    player.x + player.width > rock.x &&
+                    player.y < rock.y + rock.height &&
+                    player.y + player.height > rock.y) {
+                    
+                    gameOver();
+                }
+            });
+            
+            // Update currents
+            currents.forEach(current => {
+                if (current.direction === 'left') {
+                    current.x -= current.speed;
+                } else {
+                    current.x += current.speed;
+                }
+                
+                // Reset current position
+                if (current.x < -current.width) {
+                    current.x = canvas.width;
+                    current.y = Math.random() * 500 + 50;
+                } else if (current.x > canvas.width) {
+                    current.x = -current.width;
+                    current.y = Math.random() * 500 + 50;
+                }
+                
+                // Push player with current
+                if (player.x < current.x + current.width &&
+                    player.x + player.width > current.x &&
+                    player.y < current.y + current.height &&
+                    player.y + player.height > current.y) {
+                    
+                    if (current.direction === 'left') {
+                        player.x -= 2;
+                    } else {
+                        player.x += 2;
+                    }
+                }
+            });
+            
+            // Update creatures
+            creatures.forEach(creature => {
+                creature.x += creature.speed * (Math.random() > 0.5 ? 1 : -1);
+                
+                // Boundary check for creatures
+                if (creature.x < 0 || creature.x > canvas.width - creature.width) {
+                    creature.speed *= -1;
+                }
+                
+                // Creature collision with player
+                if (player.x < creature.x + creature.width &&
+                    player.x + player.width > creature.x &&
+                    player.y < creature.y + creature.height &&
+                    player.y + player.height > creature.y) {
+                    
+                    gameOver();
+                }
+            });
+            
+            // Check exit collision
+            if (player.x < exit.x + exit.width &&
+                player.x + player.width > exit.x &&
+                player.y < exit.y + exit.height &&
+                player.y + player.height > exit.y) {
+                
+                winGame();
+            }
+            
+            // Check game over conditions
+            if (oxygen <= 0) {
+                gameOver();
+            }
+            
+            if (timeLeft <= 0) {
+                gameOver();
+            }
+            
+            // Update UI
+            scoreDisplay.textContent = `Score: ${score}`;
+            oxygenDisplay.textContent = Math.round(oxygen);
+            timeDisplay.textContent = Math.ceil(timeLeft);
+        }
+        
+        // Draw everything
+        function draw() {
+            drawBackground();
+            drawPlatforms();
+            drawBubbles();
+            drawRocks();
+            drawCurrents();
+            drawCreatures();
+            drawExit();
+            player.draw();
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            
+            if (gameState === 'playing') {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            initGame();
+            gameState = 'playing';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            winScreen.style.display = 'none';
+            gameLoop();
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState = 'gameOver';
+            finalScore.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Win game
+        function winGame() {
+            gameState = 'win';
+            escapedScore.textContent = Math.round(oxygen);
+            winScreen.style.display = 'flex';
+        }
+        
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        winRestartButton.addEventListener('click', startGame);
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Initialize UI
+        scoreDisplay.textContent = `Score: ${score}`;
+        oxygenDisplay.textContent = oxygen;
+        timeDisplay.textContent = timeLeft;
+    </script>
+</body>
+</html>

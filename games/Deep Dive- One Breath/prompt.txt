@@ -1,0 +1,114 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_background_water.png description: A minimalist pixel-style diver character, facing right, in a diving suit.
+path: images/474x441_collectible.png description: A single oxygen bubble floating in water, pixel-style.
+path: images/380x431_creature_attack.png description: A large, jagged rock falling from above, pixel-style.
+path: images/512x512_current.png description: A flowing water current pushing left or right, pixel-style.
+path: images/452x476_current_left.png description: A simple, pixel-style dangerous marine creature (e.g., octopus or shark).
+path: images/512x512_current_right.png description: A flat, horizontal platform in an underwater cave, pixel-style.
+path: images/512x512_dangerous_creature.png description: A simple exit sign or light at the end of the cave, pixel-style.
+path: images/269x499_diver.png description: A simple oxygen meter bar showing remaining oxygen, pixel-style.
+path: images/453x414_diver_ascend.png description: A simple time meter bar showing remaining time, pixel-style.
+path: images/403x421_diver_fall.png description: A dark, minimalistic background representing deep underwater cave walls.
+path: images/313x410_diver_jump.png description: A diver jumping upward, pixel-style.
+path: images/8x61_exit_sign.png description: A diver ascending slowly, pixel-style.
+path: images/512x512_game_over.png description: A diver falling downward, pixel-style.
+path: images/512x512_oxygen_bubble.png description: A rock falling from above, pixel-style.
+path: images/123x168_oxygen_meter.png description: A water current pushing to the left, pixel-style.
+path: images/512x472_platform.png description: A water current pushing to the right, pixel-style.
+path: images/352x404_rock.png description: A dangerous creature attacking, pixel-style.
+path: images/390x395_rock_fall.png description: A glowing collectible item (like an oxygen bubble), pixel-style.
+path: images/434x421_time_meter.png description: A simple game over screen with a diver and a 'Game Over' message, pixel-style.
+path: images/443x421_win_screen.png description: A simple win screen with a diver and a 'You Escaped!' message, pixel-style.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Deep Dive: One Breath"**
+
+**Theme:** Cave Diving Expedition  
+**Genre:** One-Screen Platform Escape  
+**Art Style:** Minimalist 2D, pixel-style, single-element PNGs  
+
+---
+
+**Gameplay Overview:**  
+"Deep Dive: One Breath" is a one-screen platformer where the player controls a diver navigating a dark, labyrinthine underwater cave. The goal is to reach the exit while managing oxygen and avoiding dangers like collapsing rocks, sudden currents, and dangerous marine life. The game is designed to be simple, fast-paced, and highly replayable.
+
+---
+
+**Gameplay Mechanics:**  
+- **Movement:** The player uses arrow keys or touch controls to move left and right, and the spacebar to dive (jump) or ascend (hold to breathe).  
+- **Oxygen System:** The diver has a limited oxygen supply that depletes over time. The player must collect oxygen bubbles to refill it. If oxygen runs out, the game ends.  
+- **Platforming:** The player must navigate through a series of floating platforms, moving rocks, and narrow passages. The level is a single continuous screen, looping back to the start if the player falls off.  
+- **Hazards:** The cave has moving obstacles such as large rocks that fall, currents that push the player, and dangerous creatures that attack on contact.  
+- **Collectibles:** Oxygen bubbles are scattered throughout the level. Collecting them helps refill the oxygen meter and gives a brief boost in speed.  
+- **Time Limit:** The player has a limited amount of time before the cave collapses. If the player doesn’t reach the exit in time, the game ends.
+
+---
+
+**Objectives:**  
+- Reach the exit of the cave before oxygen runs out or time runs out.  
+- Collect as many oxygen bubbles as possible to extend survival.  
+- Avoid all hazards to make it through the level.
+
+---
+
+**Unique Features:**  
+- **Minimalist Art Style:** The game uses only 20 single-element .png images (diver, oxygen bubble, rock, current, etc.) to create the environment.  
+- **One-Screen Challenge:** The level is a single screen, encouraging quick reflexes and precise timing.  
+- **No Sprites or Animations:** All movement and interactions are handled through simple physics and sprite positioning.  
+- **Replayability:** The player can replay the same level with different hazards, collectibles, and timing challenges.  
+- **Simple Controls:** Easy to pick up and play, with intuitive movement and interaction.  
+
+---
+
+**Design Philosophy:**  
+The game is designed to be accessible to all players, with a focus on simplicity and fun. It avoids complex animations or graphics, relying instead on clever level design, timing, and minimal art to create an engaging and immersive experience. The single-screen format ensures the game is easy to implement and run without requiring complex infrastructure or high-performance assets.
+
+---
+
+**Target Audience:**  
+- Casual gamers  
+- Mobile and browser players  
+- Players looking for a quick, challenging, and fun game with minimal system requirements  
+
+This concept is ideal for a quick prototype or a small-scale indie game that can be coded in pure JavaScript with just 20 images and around 500 lines of code.
