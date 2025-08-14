@@ -1,0 +1,119 @@
+Game Idea:
+**Game Title:** *Tundra Runner*
+
+**Theme:** Frozen Wasteland Tribes  
+**Genre:** Timed Maze Run
+
+**Concept:**  
+In *Tundra Runner*, players take on the role of a member of a nomadic tribe surviving in a harsh, frozen wasteland. The goal is to navigate through a series of ever-changing maze-like environments, avoiding dangers and collecting resources to survive and escape the endless cold.
+
+**Gameplay Mechanics:**  
+- Players control a tribal runner who moves through a maze that shifts and reconfigures in real-time.  
+- Movement is fast-paced and requires quick reflexes as the maze collapses or alters after a set time.  
+- The player can "freeze" the environment temporarily to create a safe path, but this uses up precious energy.  
+- Obstacles include ice spikes, falling rocks, and hostile creatures, all of which can freeze the player if touched.  
+- The player can collect "heat sources" (like fire crystals) to stay warm and avoid freezing, which slows movement and reduces speed over time.
+
+**Objectives:**  
+- Complete each level within the time limit before the environment becomes too unstable.  
+- Collect enough resources to unlock new areas and eventually escape the wasteland.  
+- Survive as long as possible in the final "Endless Mode" where the maze becomes increasingly complex and dangerous.
+
+**Unique Features:**  
+- **Dynamic Maze System:** Each level has a unique maze that changes every few seconds, requiring constant adaptation.  
+- **Thermal Management:** Players must balance speed and survival by managing energy and heat, adding a layer of strategy.  
+- **Cultural Elements:** The environment and obstacles reflect the tribal culture, with visual and audio cues that hint at the tribes' legends and survival techniques.  
+- **Simple Controls:** Intuitive touch or button-based movement with minimal on-screen indicators, making it accessible for all ages.
+
+**Tone & Style:**  
+The game has a stark, icy aesthetic with vibrant tribal art elements. The soundtrack blends ambient cold-weather sounds with rhythmic tribal drums to create an engaging and immersive atmosphere.
+
+*Tundra Runner* is a fast-paced, addictive, and visually striking game that combines the tension of a maze runner with the survival challenge of a frozen wasteland.
+
+JSON Data:
+{
+  "name": "Tundra Runner",
+  "description": "In *Tundra Runner*, players take on the role of a member of a nomadic tribe surviving in a harsh, frozen wasteland. Navigate through ever-changing maze-like environments, avoid dangers like ice spikes and falling rocks, and collect heat sources to stay warm and survive. Balance speed and strategy to escape the endless cold in this fast-paced, visually striking timed maze runner.",
+  "images": [
+    {
+      "file": "tundra_runner_1.png",
+      "shortgenerationprompt": "A tribal runner in a frozen wasteland, navigating through a maze of ice and snow, with vibrant tribal patterns on their clothing."
+    },
+    {
+      "file": "tundra_runner_2.png",
+      "shortgenerationprompt": "A close-up of the runner's hand freezing as they touch an ice spike, with a glowing fire crystal in the background."
+    },
+    {
+      "file": "tundra_runner_3.png",
+      "shortgenerationprompt": "A dynamic maze of shifting ice structures, with the runner moving through it in fast-paced action."
+    },
+    {
+      "file": "tundra_runner_4.png",
+      "shortgenerationprompt": "A tribal runner using a freeze ability to create a safe path through a collapsing maze, surrounded by snow and ice."
+    },
+    {
+      "file": "tundra_runner_5.png",
+      "shortgenerationprompt": "A side view of the runner dodging falling rocks and ice spikes in a fast-paced maze environment."
+    },
+    {
+      "file": "tundra_runner_6.png",
+      "shortgenerationprompt": "A glowing fire crystal being collected by the runner, with a cold, icy background and tribal art elements."
+    },
+    {
+      "file": "tundra_runner_7.png",
+      "shortgenerationprompt": "A wide shot of the frozen wasteland with a maze in the distance, showing the stark, icy aesthetic and tribal art elements."
+    },
+    {
+      "file": "tundra_runner_8.png",
+      "shortgenerationprompt": "A close-up of the runner's face showing determination and survival instincts in the middle of a dangerous maze."
+    },
+    {
+      "file": "tundra_runner_9.png",
+      "shortgenerationprompt": "A screenshot of the game interface showing the runner's energy bar, heat level, and time remaining in a level."
+    },
+    {
+      "file": "tundra_runner_10.png",
+      "shortgenerationprompt": "A tribal runner in the final 'Endless Mode' of the game, navigating through an increasingly complex and dangerous maze."
+    },
+    {
+      "file": "tundra_runner_11.png",
+      "shortgenerationprompt": "A dramatic shot of the runner being chased by a hostile creature in the frozen wasteland, with a glowing trail behind them."
+    },
+    {
+      "file": "tundra_runner_12.png",
+      "shortgenerationprompt": "A still from the game's soundtrack, with ambient cold-weather sounds and tribal drums in the background."
+    },
+    {
+      "file": "tundra_runner_13.png",
+      "shortgenerationprompt": "A screenshot of the runner freezing mid-movement, surrounded by ice and a glowing fire crystal nearby."
+    },
+    {
+      "file": "tundra_runner_14.png",
+      "shortgenerationprompt": "A close-up of the runner's feet on the icy ground, showing the texture and environment of the frozen wasteland."
+    },
+    {
+      "file": "tundra_runner_15.png",
+      "shortgenerationprompt": "A dramatic panoramic view of the frozen wasteland with a maze in the foreground and tribal art patterns in the background."
+    },
+    {
+      "file": "tundra_runner_16.png",
+      "shortgenerationprompt": "A screenshot showing the runner collecting multiple heat sources while avoiding obstacles in a fast-paced maze."
+    },
+    {
+      "file": "tundra_runner_17.png",
+      "shortgenerationprompt": "A still image of the runner in the middle of a collapsing maze, with a glowing fire crystal and snowflakes in the air."
+    },
+    {
+      "file": "tundra_runner_18.png",
+      "shortgenerationprompt": "A screenshot of the game's UI showing the tribal runner's progress, collected resources, and time remaining in the level."
+    },
+    {
+      "file": "tundra_runner_19.png",
+      "shortgenerationprompt": "A concept art of the tribal runner in their natural habitat, surrounded by ice formations and tribal artifacts."
+    },
+    {
+      "file": "tundra_runner_20.png",
+      "shortgenerationprompt": "A dynamic action shot of the runner dodging a falling rock and a hostile creature in a fast-paced, frozen maze environment."
+    }
+  ]
+}
