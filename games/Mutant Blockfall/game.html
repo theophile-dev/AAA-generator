@@ -1,0 +1,292 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mutant Blockfall</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+        }
+        canvas {
+            border: 2px solid #fff;
+            background-color: #111;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const BLOCK_SIZE = 32;
+        const GRID_WIDTH = Math.floor(CANVAS_WIDTH / BLOCK_SIZE);
+        const GRID_HEIGHT = Math.floor(CANVAS_HEIGHT / BLOCK_SIZE);
+
+        // Game state
+        let gameState = 'menu'; // menu, playing, paused, gameOver, levelComplete
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let heroBlock = null;
+        let mutantBlocks = [];
+        let fallingBlocks = [];
+        let gameSpeed = 1;
+        let lastTime = 0;
+        let keys = {};
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Image cache
+        const images = {};
+        const imageNames = [
+            '246x279_background.png',
+            '512x512_city_core.png',
+            '214x54_falling_block.png',
+            '476x475_game_grid.png',
+            '440x409_game_over.png',
+            '346x370_ground.png',
+            '437x424_hero_block.png',
+            '512x512_level_1.png',
+            '512x512_level_2.png',
+            '387x406_level_3.png',
+            '390x473_level_4.png',
+            '207x366_level_5.png',
+            '341x302_level_complete.png',
+            '512x451_menu_screen.png',
+            '494x467_mutant_block.png',
+            '409x412_mutant_surge.png',
+            '512x391_pause_screen.png',
+            '418x401_score_board.png',
+            '441x445_ui_elements.png'
+        ];
+
+        // Load images
+        imageNames.forEach(name => {
+            const img = new Image();
+            img.src = `images/${name}`;
+            images[name] = img;
+        });
+
+        // Initialize game objects
+        function initGame() {
+            heroBlock = { x: Math.floor(GRID_WIDTH / 2), y: GRID_HEIGHT - 2 };
+            mutantBlocks = [];
+            fallingBlocks = [];
+            score = 0;
+            lives = 3;
+            level = 1;
+            gameSpeed = 1;
+            generateLevel();
+        }
+
+        // Generate a new level
+        function generateLevel() {
+            // Create some mutants at the top
+            for (let i = 0; i < 5 + level * 2; i++) {
+                mutantBlocks.push({
+                    x: Math.floor(Math.random() * GRID_WIDTH),
+                    y: -Math.floor(Math.random() * 5),
+                    type: Math.floor(Math.random() * 3)
+                });
+            }
+        }
+
+        // Draw game elements
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw background
+            if (images['476x475_game_grid.png']) {
+                ctx.drawImage(images['476x475_game_grid.png'], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            }
+
+            // Draw hero block
+            if (heroBlock && images['437x424_hero_block.png']) {
+                ctx.drawImage(images['437x424_hero_block.png'], heroBlock.x * BLOCK_SIZE, heroBlock.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            }
+
+            // Draw mutant blocks
+            mutantBlocks.forEach(block => {
+                if (images['494x467_mutant_block.png']) {
+                    ctx.drawImage(images['494x467_mutant_block.png'], block.x * BLOCK_SIZE, block.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                }
+            });
+
+            // Draw falling blocks
+            fallingBlocks.forEach(block => {
+                if (images['214x54_falling_block.png']) {
+                    ctx.drawImage(images['214x54_falling_block.png'], block.x * BLOCK_SIZE, block.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                }
+            });
+
+            // Draw UI
+            drawUI();
+        }
+
+        // Draw UI elements
+        function drawUI() {
+            // Score and lives
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px "Courier New", monospace';
+            ctx.fillText(`Score: ${score}`, 20, 30);
+            ctx.fillText(`Lives: ${lives}`, 20, 60);
+            ctx.fillText(`Level: ${level}`, 20, 90);
+
+            // Menu screen
+            if (gameState === 'menu') {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.fillStyle = '#fff';
+                ctx.font = '48px "Courier New", monospace';
+                ctx.fillText('MUTANT BLOCKFALL', CANVAS_WIDTH / 2 - 200, CANVAS_HEIGHT / 2 - 50);
+                ctx.font = '24px "Courier New", monospace';
+                ctx.fillText('Press SPACE to start', CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 + 30);
+            }
+
+            // Pause screen
+            if (gameState === 'paused') {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.fillStyle = '#fff';
+                ctx.font = '48px "Courier New", monospace';
+                ctx.fillText('PAUSED', CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2);
+                ctx.font = '24px "Courier New", monospace';
+                ctx.fillText('Press P to resume', CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 + 50);
+            }
+
+            // Game over screen
+            if (gameState === 'gameOver') {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.fillStyle = '#fff';
+                ctx.font = '48px "Courier New", monospace';
+                ctx.fillText('GAME OVER', CANVAS_WIDTH / 2 - 150, CANVAS_HEIGHT / 2 - 50);
+                ctx.font = '24px "Courier New", monospace';
+                ctx.fillText(`Final Score: ${score}`, CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 + 30);
+                ctx.fillText('Press R to restart', CANVAS_WIDTH / 2 - 110, CANVAS_HEIGHT / 2 + 70);
+            }
+
+            // Level complete screen
+            if (gameState === 'levelComplete') {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.fillStyle = '#fff';
+                ctx.font = '48px "Courier New", monospace';
+                ctx.fillText('LEVEL COMPLETE', CANVAS_WIDTH / 2 - 180, CANVAS_HEIGHT / 2 - 50);
+                ctx.font = '24px "Courier New", monospace';
+                ctx.fillText(`Score: ${score}`, CANVAS_WIDTH / 2 - 70, CANVAS_HEIGHT / 2 + 30);
+                ctx.fillText('Next level in 3 seconds...', CANVAS_WIDTH / 2 - 150, CANVAS_HEIGHT / 2 + 70);
+            }
+        }
+
+        // Update game state
+        function update(deltaTime) {
+            if (gameState !== 'playing') return;
+
+            // Move hero block
+            if (keys['ArrowLeft'] && heroBlock.x > 0) {
+                heroBlock.x -= 1;
+            }
+            if (keys['ArrowRight'] && heroBlock.x < GRID_WIDTH - 1) {
+                heroBlock.x += 1;
+            }
+
+            // Update mutant blocks
+            mutantBlocks.forEach(block => {
+                block.y += gameSpeed * 0.5;
+            });
+
+            // Check for collisions with hero block
+            mutantBlocks.forEach((block, index) => {
+                if (block.y >= heroBlock.y && block.x === heroBlock.x) {
+                    // Collision detected - remove mutant and add falling block
+                    fallingBlocks.push({ x: block.x, y: block.y });
+                    mutantBlocks.splice(index, 1);
+                    score += 10;
+                }
+            });
+
+            // Check if any mutant reached the bottom
+            mutantBlocks.forEach((block, index) => {
+                if (block.y >= GRID_HEIGHT - 1) {
+                    lives--;
+                    mutantBlocks.splice(index, 1);
+                    if (lives <= 0) {
+                        gameState = 'gameOver';
+                    }
+                }
+            });
+
+            // Remove falling blocks that are off screen
+            fallingBlocks = fallingBlocks.filter(block => block.y < GRID_HEIGHT);
+
+            // Check for level completion
+            if (mutantBlocks.length === 0 && gameState === 'playing') {
+                level++;
+                gameSpeed += 0.2;
+                gameState = 'levelComplete';
+                setTimeout(() => {
+                    gameState = 'playing';
+                    generateLevel();
+                }, 3000);
+            }
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            update(deltaTime);
+            draw();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle keyboard input
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === ' ') {
+                if (gameState === 'menu') {
+                    gameState = 'playing';
+                    initGame();
+                } else if (gameState === 'gameOver' || gameState === 'levelComplete') {
+                    gameState = 'menu';
+                }
+            }
+
+            if (e.key === 'p' || e.key === 'P') {
+                if (gameState === 'playing') {
+                    gameState = 'paused';
+                } else if (gameState === 'paused') {
+                    gameState = 'playing';
+                }
+            }
+
+            if (e.key === 'r' || e.key === 'R') {
+                if (gameState === 'gameOver' || gameState === 'levelComplete') {
+                    gameState = 'menu';
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Start the game
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
