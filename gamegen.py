@@ -239,3 +239,21 @@ with open(game_info_path, "w", encoding="utf-8") as f:
 prompt_path = os.path.join(game_dir, "prompt.txt")
 with open(prompt_path, "w", encoding="utf-8") as f:
     f.write(gamegenprompt)
+
+#generate thumbnail
+thumbnail_path = os.path.join(game_dir, "thumbnail.png")
+genimg.generate_image(
+    outfile=thumbnail_path,
+    prompt=f"A thumbnail for the game {json_data["name"]}, {imgprompt}",
+    negativeprompt=imgnegativeprompt,
+    model="OfficialStableDiffusion/dreamshaper_8LCM",
+    seed=-1,
+    steps=5,
+    cfgscale=2.0,
+    aspectratio="1:1",
+    width=512,
+    height=512,
+    sampler="lcm",
+    automaticvae=True,
+    images=1
+)

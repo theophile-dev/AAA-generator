@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Games</title>
+  <meta name="description" content="A slick, animated index of all games in the /games directory." />
+  <meta name="theme-color" content="#0ea5ea" />
+  <style>
+    /* ====== Base / Reset ====== */
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg-start: #0ea5ea;
+      --bg-end: #7c3aed;
+      --card-bg: rgba(255,255,255,0.08);
+      --card-stroke: rgba(255,255,255,0.12);
+      --text: #eaf2ff;
+      --muted: #c6d0e3;
+      --accent: #a1ffce;
+      --shadow: rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 10% 10%, rgba(255,255,255,0.06), transparent 60%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(255,255,255,0.05), transparent 60%),
+                  linear-gradient(115deg, var(--bg-start), var(--bg-end));
+      background-size: 200% 200%;
+      animation: gradientShift 18s ease-in-out infinite;
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes floatUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; }
+      .card { transition: none; }
+      .reveal { animation: none !important; }
+    }
+
+    /* ====== Layout ====== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px clamp(16px, 4vw, 32px) 64px;
+    }
+
+    header {
+      display: grid;
+      gap: 18px;
+      padding: 24px;
+      margin-bottom: 8px;
+      border-radius: calc(var(--radius) + 6px);
+      backdrop-filter: blur(12px) saturate(120%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 10px 30px -10px var(--shadow);
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 0;
+      background: linear-gradient(90deg, #fff, #dfe8ff, #b6ffea);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: clamp(14px, 2vw, 16px);
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .input, .select, .button {
+      appearance: none;
+      border: 1px solid var(--card-stroke);
+      background: var(--card-bg);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 12px;
+      outline: none;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .2s ease;
+      box-shadow: 0 6px 18px -10px var(--shadow) inset, 0 6px 22px -14px var(--shadow);
+    }
+
+    .input:focus, .select:focus, .button:focus-visible {
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.12), 0 6px 22px -14px var(--shadow);
+    }
+
+    .button { cursor: pointer; }
+
+    .grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat( auto-fill, minmax(240px, 1fr) );
+      gap: clamp(14px, 2vw, 20px);
+    }
+
+    /* ====== Cards ====== */
+    .card {
+      position: relative;
+      display: grid;
+      grid-template-rows: 150px auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      border: 1px solid var(--card-stroke);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      box-shadow: 0 10px 26px -16px var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.01);
+      border-color: rgba(255,255,255,0.28);
+      box-shadow: 0 20px 40px -20px var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    .thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+    }
+
+    .card-body {
+      padding: 14px 14px 16px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+
+    .game-name {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.2px;
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      opacity: .8;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+
+    .empty {
+      margin-top: 24px;
+      opacity: 0.9;
+      font-size: 15px;
+    }
+
+    footer {
+      margin-top: 48px;
+      opacity: .7;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .reveal { animation: floatUp .5s both; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="title">🎮 My Game Library</h1>
+      <p class="subtitle">Automatically lists every <code>game.html</code> inside <code>/games/&lt;Game Name&gt;/</code>. Thumbnails are taken from each folder's <code>thumbnail.png</code> (falls back to <code>/thumbnail.png</code>).</p>
+      <div class="controls" role="toolbar" aria-label="Game list controls">
+        <input id="search" class="input" type="search" placeholder="Search games…" aria-label="Search games" />
+        <select id="sort" class="select" aria-label="Sort games">
+          <option value="az">Sort: A → Z</option>
+          <option value="za">Sort: Z → A</option>
+        </select>
+        <button id="reload" class="button" type="button" title="Re-scan the games folder">↻ Rescan</button>
+      </div>
+    </header>
+
+    <main aria-live="polite" aria-busy="true">
+      <div id="grid" class="grid" data-state="loading"></div>
+      <p id="empty" class="empty" hidden>
+        No games found. Make sure your server allows directory listing for <code>/games/</code> and that each game folder contains a <code>game.html</code> file.
+      </p>
+    </main>
+
+    <footer>
+      <span>Made with ❤︎ · Smooth gradients, tasteful glassmorphism, and a sprinkle of motion.</span>
+    </footer>
+  </div>
+
+  <template id="card-template">
+    <a class="card reveal" target="_self" rel="noopener">
+      <img class="thumb" alt="Game thumbnail" />
+      <div class="card-body">
+        <h3 class="game-name"></h3>
+        <div class="meta">
+          <span class="badge">Playable</span>
+          <span class="badge">HTML5</span>
+        </div>
+      </div>
+    </a>
+  </template>
+
+  <script>
+    // -------- Configuration --------
+    const ROOT_THUMBNAIL = 'thumbnail.png'; // fallback if a game has no thumbnail.png
+    const GAMES_DIR = 'games';
+
+    // -------- Utility helpers --------
+    const qs = (sel, el=document) => el.querySelector(sel);
+    const qsa = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+    function encodePathSegment(name) {
+      // Ensure spaces and special chars are safe in URLs but keep slashes separate
+      return name.split('/').map(encodeURIComponent).join('/');
+    }
+
+    async function headOrGet(url) {
+      // Some hosts disallow HEAD; gracefully fall back to GET
+      try {
+        const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+        if (r.ok) return r;
+      } catch (e) {}
+      return fetch(url, { method: 'GET', cache: 'no-store' });
+    }
+
+    function niceNameFromFolder(folder) {
+      // Convert "my-game_name" → "My Game Name"
+      return decodeURIComponent(folder)
+        .replace(/[\/_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    // -------- Discovery strategies --------
+    async function getFromManifest() { return []; }
+
+    async function getFromDirectoryListing() {
+      try {
+        const res = await fetch(`${GAMES_DIR}/`, { cache: 'no-store' });
+        if (!res.ok) return [];
+        const html = await res.text();
+        // Heuristic parse of typical autoindex pages (Apache/NGINX/Netlify dev): look for anchors ending with '/'
+        const matches = [...html.matchAll(/href\s*=\s*"([^"?#]+)\/?"/gi)]
+          .map(m => m[1])
+          .filter(href => href && href !== '../' && !href.startsWith('?') && !href.startsWith('#'))
+          .map(href => href.replace(/\/?$/, '')) // remove trailing slash if present
+          .filter(Boolean);
+
+        // De-dup and ignore plain files (keep entries without a dot --- very heuristic)
+        const folders = [...new Set(matches.filter(x => !/\.[a-z0-9]{1,6}$/i.test(x)))];
+        return folders.map(folder => ({ folder, name: niceNameFromFolder(folder) }));
+      } catch { return []; }
+    }
+
+    async function verifyGame(folder) {
+      const safeFolder = encodePathSegment(folder);
+      const base = `${GAMES_DIR}/${safeFolder}/`;
+      const gameUrl = `${base}game.html`;
+      try {
+        const r = await headOrGet(gameUrl);
+        if (!r.ok) return null;
+        return { folder, base, gameUrl };
+      } catch { return null; }
+    }
+
+    async function resolveThumbnail(base) {
+      const gameThumb = `${base}thumbnail.png`;
+      try {
+        const r = await headOrGet(gameThumb);
+        if (r.ok) return gameThumb;
+      } catch {}
+      // Fall back to root thumbnail
+      return ROOT_THUMBNAIL;
+    }
+
+    async function getTitleFromGame(gameUrl, fallbackName) {
+      // Best-effort: parse <title> from the game's HTML to show a nicer name
+      try {
+        const res = await fetch(gameUrl, { cache: 'no-store' });
+        if (!res.ok) return fallbackName;
+        const html = await res.text();
+        const m = html.match(/<title>([^<]{1,80})<\/title>/i);
+        return (m && m[1].trim()) || fallbackName;
+      } catch {
+        return fallbackName;
+      }
+    }
+
+    // -------- Rendering --------
+    function renderGames(games) {
+      const grid = qs('#grid');
+      grid.innerHTML = '';
+      const tpl = qs('#card-template');
+
+      const io = new IntersectionObserver((entries, obs) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add('reveal'); obs.unobserve(e.target); }
+      }, { threshold: 0.2 });
+
+      games.forEach((g, idx) => {
+        const a = tpl.content.firstElementChild.cloneNode(true);
+        a.href = g.gameUrl;
+        a.setAttribute('data-name', g.displayName.toLowerCase());
+        a.style.animationDelay = (idx * 30) + 'ms';
+
+        const img = a.querySelector('img.thumb');
+        img.src = g.thumbnail;
+        img.alt = `${g.displayName} thumbnail`;
+
+        a.querySelector('.game-name').textContent = g.displayName;
+        grid.appendChild(a);
+        io.observe(a);
+      });
+
+      grid.dataset.state = 'ready';
+      qs('main').setAttribute('aria-busy', 'false');
+      qs('#empty').hidden = games.length !== 0;
+    }
+
+    function applySearchAndSort() {
+      const query = qs('#search').value.trim().toLowerCase();
+      const mode = qs('#sort').value;
+      const cards = qsa('#grid .card');
+
+      cards.forEach(card => {
+        const match = card.getAttribute('data-name').includes(query);
+        card.style.display = match ? '' : 'none';
+      });
+
+      const visible = cards.filter(c => c.style.display !== 'none');
+      visible.sort((a, b) => {
+        const an = a.getAttribute('data-name');
+        const bn = b.getAttribute('data-name');
+        return mode === 'za' ? bn.localeCompare(an) : an.localeCompare(bn);
+      }).forEach(c => c.parentElement.appendChild(c));
+    }
+
+    // -------- Orchestration --------
+    async function discoverGames() {
+      qs('main').setAttribute('aria-busy', 'true');
+      const fromManifest = await getFromManifest();
+      const fromDir = fromManifest.length ? [] : await getFromDirectoryListing();
+      const candidates = fromManifest.length ? fromManifest : fromDir;
+
+      const verified = (await Promise.all(candidates.map(async c => {
+        const v = await verifyGame(c.folder);
+        if (!v) return null;
+        const thumbnail = await resolveThumbnail(v.base);
+        const displayName = await getTitleFromGame(v.gameUrl, c.name);
+        return { ...v, thumbnail, displayName };
+      }))).filter(Boolean);
+
+      // Default: if we still have none, show empty state.
+      renderGames(verified);
+      applySearchAndSort();
+    }
+
+    // -------- Wire up UI --------
+    qs('#search').addEventListener('input', applySearchAndSort);
+    qs('#sort').addEventListener('change', applySearchAndSort);
+    qs('#reload').addEventListener('click', discoverGames);
+
+    // Kick off
+    discoverGames();
+  </script>
+</body>
+</html>
