@@ -1,0 +1,120 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_background.png description: A magical creature (dragon, elf, or wizard) standing on the ground, facing right
+path: images/512x512_bonus-word.png description: A fantasy sports-themed word falling from the top of the screen, like 'Dragon Slayer'
+path: images/427x430_boost-icon.png description: A glowing power-up icon, like a shield or boost symbol
+path: images/421x442_character-selection.png description: A simple score board showing points and level progress
+path: images/428x399_double-points-icon.png description: A fantasy-themed background with clouds and magical elements
+path: images/399x384_dragon-elf-wizard.png description: A game over screen with a 'Restart' button and score display
+path: images/443x445_falling-word.png description: A tutorial screen showing how to move left and right to catch words
+path: images/479x420_final-score.png description: A level-up animation showing the player advancing through the tournament bracket
+path: images/464x431_game-over.png description: A character selection screen with different fantasy creatures
+path: images/512x512_game-ui.png description: A boost icon that appears when a word with a power-up is caught
+path: images/212x480_level-up.png description: A shield icon that appears when a shield power-up is activated
+path: images/512x512_loading-screen.png description: A double points icon that appears when a word triggers bonus points
+path: images/357x426_player-character.png description: A small sprite of a dragon, elf, and wizard for character selection
+path: images/212x273_power-up-activation.png description: A stream of falling words in a vertical line
+path: images/326x326_power-up.png description: A simple game UI with player position, score, and power-up icons
+path: images/487x451_score-board.png description: A loading screen with a progress bar and game title
+path: images/385x450_shield-icon.png description: A tutorial word like 'Catch Me' that the player must catch
+path: images/410x475_tutorial-screen.png description: A bonus word with a golden border and extra points
+path: images/423x447_tutorial-word.png description: A power-up activation animation showing effects in the game world
+path: images/512x512_word-stream.png description: A final score screen with a 'Play Again' button and high score display
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Fantasy Word Catcher"**
+
+**Concept Overview:**
+
+"Fantasy Word Catcher" is a simple, fun, and engaging 2D falling word catcher game that blends fantasy sports and word-based mechanics. The player is a magical creature (like a dragon, elf, or wizard) who must catch falling words in the air to score points and progress through a fantasy sports tournament. The goal is to collect words that match the fantasy sports theme — such as "Dragon Slayer", "Elf Champion", "Wizard of the Year", and others — to earn points and advance through rounds.
+
+---
+
+**Gameplay Mechanics:**
+
+- The player controls a fantasy character that moves left and right across the screen.
+- Words fall from the top of the screen in a vertical stream, each with a unique fantasy sports-related name or title.
+- The player must catch the falling words by moving their character under the word when it reaches the bottom of the screen.
+- Each caught word adds to the player's score and may also activate a fantasy power (e.g., "Boost", "Shield", "Double Points").
+- The game has multiple rounds or levels, with increasing difficulty and faster falling words.
+- A "Power-Up" system allows the player to use special abilities like slowing down falling words, creating a shield, or collecting bonus points for a short time.
+
+---
+
+**Objectives:**
+
+- Catch as many fantasy words as possible to increase your score.
+- Reach the top of the tournament bracket by scoring enough points in each round.
+- Unlock new fantasy characters and power-ups as you progress.
+
+---
+
+**Unique Features:**
+
+- **Fantasy Sports Theme:** Words are themed around fantasy sports, making the game feel like a magical competition.
+- **Single-Element Art:** Uses 20 unique .png images for the player character, falling words, and power-ups — no sprite sheets or complex animations.
+- **Simple Controls:** Just left and right movement, making it accessible to all ages.
+- **Progressive Difficulty:** Words fall faster as the game progresses, increasing the challenge.
+- **Bonus System:** Each word caught can trigger a random fantasy power or boost, keeping gameplay dynamic and fun.
+
+---
+
+**Implementation Notes:**
+
+- All images are single elements, making it easy to position and animate using basic JavaScript and DOM manipulation.
+- The game uses simple collision detection between the falling words and the player’s position.
+- Each word is a separate image, and their fall is simulated with basic vertical movement.
+- Power-ups are triggered by catching specific words, and their effects are applied with simple conditional logic.
+
+---
+
+**Target Audience:**
+
+- All ages, especially fans of fantasy, sports, and word games.
+- Suitable for casual gaming sessions and quick matches.
+
+---
+
+**Conclusion:**
+
+"Fantasy Word Catcher" offers a fun, engaging, and visually simple game experience that blends the excitement of fantasy sports with the challenge of word catching. It’s a great candidate for a small-scale, browser-based game with minimal resources and maximum replayability.

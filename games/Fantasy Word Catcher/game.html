@@ -1,0 +1,683 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Word Catcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="720" viewBox="0 0 1024 720"><rect width="1024" height="720" fill="%230d1b2a"/><path d="M0,360 Q256,300 512,360 T1024,360 L1024,720 L0,720 Z" fill="%231b263b"/><circle cx="100" cy="100" r="20" fill="%23f8f9fa"/><circle cx="200" cy="150" r="15" fill="%23f8f9fa"/><circle cx="300" cy="80" r="10" fill="%23f8f9fa"/><circle cx="400" cy="120" r="18" fill="%23f8f9fa"/><circle cx="500" cy="60" r="12" fill="%23f8f9fa"/><circle cx="600" cy="100" r="14" fill="%23f8f9fa"/><circle cx="700" cy="130" r="16" fill="%23f8f9fa"/><circle cx="800" cy="90" r="13" fill="%23f8f9fa"/><circle cx="900" cy="110" r="17" fill="%23f8f9fa"/><circle cx="950" cy="70" r="11" fill="%23f8f9fa"/></svg>') center/cover;
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff8c00, 0 0 20px #ff8c00;
+            color: #ffd700;
+        }
+        
+        h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #4da6ff;
+        }
+        
+        p {
+            font-size: 20px;
+            max-width: 800px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #ff8c00, #ff4500);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px 0;
+            pointer-events: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(to bottom, #ff9d2d, #ff5a1f);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .power-up-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .power-up-icon {
+            width: 50px;
+            height: 50px;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+        
+        .power-up-icon.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        
+        .character-selection {
+            display: flex;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .character-option {
+            width: 150px;
+            height: 150px;
+            border: 3px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .character-option:hover {
+            transform: scale(1.1);
+            border-color: #ffd700;
+        }
+        
+        .character-option.selected {
+            border-color: #4da6ff;
+            box-shadow: 0 0 20px rgba(77, 166, 255, 0.7);
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            max-width: 800px;
+        }
+        
+        .instructions h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+        }
+        
+        .level-progress {
+            width: 80%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #4da6ff, #ffd700);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .word-stream {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .word {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            color: #fff;
+            animation: float 3s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(5deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(10px) rotate(-5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        
+        .word-stream .word:nth-child(odd) {
+            animation-delay: 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <div class="power-up-display">
+                <img id="boost-icon" class="power-up-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%234da6ff' opacity='0.7'/><path d='M30,50 L70,50 M50,30 L50,70 M40,40 L60,60 M60,40 L40,60' stroke='%23ffffff' stroke-width='8' fill='none'/></svg>" alt="Boost">
+                <img id="shield-icon" class="power-up-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,10 L90,30 L90,70 L50,90 L10,70 L10,30 Z' fill='%23ff4500' opacity='0.8'/><circle cx='50' cy='50' r='20' fill='%23ffd700' opacity='0.9'/></svg>" alt="Shield">
+                <img id="double-points-icon" class="power-up-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='10' y='10' width='80' height='80' fill='%23ffd700' opacity='0.7' rx='10'/><text x='50' y='60' font-family='Arial' font-size='40' text-anchor='middle' fill='%23000000'>2x</text></svg>" alt="Double Points">
+            </div>
+            
+            <div id="start-screen" class="screen active">
+                <h1>FANTASY WORD CATCHER</h1>
+                <p>Collect falling fantasy words to score points and advance through the tournament!</p>
+                
+                <div class="character-selection">
+                    <div class="character-option selected" data-character="dragon">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="#ff4500"/>
+                            <circle cx="35" cy="40" r="5" fill="white"/>
+                            <circle cx="35" cy="40" r="2" fill="black"/>
+                            <circle cx="65" cy="40" r="5" fill="white"/>
+                            <circle cx="65" cy="40" r="2" fill="black"/>
+                            <path d="M40,60 Q50,70 60,60" stroke="white" stroke-width="3" fill="none"/>
+                            <path d="M30,20 L40,10 L50,15 L60,10 L70,20" stroke="#ff8c00" stroke-width="3" fill="none"/>
+                        </svg>
+                    </div>
+                    <div class="character-option" data-character="elf">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="#4da6ff"/>
+                            <circle cx="35" cy="40" r="5" fill="white"/>
+                            <circle cx="35" cy="40" r="2" fill="black"/>
+                            <circle cx="65" cy="40" r="5" fill="white"/>
+                            <circle cx="65" cy="40" r="2" fill="black"/>
+                            <path d="M40,60 Q50,70 60,60" stroke="white" stroke-width="3" fill="none"/>
+                            <path d="M30,20 L40,10 L50,15 L60,10 L70,20" stroke="#ffd700" stroke-width="3" fill="none"/>
+                        </svg>
+                    </div>
+                    <div class="character-option" data-character="wizard">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="#8a2be2"/>
+                            <circle cx="35" cy="40" r="5" fill="white"/>
+                            <circle cx="35" cy="40" r="2" fill="black"/>
+                            <circle cx="65" cy="40" r="5" fill="white"/>
+                            <circle cx="65" cy="40" r="2" fill="black"/>
+                            <path d="M40,60 Q50,70 60,60" stroke="white" stroke-width="3" fill="none"/>
+                            <path d="M30,20 L40,10 L50,15 L60,10 L70,20" stroke="#ffd700" stroke-width="3" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <button id="start-btn" class="btn">START GAME</button>
+                
+                <div class="instructions">
+                    <h3>HOW TO PLAY</h3>
+                    <ul>
+                        <li>Use <strong>LEFT</strong> and <strong>RIGHT</strong> arrow keys to move your character</li>
+                        <li>Catch falling fantasy words to score points</li>
+                        <li>Collect power-ups for special abilities!</li>
+                        <li>Reach the tournament bracket to advance levels</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="game-over-screen" class="screen">
+                <h1>GAME OVER</h1>
+                <h2>Your Score: <span id="final-score">0</span></h2>
+                <p>You reached level <span id="final-level">0</span> in the tournament!</p>
+                <button id="restart-btn" class="btn">PLAY AGAIN</button>
+            </div>
+            
+            <div id="level-up-screen" class="screen">
+                <h1>LEVEL UP!</h1>
+                <h2>You reached level <span id="current-level">0</span></h2>
+                <p>Words are falling faster now!</p>
+                <button id="continue-btn" class="btn">CONTINUE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const PLAYER_WIDTH = 100;
+        const PLAYER_HEIGHT = 150;
+        const WORD_WIDTH = 200;
+        const WORD_HEIGHT = 60;
+        const WORD_SPEED_MIN = 1;
+        const WORD_SPEED_MAX = 5;
+        const POWER_UP_CHANCE = 0.2;
+        const LEVEL_UP_SCORE = 1000;
+        
+        // Game state
+        let gameState = {
+            score: 0,
+            level: 1,
+            lives: 3,
+            isPlaying: false,
+            isPaused: false,
+            playerCharacter: 'dragon',
+            powerUps: {
+                boost: false,
+                shield: false,
+                doublePoints: false
+            },
+            words: [],
+            powerUpsActive: []
+        };
+        
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const levelUpScreen = document.getElementById('level-up-screen');
+        const scoreElement = document.getElementById('score');
+        const finalScoreElement = document.getElementById('final-score');
+        const finalLevelElement = document.getElementById('final-level');
+        const currentLevelElement = document.getElementById('current-level');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const characterOptions = document.querySelectorAll('.character-option');
+        
+        // Player position
+        let playerX = CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2;
+        let playerY = CANVAS_HEIGHT - PLAYER_HEIGHT - 20;
+        
+        // Word stream effect
+        const wordStream = [];
+        for (let i = 0; i < 15; i++) {
+            wordStream.push({
+                x: Math.random() * CANVAS_WIDTH,
+                y: Math.random() * CANVAS_HEIGHT,
+                text: ['Dragon Slayer', 'Elf Champion', 'Wizard of the Year'][Math.floor(Math.random() * 3)],
+                speed: Math.random() * 2 + 1
+            });
+        }
+        
+        // Initialize game
+        function initGame() {
+            gameState = {
+                score: 0,
+                level: 1,
+                lives: 3,
+                isPlaying: true,
+                isPaused: false,
+                playerCharacter: 'dragon',
+                powerUps: {
+                    boost: false,
+                    shield: false,
+                    doublePoints: false
+                },
+                words: [],
+                powerUpsActive: []
+            };
+            
+            playerX = CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2;
+            updateScore();
+            startScreen.classList.remove('active');
+            gameOverScreen.classList.remove('active');
+            levelUpScreen.classList.remove('active');
+            
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreElement.textContent = gameState.score;
+        }
+        
+        // Create a new falling word
+        function createWord() {
+            const words = [
+                'Dragon Slayer', 'Elf Champion', 'Wizard of the Year',
+                'Fire Mage', 'Ice Archer', 'Lightning Warrior',
+                'Forest Guardian', 'Mountain King', 'Sea Serpent',
+                'Shadow Assassin', 'Healing Priest', 'Time Traveler'
+            ];
+            
+            const word = {
+                x: Math.random() * (CANVAS_WIDTH - WORD_WIDTH),
+                y: -WORD_HEIGHT,
+                text: words[Math.floor(Math.random() * words.length)],
+                speed: WORD_SPEED_MIN + (gameState.level * 0.2) + Math.random() * 0.5,
+                width: WORD_WIDTH,
+                height: WORD_HEIGHT,
+                points: 10
+            };
+            
+            // Chance to create a power-up word
+            if (Math.random() < POWER_UP_CHANCE) {
+                const powerUpTypes = ['boost', 'shield', 'doublePoints'];
+                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                word.powerUpType = type;
+                word.points = 50;
+            }
+            
+            gameState.words.push(word);
+        }
+        
+        // Handle keyboard input
+        function handleKeyDown(e) {
+            if (!gameState.isPlaying || gameState.isPaused) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    playerX = Math.max(0, playerX - 20);
+                    break;
+                case 'ArrowRight':
+                    playerX = Math.min(CANVAS_WIDTH - PLAYER_WIDTH, playerX + 20);
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    gameState.isPaused = !gameState.isPaused;
+                    if (!gameState.isPaused) {
+                        requestAnimationFrame(gameLoop);
+                    }
+                    break;
+            }
+        }
+        
+        // Draw player character
+        function drawPlayer() {
+            const char = gameState.playerCharacter;
+            
+            // Draw character body
+            ctx.fillStyle = char === 'dragon' ? '#ff4500' : 
+                           char === 'elf' ? '#4da6ff' : '#8a2be2';
+            ctx.beginPath();
+            ctx.arc(playerX + PLAYER_WIDTH/2, playerY + 50, 40, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw character eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(playerX + PLAYER_WIDTH/2 - 15, playerY + 40, 8, 0, Math.PI * 2);
+            ctx.arc(playerX + PLAYER_WIDTH/2 + 15, playerY + 40, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(playerX + PLAYER_WIDTH/2 - 15, playerY + 40, 4, 0, Math.PI * 2);
+            ctx.arc(playerX + PLAYER_WIDTH/2 + 15, playerY + 40, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw character mouth
+            ctx.beginPath();
+            ctx.arc(playerX + PLAYER_WIDTH/2, playerY + 60, 10, 0, Math.PI);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw wings (if elf or wizard)
+            if (char !== 'dragon') {
+                ctx.fillStyle = char === 'elf' ? '#4da6ff' : '#8a2be2';
+                ctx.beginPath();
+                ctx.ellipse(playerX + PLAYER_WIDTH/2, playerY + 30, 50, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw falling words
+        function drawWords() {
+            gameState.words.forEach(word => {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(word.x - 5, word.y - 5, word.width + 10, word.height + 10);
+                
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(word.text, word.x + word.width/2, word.y + word.height/2 + 8);
+                
+                // Draw power-up indicator
+                if (word.powerUpType) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(word.x + word.width/2, word.y + word.height/2, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#ffd700';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('★', word.x + word.width/2, word.y + word.height/2 + 6);
+                }
+            });
+        }
+        
+        // Draw power-up icons
+        function drawPowerUps() {
+            const icons = [
+                { id: 'boost-icon', active: gameState.powerUps.boost },
+                { id: 'shield-icon', active: gameState.powerUps.shield },
+                { id: 'double-points-icon', active: gameState.powerUps.doublePoints }
+            ];
+            
+            icons.forEach(icon => {
+                const element = document.getElementById(icon.id);
+                if (element) {
+                    element.classList.toggle('active', icon.active);
+                }
+            });
+        }
+        
+        // Draw word stream background
+        function drawWordStream() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            wordStream.forEach(word => {
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(word.text, word.x, word.y);
+                
+                // Move words
+                word.y += word.speed;
+                if (word.y > CANVAS_HEIGHT) {
+                    word.y = -20;
+                    word.x = Math.random() * CANVAS_WIDTH;
+                }
+            });
+        }
+        
+        // Update game state
+        function updateGame() {
+            // Create new words at intervals
+            if (Math.random() < 0.05) {
+                createWord();
+            }
+            
+            // Update words position
+            gameState.words.forEach((word, index) => {
+                word.y += word.speed;
+                
+                // Check collision with player
+                if (
+                    word.y + word.height > playerY &&
+                    word.y < playerY + PLAYER_HEIGHT &&
+                    word.x + word.width > playerX &&
+                    word.x < playerX + PLAYER_WIDTH
+                ) {
+                    // Score points
+                    let points = word.points;
+                    if (gameState.powerUps.doublePoints) {
+                        points *= 2;
+                    }
+                    
+                    gameState.score += points;
+                    updateScore();
+                    
+                    // Handle power-up
+                    if (word.powerUpType) {
+                        gameState.powerUps[word.powerUpType] = true;
+                        
+                        // Deactivate after time
+                        setTimeout(() => {
+                            gameState.powerUps[word.powerUpType] = false;
+                        }, 5000);
+                    }
+                    
+                    // Remove caught word
+                    gameState.words.splice(index, 1);
+                } 
+                // Remove words that fall off screen
+                else if (word.y > CANVAS_HEIGHT) {
+                    gameState.words.splice(index, 1);
+                }
+            });
+            
+            // Check level up
+            if (gameState.score >= LEVEL_UP_SCORE * gameState.level) {
+                gameState.level++;
+                levelUpScreen.classList.add('active');
+                currentLevelElement.textContent = gameState.level;
+                gameState.isPlaying = false;
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameState.isPlaying || gameState.isPaused) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background
+            drawWordStream();
+            
+            // Update and draw game objects
+            updateGame();
+            drawWords();
+            drawPlayer();
+            
+            // Draw power-ups
+            drawPowerUps();
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', initGame);
+        
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.classList.remove('active');
+            initGame();
+        });
+        
+        continueBtn.addEventListener('click', () => {
+            levelUpScreen.classList.remove('active');
+            gameState.isPlaying = true;
+            requestAnimationFrame(gameLoop);
+        });
+        
+        document.addEventListener('keydown', handleKeyDown);
+        
+        // Character selection
+        characterOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                characterOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                gameState.playerCharacter = option.dataset.character;
+            });
+        });
+        
+        // Initial draw
+        ctx.fillStyle = '#0d1b2a';
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        
+        // Draw title screen
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('FANTASY WORD CATCHER', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
+        
+        ctx.font = '24px Arial';
+        ctx.fillText('Press START to begin your tournament journey!', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 20);
+        
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 36px Arial';
+        ctx.fillText('Use ← → keys to move', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 80);
+    </script>
+</body>
+</html>
