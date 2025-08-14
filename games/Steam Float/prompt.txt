@@ -1,0 +1,103 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/508x480_background.png description: A small steampunk robot with a rotating gear on its back, standing on a floating platform.
+path: images/390x413_core.png description: A static, wooden floating platform with steam vents and gears.
+path: images/512x512_level_complete.png description: A vertical steam vent emitting white steam, with a small canister nearby.
+path: images/404x382_level_map.png description: A large rotating gear suspended in the air, with steam rising from its edges.
+path: images/439x440_level_progress.png description: A small red steam valve switch on a floating platform, ready to be activated.
+path: images/512x512_menu.png description: A glowing, central steam core at the top of the fortress, surrounded by glowing pipes.
+path: images/326x445_platform.png description: A small, metallic steam canister with a valve, lying on a platform.
+path: images/512x496_puzzle_element.png description: A minimalist steampunk fortress floating in the sky, with clouds and distant mountains in the background.
+path: images/441x460_robot.png description: A level map showing the layout of platforms, vents, and gears in a 2D puzzle layout.
+path: images/261x308_robot_jump.png description: A steampunk robot mid-air, jumping from one platform to another.
+path: images/431x432_robot_rotation.png description: A circular, rotating platform with steam rising from its edges.
+path: images/494x495_rotating_gear.png description: A block of steam blocking the path, with a canister nearby to clear it.
+path: images/392x418_rotating_platform.png description: A level complete screen with the core glowing and a 'Next Level' button.
+path: images/512x467_steam_block.png description: A simple timer display showing the remaining time for the level.
+path: images/325x358_steam_canister.png description: A main menu screen with the game title 'Steam Float' and start button.
+path: images/292x383_steam_vent.png description: A puzzle element with gears, switches, and steam vents arranged in a complex pattern.
+path: images/289x423_switch.png description: A steampunk robot rotating 90 degrees to face a new direction.
+path: images/318x392_timer.png description: A visual representation of level progress with colored segments showing completed and upcoming levels.
+path: images/405x418_ui_elements.png description: Minimalist UI elements including health bar, score counter, and level indicator.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Steam Float"**
+
+**Concept:**
+
+"Steam Float" is a simple, fun, and engaging 2D platform puzzle game set in a floating steampunk fortress suspended in the sky. The player controls a small, steampunk-style robot that can move, jump, and rotate to navigate through a series of floating platforms, gears, and steam vents. The goal is to reach the top of the fortress and activate the core, unlocking new areas and challenges.
+
+**Gameplay Mechanics:**
+
+- **Movement:** The player controls a robot that can move left and right, jump, and rotate in 90-degree increments (up, down, left, right) to change direction.
+- **Gravity:** The fortress floats in the air, so gravity pulls the robot downward, but the platforms are arranged in a way that requires strategic movement.
+- **Platform Interaction:** Some platforms are static, while others are moving or rotating, requiring precise timing to land safely.
+- **Puzzle Elements:** Certain platforms only appear when the player activates a steam valve, which can be done by landing on a specific switch or rotating the robot to trigger a gear mechanism.
+- **Steam Vents:** Some vents release steam that blocks movement, but the player can collect steam canisters to clear the path.
+
+**Game Objectives:**
+
+- The main objective is to reach the core at the top of the fortress.
+- Each level adds new mechanics, such as moving platforms, rotating gears, and steam vents.
+- Players collect "steam cores" to unlock new areas and levels.
+- The game includes a simple timer to encourage quick thinking and efficient pathfinding.
+
+**Unique Features:**
+
+- **Minimalist Art Style:** The game uses 20 simple .png images, each representing a single element (robot, platform, steam vent, gear, etc.), with no sprite sheets or complex animations.
+- **Rotatable Mechanics:** The robot can rotate to interact with rotating gears and environmental puzzles, adding a unique twist to the platforming genre.
+- **Progressive Difficulty:** Each level introduces a new puzzle mechanic, keeping the gameplay fresh and challenging.
+- **No Complex Graphics:** The game relies on clean, colorful designs and simple physics to maintain accessibility and appeal for a wide audience.
+
+**Implementation Notes:**
+
+- All assets are single-element PNGs, making it easy to manage and implement.
+- The game uses basic JavaScript and HTML5 Canvas for rendering and interaction.
+- The code is concise, with 500 lines of code focusing on core mechanics, collision detection, and level progression.
+
+**Target Audience:**
+
+- Families, casual gamers, and puzzle enthusiasts.
+- Designed to be easy to pick up, with a satisfying sense of accomplishment as players overcome each level's unique challenges.
+
+"Steam Float" blends the charm of steampunk aesthetics with the simplicity of platform puzzle gameplay, offering a fun and engaging experience with minimal resources and code.
