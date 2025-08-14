@@ -1,4 +1,14 @@
 {
+  "frameworks": [
+  "No frameworks pure JS",
+  "Phaser",
+  "Three.js",
+  "Babylon.js",
+  "Matter.js",
+  "PlayCanvas",
+  "MelonJS",
+  "ExcaliburJS"
+],
     "themes": [
       "Ancient Egypt",
       "Cyberpunk dystopia",
@@ -603,8 +613,8 @@
         "Avoid the Circle",
         "Minimal Turn-Based Strategy"
       ],
-    "imgprompt" : "beautiful 2d game asset, pixel art, retro style, limited color palette, clean outline, high contrast, isolated on pure white background, sprite sheet style, crisp edges",
+    "imgprompt" : "beautiful 2d game asset, clean outline, high contrast, isolated on pure white background, vibrant color, crisp edges",
     "imgnegativeprompt" : "blurry, messy lines, noisy background, dark background, watermarks, text, signature, extra objects, photorealistic, 3d render, grayscale",
-    "prompt" : "create a concept for an original 2d game that can be coded in pure js using only 20 images .png that should be single elements, no collection or sprite sheet, and 500 lines of codes, using the following themes: {themes}, genres: {genres}. The game should be simple, fun, and engaging, suitable for a wide audience. The concept should include a brief description of the gameplay mechanics, objectives, and unique features that make it stand out. The game should be designed to be easily implemented with minimal resources and should not require complex animations or graphics. don't generate code or snippets, just give the idea. responds only with description of the idea" 
+    "prompt" : "create a concept for an original game, using the following themes: {themes}, genres: {genres}. The game should be simple, fun, and engaging. The concept should include a brief description of the gameplay mechanics, objectives, and unique features that make it stand out. don't generate code or snippets, responds only with description of the idea" 
 }
   

@@ -17,7 +17,7 @@ def rgb_to_hsv_sv(rgb_arr: np.ndarray):
     return s, v
 
 def remove_white_bg(img: Image.Image,
-                    rgb_min: int = 240,
+                    rgb_min: int = 252,
                     v_min: float = 0.95,
                     s_max: float = 0.20,
                     feather: int = 1) -> Image.Image:

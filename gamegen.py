@@ -141,15 +141,18 @@ Constraints
 
     Single file only: One .html file containing all HTML, CSS, and JavaScript.
 
-    No external libraries or files beyond those listed in the assets section below.
-
-    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+    Relatively small game
 
     Canvas size: 1024 × 720.
 
     Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
 
     Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    {random.choice(config["frameworks"])}  
+
+No music or sound effects   
 
 Assets
     List of available images :
@@ -163,15 +166,7 @@ Output Requirements
 
     Basic input handling (keyboard/mouse/touch as appropriate).
 
-    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
-
     Include minimal UI (start/restart, score/lives, instructions).
-
-Quality Bar
-
-    Stable 60 FPS on a typical desktop.
-
-    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
 
 Deliverable
 
@@ -191,7 +186,7 @@ def on_chunk(piece: str) -> None:
     chunk_count += 1
     accumulated.append(piece)
 
-    if chunk_count % 150 == 0:
+    if chunk_count % 300 == 0:
         full_so_far = "".join(accumulated)
         print(f"\n--- streaming update after {chunk_count} chunks ---\n")
         print(full_so_far, flush=True)
@@ -204,6 +199,10 @@ res = ollamagen.ollama_generate(
     options={
         "temperature": 0.6,
         "num_ctx": 8192,
+        "repeat_penalty" : 1.05,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0,
     },
     stream=True,
     on_chunk=on_chunk,
@@ -244,8 +243,7 @@ with open(prompt_path, "w", encoding="utf-8") as f:
 thumbnail_path = os.path.join(game_dir, "thumbnail.png")
 genimg.generate_image(
     outfile=thumbnail_path,
-    prompt=f"Vibrant, colorful abstract digital art with swirling gradients of orange, red, blue, purple, and teal, energetic brushstrokes and geometric accents, high contrast, modern style, featuring a clean, minimalist symbolic logo representing the game {json_data["name"]} at the center, surrounded by a segmented circular border, sharp focus, high detail, bold and striking composition, text-free, modern graphic design aesthetic",
-    negativeprompt="text, watermark, low resolution, blurry, photorealistic, muted colors, monochrome, 3D render, realistic shading, people, animals",
+    prompt=f"{json_data["name"]}",
     model="OfficialStableDiffusion/dreamshaper_8LCM",
     seed=-1,
     steps=5,
