@@ -1,0 +1,109 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_maze_match_1.png description: Retro pixel art maze with a small character navigating through a simple grid.
+path: images/123x406_maze_match_10.png description: A close-up of a memory match tile revealing its image (e.g., a red square).
+path: images/512x512_maze_match_11.png description: Two matching tiles being flipped and removed from the maze.
+path: images/445x445_maze_match_12.png description: A procedurally generated maze expanding in all directions.
+path: images/512x512_maze_match_13.png description: A player character moving through a maze with walls and floor tiles.
+path: images/461x447_maze_match_14.png description: A timer overlay showing the remaining time for the level.
+path: images/512x465_maze_match_15.png description: A maze segment with 6 pairs of matching tiles in the center.
+path: images/512x512_maze_match_16.png description: A retro pixel art door tile in the maze.
+path: images/512x512_maze_match_17.png description: A maze with a few cleared pairs and partially expanded sections.
+path: images/493x496_maze_match_18.png description: A player character standing on a floor tile with a matching tile nearby.
+path: images/512x512_maze_match_2.png description: A maze segment with walls and empty spaces, showing the maze structure.
+path: images/467x473_maze_match_3.png description: A memory match tile with a blue circle as its image.
+path: images/422x466_maze_match_4.png description: A maze with a trap tile (e.g., a red X) that the player must avoid.
+path: images/342x261_maze_match_5.png description: A player character attempting to match tiles while avoiding maze traps.
+path: images/512x512_maze_match_6.png description: A maze with multiple segments connected by doors and walls.
+path: images/452x467_maze_match_7.png description: A completed level with all pairs cleared and the maze fully expanded.
+path: images/210x391_maze_match_8.png description: A character standing in the center of a maze with all pairs cleared.
+path: images/121x125_maze_match_9.png description: A minimalist pixel art tile set showing walls, floor, and 6 unique match pairs.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Maze Match"**
+
+**Theme:** Infinite Maze + Memory Match  
+**Genre:** Puzzle / Memory  
+**Style:** Simple, clean, retro pixel art aesthetic
+
+---
+
+**Concept Overview:**
+
+"Maze Match" is a simple, engaging 2D memory match game set within an infinite maze. Players navigate a small character through a procedurally generated maze, collecting pairs of matching tiles to clear the level. The goal is to find all matching pairs as quickly as possible while avoiding traps or obstacles that appear as the maze expands.
+
+---
+
+**Gameplay Mechanics:**
+
+- The game uses a grid-based infinite maze system where each new section is randomly generated using a simple algorithm that ensures connectivity between rooms.
+- The maze is made up of single-element PNGs: walls, floor, doors, and empty spaces.
+- Players move in four directions (up, down, left, right) using arrow keys or WASD.
+- At the center of each maze segment, there are **6 pairs of matching tiles**, each represented by unique single-element PNGs (e.g., a red square, a blue circle, etc.).
+- When a player clicks on a tile, it flips to reveal its image. If two matching tiles are clicked, they are removed from the maze.
+- As the player clears pairs, the maze expands in all directions, creating an ever-growing environment.
+- A timer is added to encourage quick thinking and matching.
+
+---
+
+**Objective:**
+
+- Clear all matching pairs in the maze.
+- Complete as many levels as possible within a set time limit.
+- Avoid getting stuck in unreachable areas due to maze structure.
+
+---
+
+**Unique Features:**
+
+- **Infinite Maze Expansion:** The maze grows as the player progresses, ensuring endless replayability.
+- **Memory Match Twist:** Combines classic memory matching with maze navigation and spatial reasoning.
+- **Minimal Graphics:** Uses only 20 single PNGs (walls, floor, doors, 6 unique tile pairs), making it easy to implement without complex graphics or sprite sheets.
+- **Simple Controls:** Keyboard-based movement and tile selection keeps the game accessible to all ages.
+- **No Complex Animations:** All interactions are based on static images, making the game lightweight and easy to code.
+
+---
+
+**Why It Works:**
+
+"Maze Match" is designed to be simple, fun, and engaging for a wide audience. It blends the challenge of memory matching with the exploration of an infinite maze, offering a unique twist on traditional memory games. The minimal art and code requirements make it ideal for beginners or those looking to create a small, polished game with limited resources.

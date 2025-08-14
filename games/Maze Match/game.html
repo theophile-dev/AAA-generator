@@ -1,0 +1,682 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Match</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #e6e6e6;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background-color: #0f3460;
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        
+        .ui-panel {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #4cc9f0;
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
+        }
+        
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 52, 96, 0.9);
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #game-over {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #f72585;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #4361ee, #3a0ca3);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(to right, #3a0ca3, #4361ee);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            max-width: 600px;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+            font-weight: bold;
+        }
+        
+        .pair-count {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .pair-count span {
+            font-size: 1.5rem;
+            color: #f72585;
+            font-weight: bold;
+        }
+        
+        .timer {
+            font-size: 1.8rem;
+            color: #4cc9f0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div class="ui-panel">
+                <div class="timer">Time: <span id="time">60</span>s</div>
+                <div class="pair-count">Pairs: <span id="pairs">0</span>/6</div>
+            </div>
+            <div class="ui-panel">
+                <div>Score: <span id="score">0</span></div>
+                <div>Lives: <span id="lives">3</span></div>
+            </div>
+        </div>
+        
+        <div id="start-screen">
+            <h1>MAZE MATCH</h1>
+            <div class="instructions">
+                <p>Navigate the maze and find matching pairs of tiles!</p>
+                <p>Use <span class="key">WASD</span> or <span class="key">Arrow Keys</span> to move.</p>
+                <p>Click on tiles to flip them and find matches.</p>
+                <p>Avoid traps and complete all pairs before time runs out!</p>
+            </div>
+            <button id="start-btn" class="btn">START GAME</button>
+        </div>
+        
+        <div id="game-over">
+            <h2>GAME OVER</h2>
+            <p>Your final score: <span id="final-score">0</span></p>
+            <p>You found <span id="final-pairs">0</span> pairs of tiles</p>
+            <button id="restart-btn" class="btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const TILE_SIZE = 64;
+        const PLAYER_SPEED = 5;
+        const MAX_PAIRS = 6;
+        
+        // Game state
+        let gameState = {
+            player: { x: 0, y: 0, facing: 'right' },
+            maze: [],
+            tiles: [],
+            pairs: [],
+            flippedTiles: [],
+            score: 0,
+            lives: 3,
+            timeLeft: 60,
+            gameActive: false,
+            gameOver: false,
+            level: 1
+        };
+        
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const timeElement = document.getElementById('time');
+        const pairsElement = document.getElementById('pairs');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const finalScoreElement = document.getElementById('final-score');
+        const finalPairsElement = document.getElementById('final-pairs');
+        
+        // Image assets
+        const images = {};
+        const imagePaths = [
+            'images/512x512_maze_match_1.png',   // Maze background
+            'images/123x406_maze_match_10.png',  // Tile reveal
+            'images/512x512_maze_match_11.png',  // Matching tiles
+            'images/445x445_maze_match_12.png',  // Maze expansion
+            'images/512x512_maze_match_13.png',  // Player character
+            'images/461x447_maze_match_14.png',  // Timer overlay
+            'images/512x465_maze_match_15.png',  // Maze with pairs
+            'images/512x512_maze_match_16.png',  // Door tile
+            'images/512x512_maze_match_17.png',  // Partially cleared maze
+            'images/493x496_maze_match_18.png',  // Player near tile
+            'images/512x512_maze_match_2.png',   // Maze segment
+            'images/467x473_maze_match_3.png',   // Blue circle tile
+            'images/422x466_maze_match_4.png',   // Trap tile
+            'images/342x261_maze_match_5.png',   // Player avoiding trap
+            'images/512x512_maze_match_6.png',   // Connected segments
+            'images/452x467_maze_match_7.png',   // Completed level
+            'images/210x391_maze_match_8.png',   // Centered player
+            'images/121x125_maze_match_9.png'    // Tile set (walls, floor, pairs)
+        ];
+        
+        // Load images
+        function loadImages() {
+            const promises = imagePaths.map(path => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = path;
+                    img.onload = () => {
+                        // Extract filename without path for key
+                        const filename = path.split('/').pop();
+                        images[filename] = img;
+                        resolve();
+                    };
+                    img.onerror = reject;
+                });
+            });
+            
+            return Promise.all(promises);
+        }
+        
+        // Initialize game
+        function initGame() {
+            gameState.player.x = 512;
+            gameState.player.y = 360;
+            gameState.pairs = [];
+            gameState.tiles = [];
+            gameState.flippedTiles = [];
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.timeLeft = 60;
+            gameState.gameActive = true;
+            gameState.gameOver = false;
+            
+            // Create initial maze
+            generateMaze();
+            
+            // Create pairs of tiles at center
+            createPairs();
+            
+            updateUI();
+        }
+        
+        // Generate a simple maze structure
+        function generateMaze() {
+            const width = Math.ceil(CANVAS_WIDTH / TILE_SIZE);
+            const height = Math.ceil(CANVAS_HEIGHT / TILE_SIZE);
+            
+            gameState.maze = [];
+            
+            // Create grid with walls and floor
+            for (let y = 0; y < height; y++) {
+                gameState.maze[y] = [];
+                for (let x = 0; x < width; x++) {
+                    // Border walls
+                    if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+                        gameState.maze[y][x] = 'wall';
+                    } else {
+                        // Random floor tiles
+                        gameState.maze[y][x] = Math.random() > 0.7 ? 'wall' : 'floor';
+                    }
+                }
+            }
+            
+            // Ensure connectivity by creating a path from center
+            const centerX = Math.floor(width / 2);
+            const centerY = Math.floor(height / 2);
+            
+            gameState.maze[centerY][centerX] = 'floor';
+            gameState.maze[centerY][centerX - 1] = 'floor';
+            gameState.maze[centerY][centerX + 1] = 'floor';
+            gameState.maze[centerY - 1][centerX] = 'floor';
+            gameState.maze[centerY + 1][centerX] = 'floor';
+        }
+        
+        // Create pairs of matching tiles
+        function createPairs() {
+            // Create pairs at center
+            const centerX = Math.floor(CANVAS_WIDTH / TILE_SIZE / 2);
+            const centerY = Math.floor(CANVAS_HEIGHT / TILE_SIZE / 2);
+            
+            const pairImages = [
+                images['467x473_maze_match_3.png'], // Blue circle
+                images['512x512_maze_match_13.png'], // Player character
+                images['422x466_maze_match_4.png'], // Trap tile
+                images['512x512_maze_match_11.png'], // Matching tiles
+                images['512x512_maze_match_17.png'], // Partially cleared
+                images['512x512_maze_match_16.png']  // Door tile
+            ];
+            
+            for (let i = 0; i < MAX_PAIRS; i++) {
+                const pairId = i;
+                const image = pairImages[i % pairImages.length];
+                
+                gameState.pairs.push({
+                    id: pairId,
+                    x: centerX * TILE_SIZE + Math.random() * TILE_SIZE * 2 - TILE_SIZE,
+                    y: centerY * TILE_SIZE + Math.random() * TILE_SIZE * 2 - TILE_SIZE,
+                    image: image,
+                    flipped: false,
+                    matched: false
+                });
+            }
+        }
+        
+        // Draw the maze
+        function drawMaze() {
+            const width = Math.ceil(CANVAS_WIDTH / TILE_SIZE);
+            const height = Math.ceil(CANVAS_HEIGHT / TILE_SIZE);
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const tileX = x * TILE_SIZE;
+                    const tileY = y * TILE_SIZE;
+                    
+                    if (gameState.maze[y][x] === 'wall') {
+                        // Draw wall tile
+                        ctx.fillStyle = '#2a2a4a';
+                        ctx.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+                        
+                        // Add some detail to walls
+                        ctx.strokeStyle = '#1a1a3a';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Draw floor tile
+                        ctx.fillStyle = '#1e3a5f';
+                        ctx.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+                        
+                        // Add some texture to floor
+                        ctx.strokeStyle = '#162947';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+            }
+        }
+        
+        // Draw player character
+        function drawPlayer() {
+            const playerSize = 32;
+            const x = gameState.player.x - playerSize / 2;
+            const y = gameState.player.y - playerSize / 2;
+            
+            // Draw player body
+            ctx.fillStyle = '#f72585';
+            ctx.beginPath();
+            ctx.arc(gameState.player.x, gameState.player.y, playerSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(gameState.player.x - 8, gameState.player.y - 5, 4, 0, Math.PI * 2);
+            ctx.arc(gameState.player.x + 8, gameState.player.y - 5, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw pupils
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(gameState.player.x - 8, gameState.player.y - 5, 2, 0, Math.PI * 2);
+            ctx.arc(gameState.player.x + 8, gameState.player.y - 5, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw mouth
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(gameState.player.x, gameState.player.y + 5, 8, 0, Math.PI);
+            ctx.stroke();
+        }
+        
+        // Draw pairs of tiles
+        function drawPairs() {
+            gameState.pairs.forEach(pair => {
+                if (pair.matched) return;
+                
+                const x = pair.x - TILE_SIZE / 2;
+                const y = pair.y - TILE_SIZE / 2;
+                
+                // Draw tile background
+                ctx.fillStyle = '#4cc9f0';
+                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                
+                // Draw tile border
+                ctx.strokeStyle = '#3a0ca3';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+                
+                // Draw tile image if flipped or matched
+                if (pair.flipped || pair.matched) {
+                    ctx.drawImage(pair.image, x + 8, y + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+                } else {
+                    // Draw question mark for hidden tiles
+                    ctx.fillStyle = '#3a0ca3';
+                    ctx.font = 'bold 40px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('?', x + TILE_SIZE/2, y + TILE_SIZE/2 + 15);
+                }
+            });
+        }
+        
+        // Update game state
+        function update() {
+            if (!gameState.gameActive || gameState.gameOver) return;
+            
+            // Move player with keyboard input
+            const keys = {};
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+            });
+            
+            if (keys['ArrowUp'] || keys['w'] || keys['W']) {
+                gameState.player.y -= PLAYER_SPEED;
+                gameState.player.facing = 'up';
+            }
+            if (keys['ArrowDown'] || keys['s'] || keys['S']) {
+                gameState.player.y += PLAYER_SPEED;
+                gameState.player.facing = 'down';
+            }
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                gameState.player.x -= PLAYER_SPEED;
+                gameState.player.facing = 'left';
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                gameState.player.x += PLAYER_SPEED;
+                gameState.player.facing = 'right';
+            }
+            
+            // Keep player within bounds
+            gameState.player.x = Math.max(TILE_SIZE/2, Math.min(CANVAS_WIDTH - TILE_SIZE/2, gameState.player.x));
+            gameState.player.y = Math.max(TILE_SIZE/2, Math.min(CANVAS_HEIGHT - TILE_SIZE/2, gameState.player.y));
+            
+            // Check for tile interactions
+            checkTileInteractions();
+            
+            // Update timer
+            gameState.timeLeft -= 1/60;
+            if (gameState.timeLeft <= 0) {
+                gameState.timeLeft = 0;
+                endGame();
+            }
+            
+            updateUI();
+        }
+        
+        // Check if player interacts with tiles
+        function checkTileInteractions() {
+            const playerX = Math.floor(gameState.player.x / TILE_SIZE);
+            const playerY = Math.floor(gameState.player.y / TILE_SIZE);
+            
+            gameState.pairs.forEach(pair => {
+                if (pair.matched) return;
+                
+                // Check distance to pair
+                const dx = gameState.player.x - pair.x;
+                const dy = gameState.player.y - pair.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < TILE_SIZE && !pair.flipped) {
+                    // Flip tile when clicked
+                    pair.flipped = true;
+                    gameState.flippedTiles.push(pair.id);
+                    
+                    // Check for match
+                    checkForMatch();
+                }
+            });
+        }
+        
+        // Check if two flipped tiles match
+        function checkForMatch() {
+            const flipped = gameState.pairs.filter(p => p.flipped && !p.matched);
+            
+            if (flipped.length === 2) {
+                // Check if they match
+                if (flipped[0].image === flipped[1].image) {
+                    // Match found!
+                    flipped[0].matched = true;
+                    flipped[1].matched = true;
+                    gameState.score += 100;
+                    
+                    // Remove matched tiles from flipped list
+                    gameState.flippedTiles = gameState.flippedTiles.filter(id => 
+                        id !== flipped[0].id && id !== flipped[1].id
+                    );
+                    
+                    // Add a new pair if all are matched
+                    if (gameState.pairs.every(p => p.matched)) {
+                        // Generate new maze section
+                        expandMaze();
+                        
+                        // Create new pairs
+                        createPairs();
+                    }
+                } else {
+                    // No match - flip back after delay
+                    setTimeout(() => {
+                        flipped.forEach(tile => {
+                            tile.flipped = false;
+                        });
+                        gameState.flippedTiles = [];
+                    }, 1000);
+                }
+            }
+        }
+        
+        // Expand maze when all pairs are matched
+        function expandMaze() {
+            const width = Math.ceil(CANVAS_WIDTH / TILE_SIZE);
+            const height = Math.ceil(CANVAS_HEIGHT / TILE_SIZE);
+            
+            // Expand in a random direction
+            const directions = ['up', 'down', 'left', 'right'];
+            const dir = directions[Math.floor(Math.random() * directions.length)];
+            
+            // Add new tiles based on direction
+            switch(dir) {
+                case 'up':
+                    for (let x = 0; x < width; x++) {
+                        if (!gameState.maze[0]) gameState.maze[0] = [];
+                        gameState.maze[0][x] = 'floor';
+                    }
+                    break;
+                case 'down':
+                    const lastRow = height - 1;
+                    for (let x = 0; x < width; x++) {
+                        if (!gameState.maze[lastRow]) gameState.maze[lastRow] = [];
+                        gameState.maze[lastRow][x] = 'floor';
+                    }
+                    break;
+                case 'left':
+                    for (let y = 0; y < height; y++) {
+                        if (!gameState.maze[y]) gameState.maze[y] = [];
+                        gameState.maze[y][0] = 'floor';
+                    }
+                    break;
+                case 'right':
+                    const lastCol = width - 1;
+                    for (let y = 0; y < height; y++) {
+                        if (!gameState.maze[y]) gameState.maze[y] = [];
+                        gameState.maze[y][lastCol] = 'floor';
+                    }
+                    break;
+            }
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            timeElement.textContent = Math.ceil(gameState.timeLeft);
+            pairsElement.textContent = gameState.pairs.filter(p => p.matched).length;
+            scoreElement.textContent = gameState.score;
+            livesElement.textContent = gameState.lives;
+        }
+        
+        // End the game
+        function endGame() {
+            gameState.gameActive = false;
+            gameState.gameOver = true;
+            
+            finalScoreElement.textContent = gameState.score;
+            finalPairsElement.textContent = gameState.pairs.filter(p => p.matched).length;
+            
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw maze
+            drawMaze();
+            
+            // Draw pairs
+            drawPairs();
+            
+            // Draw player
+            drawPlayer();
+            
+            // Draw game over screen if needed
+            if (gameState.gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                
+                ctx.fillStyle = '#f72585';
+                ctx.font = 'bold 60px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
+                
+                ctx.fillStyle = '#4cc9f0';
+                ctx.font = '30px Arial';
+                ctx.fillText(`Score: ${gameState.score}`, CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 30);
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            initGame();
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            initGame();
+        });
+        
+        // Initialize game when images are loaded
+        loadImages().then(() => {
+            console.log("All images loaded");
+            // Start the game loop
+            gameLoop();
+        }).catch(err => {
+            console.error("Failed to load images:", err);
+        });
+    </script>
+</body>
+</html>
