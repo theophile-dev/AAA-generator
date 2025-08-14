@@ -1,0 +1,105 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    PlayCanvas  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_tide_drifters_1.png description: A whimsical sea nomad character floating above a coral reef, surrounded by glowing fish and drifting islands.
+path: images/510x487_tide_drifters_10.png description: A side-scrolling view of the player pushing a heavy box through a narrow underwater tunnel.
+path: images/512x512_tide_drifters_11.png description: A floating island with a campsite in the distance, surrounded by waves and drifting boxes.
+path: images/512x418_tide_drifters_12.png description: A close-up of the player using a hook tool to pull a box from a tight space in a submerged ruin.
+path: images/512x512_tide_drifters_13.png description: A vibrant underwater scene with glowing coral, schools of fish, and a box hidden behind a rock formation.
+path: images/512x512_tide_drifters_14.png description: A map view showing the player's progress through a drifting island chain, with tides changing the layout.
+path: images/493x512_tide_drifters_15.png description: The player swimming upward through a current, pushing a box toward a glowing drop zone.
+path: images/512x401_tide_drifters_16.png description: A character customization screen showing different tools like a net, hook, and anchor.
+path: images/436x331_tide_drifters_17.png description: A serene scene of the player floating in the ocean, surrounded by soft light and drifting islands.
+path: images/322x336_tide_drifters_18.png description: A puzzle level with multiple boxes, tides, and a time limit, showing the player in action.
+path: images/512x512_tide_drifters_19.png description: A close-up of the player using momentum to push a heavy box through a narrow passage.
+path: images/415x375_tide_drifters_2.png description: A screenshot of the game's UI showing the player's collected tools and the current level objective.
+path: images/477x476_tide_drifters_20.png description: A peaceful underwater cave with glowing textures and a box hidden in a crevice.
+path: images/512x512_tide_drifters_3.png description: A dramatic scene of the player dodging a predator while pushing a box through a narrow tunnel.
+path: images/512x512_tide_drifters_4.png description: A view of the player navigating through a dynamic tidal environment with shifting pathways.
+path: images/473x483_tide_drifters_5.png description: A character standing on a floating platform, looking out over a vast, shifting ocean.
+path: images/488x460_tide_drifters_6.png description: A puzzle level with multiple objectives, including collecting and delivering boxes while avoiding hazards.
+path: images/512x512_tide_drifters_7.png description: A close-up of the player's character with a soft, hand-drawn art style and vibrant watercolor textures.
+path: images/371x306_tide_drifters_8.png description: A serene scene of the player floating in the ocean, with ambient music and soft waves in the background.
+path: images/512x512_tide_drifters_9.png description: A final level with a large, complex layout, showing the player navigating through a vast, interconnected ocean world.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Tide Drifters*
+
+**Theme:** *Ocean Nomads*  
+**Genre:** *Push the Box* (2D Puzzle/Platformer)
+
+---
+
+**Concept Overview:**
+
+*Tide Drifters* is a charming, puzzle-platformer game set in a vibrant, ever-shifting ocean world where players take on the role of a nomadic sea creature, navigating through floating islands and underwater realms to deliver essential resources to their community.
+
+---
+
+**Gameplay Mechanics:**
+
+- Players control a small, agile sea nomad character that can move, jump, and push floating objects (boxes) through a series of interconnected water-based environments.
+- The world is made up of drifting islands, coral reefs, and submerged ruins, all connected by currents and tides.
+- The main mechanic is **pushing boxes**, similar to classic *Push the Box* games, but with a unique twist: the boxes are essential resources (like food, tools, or seeds) that must be delivered to specific "nomad camps" or "harvest sites."
+- The player can move in all directions, including swimming up and down, and the physics of the water affect movement, making navigation more dynamic and challenging.
+- Some boxes are heavy and require the player to use momentum or water currents to move them, while others are light and can be pushed with ease.
+- The environment changes over time, with tides and currents altering pathways, requiring strategic thinking and adaptability.
+
+---
+
+**Objectives:**
+
+- The main goal is to **collect and deliver boxes** to designated locations.
+- Each level has a set number of boxes to collect, and the player must push them to specific drop zones to complete the level.
+- Some levels may have time limits or require completing multiple objectives simultaneously (e.g., collect and deliver, while avoiding predators or natural hazards).
+- Unlocking new areas and revealing the world map is a reward for completing levels, encouraging exploration and replayability.
+
+---
+
+**Unique Features:**
+
+- **Tide-Based Level Design:** Each level has a unique tidal pattern that changes the layout, making each playthrough feel fresh and challenging.
+- **Underwater Exploration:** Players can explore submerged areas where boxes are hidden, requiring them to navigate through tight spaces or solve simple puzzles to access them.
+- **Character Customization:** Players can collect and equip different tools (like a net, hook, or anchor) that help with pushing boxes or navigating the environment.
+- **Art Style:** A whimsical, hand-drawn aesthetic with soft watercolor textures and vibrant coral colors that evoke a sense of wonder and exploration.
+- **Music and Sound Design:** Gentle, ambient sounds and subtle sea-themed music that enhances the atmosphere and immerses the player in the ocean world.
+
+---
+
+**Tone and Feel:**
+
+*Tide Drifters* is a **calm, meditative, and fun** experience that invites players to drift through a world that feels alive and full of possibility. It’s designed to be accessible to casual players while offering enough depth for puzzle enthusiasts. The sense of exploration and the rhythm of the ocean create a soothing, engaging loop that keeps players returning for more.

@@ -1,0 +1,497 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tide Drifters</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to bottom, #1a2980, #26d0ce);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        canvas {
+            background: #0a1929;
+            display: block;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 0 0 5px black;
+        }
+        
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 30, 60, 0.85);
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        #gameOverScreen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+        
+        p {
+            font-size: 20px;
+            max-width: 800px;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        button {
+            background: #ffcc00;
+            color: #0a1929;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 30px;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background: #ffd740;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            max-width: 800px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .key {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui">
+            <div>Boxes: <span id="boxesCollected">0</span>/<span id="totalBoxes">0</span></div>
+            <div>Lives: <span id="lives">3</span></div>
+            <div>Level: <span id="level">1</span></div>
+        </div>
+        
+        <div id="startScreen">
+            <h1>Tide Drifters</h1>
+            <p>Navigate through the shifting ocean world and deliver essential resources to your nomad community!</p>
+            
+            <div class="instructions">
+                <p>Use arrow keys or WASD to move your character. Push boxes to designated drop zones.</p>
+                <p>Watch out for predators and navigate through dynamic tidal environments!</p>
+            </div>
+            
+            <div class="controls">
+                <div class="key">WASD</div>
+                <div class="key">↑↓←→</div>
+                <div class="key">SPACE</div>
+            </div>
+            
+            <button id="startButton">Start Adventure</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p>You collected <span id="finalScore">0</span> boxes!</p>
+            <p>Keep exploring the ocean world to find more resources.</p>
+            <button id="restartButton">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const boxesCollectedElement = document.getElementById('boxesCollected');
+        const totalBoxesElement = document.getElementById('totalBoxes');
+        const livesElement = document.getElementById('lives');
+        const levelElement = document.getElementById('level');
+        const finalScoreElement = document.getElementById('finalScore');
+
+        // Game state
+        let gameRunning = false;
+        let player = {
+            x: 100,
+            y: 360,
+            width: 40,
+            height: 40,
+            speed: 5,
+            color: '#ffcc00',
+            lives: 3,
+            level: 1,
+            boxesCollected: 0
+        };
+
+        let boxes = [];
+        let dropZones = [];
+        let obstacles = [];
+        let predators = [];
+        let currentLevel = 1;
+        let keys = {};
+        let gameLoop;
+
+        // Initialize game
+        function initGame() {
+            player.x = 100;
+            player.y = 360;
+            player.lives = 3;
+            player.boxesCollected = 0;
+            boxes = [];
+            dropZones = [];
+            obstacles = [];
+            predators = [];
+            
+            createLevel(currentLevel);
+            updateUI();
+        }
+
+        // Create level
+        function createLevel(level) {
+            // Clear existing elements
+            boxes = [];
+            dropZones = [];
+            obstacles = [];
+            predators = [];
+            
+            // Create player
+            player.x = 100;
+            player.y = 360;
+            
+            // Level-specific setup
+            switch(level) {
+                case 1:
+                    // Simple level with one box and drop zone
+                    boxes.push({x: 300, y: 350, width: 40, height: 40, collected: false});
+                    dropZones.push({x: 800, y: 350, width: 60, height: 60});
+                    obstacles.push({x: 200, y: 300, width: 100, height: 20});
+                    obstacles.push({x: 400, y: 400, width: 100, height: 20});
+                    break;
+                    
+                case 2:
+                    // More complex level with multiple boxes
+                    boxes.push({x: 300, y: 350, width: 40, height: 40, collected: false});
+                    boxes.push({x: 600, y: 200, width: 40, height: 40, collected: false});
+                    dropZones.push({x: 800, y: 350, width: 60, height: 60});
+                    dropZones.push({x: 800, y: 100, width: 60, height: 60});
+                    obstacles.push({x: 200, y: 300, width: 100, height: 20});
+                    obstacles.push({x: 400, y: 400, width: 100, height: 20});
+                    obstacles.push({x: 600, y: 300, width: 100, height: 20});
+                    predators.push({x: 500, y: 300, width: 50, height: 50, speed: 1});
+                    break;
+                    
+                case 3:
+                    // Advanced level with multiple obstacles
+                    boxes.push({x: 300, y: 350, width: 40, height: 40, collected: false});
+                    boxes.push({x: 600, y: 200, width: 40, height: 40, collected: false});
+                    boxes.push({x: 800, y: 500, width: 40, height: 40, collected: false});
+                    dropZones.push({x: 900, y: 350, width: 60, height: 60});
+                    obstacles.push({x: 200, y: 300, width: 100, height: 20});
+                    obstacles.push({x: 400, y: 400, width: 100, height: 20});
+                    obstacles.push({x: 600, y: 300, width: 100, height: 20});
+                    obstacles.push({x: 700, y: 550, width: 100, height: 20});
+                    predators.push({x: 500, y: 300, width: 50, height: 50, speed: 1});
+                    predators.push({x: 700, y: 400, width: 50, height: 50, speed: 1.5});
+                    break;
+            }
+            
+            updateUI();
+        }
+
+        // Update UI
+        function updateUI() {
+            boxesCollectedElement.textContent = player.boxesCollected;
+            totalBoxesElement.textContent = boxes.length;
+            livesElement.textContent = player.lives;
+            levelElement.textContent = currentLevel;
+        }
+
+        // Draw game elements
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw water background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a1929');
+            gradient.addColorStop(1, '#1a3d5c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw waves
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 20; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * 40);
+                ctx.bezierCurveTo(
+                    canvas.width/4, i * 40 + 10,
+                    canvas.width/2, i * 40 - 10,
+                    canvas.width * 3/4, i * 40 + 5,
+                    canvas.width, i * 40
+                );
+                ctx.stroke();
+            }
+            
+            // Draw obstacles
+            ctx.fillStyle = '#6b8b8b';
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                // Add some texture to obstacles
+                ctx.strokeStyle = '#5a7a7a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+            
+            // Draw drop zones
+            ctx.fillStyle = 'rgba(0, 200, 0, 0.3)';
+            dropZones.forEach(zone => {
+                ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+            });
+            
+            // Draw boxes
+            boxes.forEach(box => {
+                if (!box.collected) {
+                    ctx.fillStyle = '#ff6b35';
+                    ctx.fillRect(box.x, box.y, box.width, box.height);
+                    ctx.strokeStyle = '#d9534f';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(box.x, box.y, box.width, box.height);
+                    
+                    // Add some details to boxes
+                    ctx.fillStyle = '#e67e22';
+                    ctx.fillRect(box.x + 5, box.y + 5, box.width - 10, 5);
+                }
+            });
+            
+            // Draw predators
+            predators.forEach(predator => {
+                ctx.fillStyle = '#ff3b30';
+                ctx.beginPath();
+                ctx.arc(predator.x + predator.width/2, predator.y + predator.height/2, predator.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw eyes
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(predator.x + predator.width/3, predator.y + predator.height/3, 5, 0, Math.PI * 2);
+                ctx.arc(predator.x + 2*predator.width/3, predator.y + predator.height/3, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw pupils
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(predator.x + predator.width/3, predator.y + predator.height/3, 2, 0, Math.PI * 2);
+                ctx.arc(predator.x + 2*predator.width/3, predator.y + predator.height/3, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw player details
+            ctx.fillStyle = '#0a1929';
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/3, player.y + player.height/3, 5, 0, Math.PI * 2);
+            ctx.arc(player.x + 2*player.width/3, player.y + player.height/3, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw player mouth
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/2, player.y + 2*player.height/3, 8, 0, Math.PI);
+            ctx.strokeStyle = '#0a1929';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Update game state
+        function update() {
+            if (!gameRunning) return;
+            
+            // Move player
+            if (keys['ArrowUp'] || keys['w'] || keys['W']) {
+                player.y -= player.speed;
+            }
+            if (keys['ArrowDown'] || keys['s'] || keys['S']) {
+                player.y += player.speed;
+            }
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                player.x += player.speed;
+            }
+            
+            // Keep player within bounds
+            player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+            
+            // Update predators
+            predators.forEach(predator => {
+                predator.x += predator.speed;
+                if (predator.x > canvas.width || predator.x < 0) {
+                    predator.speed *= -1;
+                }
+                
+                // Check collision with player
+                if (
+                    player.x < predator.x + predator.width &&
+                    player.x + player.width > predator.x &&
+                    player.y < predator.y + predator.height &&
+                    player.y + player.height > predator.y
+                ) {
+                    player.lives--;
+                    updateUI();
+                    if (player.lives <= 0) {
+                        endGame();
+                    } else {
+                        // Reset player position
+                        player.x = 100;
+                        player.y = 360;
+                    }
+                }
+            });
+            
+            // Check box collection
+            boxes.forEach(box => {
+                if (!box.collected &&
+                    player.x < box.x + box.width &&
+                    player.x + player.width > box.x &&
+                    player.y < box.y + box.height &&
+                    player.y + player.height > box.y) {
+                    box.collected = true;
+                    player.boxesCollected++;
+                    updateUI();
+                }
+            });
+            
+            // Check drop zone completion
+            let allBoxesDropped = true;
+            boxes.forEach(box => {
+                if (!box.collected) {
+                    allBoxesDropped = false;
+                }
+            });
+            
+            if (allBoxesDropped && boxes.length > 0) {
+                // Level complete
+                currentLevel++;
+                if (currentLevel > 3) {
+                    // Game complete
+                    endGame(true);
+                } else {
+                    createLevel(currentLevel);
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoopFunction() {
+            update();
+            draw();
+            if (gameRunning) {
+                requestAnimationFrame(gameLoopFunction);
+            }
+        }
+
+        // Start game
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameRunning = true;
+            currentLevel = 1;
+            initGame();
+            gameLoopFunction();
+        }
+
+        // End game
+        function endGame(isWin = false) {
+            gameRunning = false;
+            if (isWin) {
+                document.getElementById('gameOverScreen').innerHTML = `
+                    <h1>Victory!</h1>
+                    <p>You've successfully delivered all resources to the nomad community!</p>
+                    <p>You collected <span id="finalScore">${player.boxesCollected}</span> boxes!</p>
+                    <button id="restartButton">Play Again</button>
+                `;
+            } else {
+                document.getElementById('finalScore').textContent = player.boxesCollected;
+            }
+            gameOverScreen.style.display = 'flex';
+            restartButton.onclick = startGame;
+        }
+
+        // Event listeners
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        startButton.addEventListener('click', startGame);
+        
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>
