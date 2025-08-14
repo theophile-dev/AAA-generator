@@ -1,0 +1,362 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dream Fleet Clash</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #000;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 16px;
+        }
+        #start-screen, #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            background-color: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+<div id="ui">
+    <div>Score: <span id="score">0</span></div>
+    <div>Lives: <span id="lives">3</span></div>
+</div>
+<div id="start-screen">
+    <h2>Dream Fleet Clash</h2>
+    <p>Place and move your fleet strategically!</p>
+    <button onclick="startGame()">Start Game</button>
+</div>
+<div id="game-over">
+    <h2>Game Over</h2>
+    <p>Your score: <span id="final-score">0</span></p>
+    <button onclick="restartGame()">Play Again</button>
+</div>
+
+<script>
+(() => {
+    // Game constants
+    const CANVAS_WIDTH = 1024;
+    const CANVAS_HEIGHT = 720;
+    const GRID_SIZE = 6;
+    const CELL_SIZE = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT) / (GRID_SIZE + 2);
+    const UNIT_TYPES = [
+        { id: 'ship', name: 'Ship', icon: 'images/257x86_unit_ship.png' },
+        { id: 'rocket', name: 'Rocket', icon: 'images/490x384_unit_rocket.png' },
+        { id: 'star', name: 'Star', icon: 'images/444x427_unit_star.png' },
+        { id: 'shield', name: 'Shield', icon: 'images/425x454_unit_shield.png' },
+        { id: 'blast', name: 'Blast', icon: 'images/299x238_unit_blast.png' },
+        { id: 'stealth', name: 'Stealth', icon: 'images/512x512_unit_stealth.png' }
+    ];
+
+    // Game state
+    let gameState = {
+        grid: Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null)),
+        playerUnits: [],
+        aiUnits: [],
+        selectedUnit: null,
+        turn: 'player',
+        score: 0,
+        lives: 3,
+        gameOver: false
+    };
+
+    // Canvas setup
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startScreen = document.getElementById('start-screen');
+    const gameOverScreen = document.getElementById('game-over');
+    const scoreElement = document.getElementById('score');
+    const livesElement = document.getElementById('lives');
+    const finalScoreElement = document.getElementById('final-score');
+
+    // Image cache
+    const images = {};
+    UNIT_TYPES.forEach(unit => {
+        images[unit.id] = new Image();
+        images[unit.id].src = unit.icon;
+    });
+
+    // Load background image
+    const backgroundImage = new Image();
+    backgroundImage.src = 'images/430x470_grid.png';
+
+    // Initialize game
+    function initGame() {
+        gameState = {
+            grid: Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null)),
+            playerUnits: [],
+            aiUnits: [],
+            selectedUnit: null,
+            turn: 'player',
+            score: 0,
+            lives: 3,
+            gameOver: false
+        };
+        scoreElement.textContent = '0';
+        livesElement.textContent = '3';
+        generateUnits();
+    }
+
+    // Generate units for both players
+    function generateUnits() {
+        // Player units
+        for (let i = 0; i < 6; i++) {
+            const type = UNIT_TYPES[Math.floor(Math.random() * UNIT_TYPES.length)];
+            gameState.playerUnits.push({
+                id: `player-${i}`,
+                type: type.id,
+                x: Math.floor(Math.random() * GRID_SIZE),
+                y: 0,
+                health: 100
+            });
+            gameState.grid[gameState.playerUnits[i].y][gameState.playerUnits[i].x] = gameState.playerUnits[i];
+        }
+
+        // AI units
+        for (let i = 0; i < 6; i++) {
+            const type = UNIT_TYPES[Math.floor(Math.random() * UNIT_TYPES.length)];
+            gameState.aiUnits.push({
+                id: `ai-${i}`,
+                type: type.id,
+                x: Math.floor(Math.random() * GRID_SIZE),
+                y: GRID_SIZE - 1,
+                health: 100
+            });
+            gameState.grid[gameState.aiUnits[i].y][gameState.aiUnits[i].x] = gameState.aiUnits[i];
+        }
+    }
+
+    // Draw game
+    function drawGame() {
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        // Draw background
+        ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        // Draw grid cells
+        for (let y = 0; y < GRID_SIZE; y++) {
+            for (let x = 0; x < GRID_SIZE; x++) {
+                const px = (CANVAS_WIDTH - GRID_SIZE * CELL_SIZE) / 2 + x * CELL_SIZE;
+                const py = (CANVAS_HEIGHT - GRID_SIZE * CELL_SIZE) / 2 + y * CELL_SIZE;
+
+                ctx.strokeStyle = '#333';
+                ctx.strokeRect(px, py, CELL_SIZE, CELL_SIZE);
+
+                // Highlight selected cell
+                if (gameState.selectedUnit && gameState.selectedUnit.x === x && gameState.selectedUnit.y === y) {
+                    ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+                    ctx.fillRect(px, py, CELL_SIZE, CELL_SIZE);
+                }
+            }
+        }
+
+        // Draw units
+        gameState.playerUnits.forEach(unit => {
+            if (unit.health > 0) {
+                drawUnit(unit, 'player');
+            }
+        });
+
+        gameState.aiUnits.forEach(unit => {
+            if (unit.health > 0) {
+                drawUnit(unit, 'ai');
+            }
+        });
+    }
+
+    // Draw a single unit
+    function drawUnit(unit, owner) {
+        const px = (CANVAS_WIDTH - GRID_SIZE * CELL_SIZE) / 2 + unit.x * CELL_SIZE;
+        const py = (CANVAS_HEIGHT - GRID_SIZE * CELL_SIZE) / 2 + unit.y * CELL_SIZE;
+
+        if (images[unit.type]) {
+            const img = images[unit.type];
+            ctx.drawImage(img, px + 5, py + 5, CELL_SIZE - 10, CELL_SIZE - 10);
+        }
+
+        // Draw health bar
+        ctx.fillStyle = 'red';
+        ctx.fillRect(px + 5, py + 5, (CELL_SIZE - 10) * (unit.health / 100), 5);
+    }
+
+    // Handle mouse click
+    function handleMouseClick(e) {
+        if (gameState.gameOver || gameState.turn !== 'player') return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const gridX = Math.floor((x - (CANVAS_WIDTH - GRID_SIZE * CELL_SIZE) / 2) / CELL_SIZE);
+        const gridY = Math.floor((y - (CANVAS_HEIGHT - GRID_SIZE * CELL_SIZE) / 2) / CELL_SIZE);
+
+        if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
+            // If no unit is selected, try to select one
+            if (!gameState.selectedUnit) {
+                const unit = gameState.grid[gridY][gridX];
+                if (unit && unit.id.startsWith('player-')) {
+                    gameState.selectedUnit = unit;
+                }
+            } else {
+                // Move or attack
+                const targetUnit = gameState.grid[gridY][gridX];
+                if (!targetUnit) {
+                    // Move to empty cell
+                    moveUnit(gameState.selectedUnit, gridX, gridY);
+                } else if (targetUnit.id.startsWith('ai-')) {
+                    // Attack AI unit
+                    attackUnit(gameState.selectedUnit, targetUnit);
+                }
+                gameState.selectedUnit = null;
+            }
+        }
+    }
+
+    // Move a unit
+    function moveUnit(unit, x, y) {
+        if (Math.abs(unit.x - x) <= 1 && Math.abs(unit.y - y) <= 1 && !gameState.grid[y][x]) {
+            gameState.grid[unit.y][unit.x] = null;
+            unit.x = x;
+            unit.y = y;
+            gameState.grid[y][x] = unit;
+        }
+    }
+
+    // Attack a unit
+    function attackUnit(attacker, defender) {
+        // Simple damage calculation
+        const damage = Math.floor(Math.random() * 50) + 25;
+        defender.health -= damage;
+
+        if (defender.health <= 0) {
+            gameState.grid[defender.y][defender.x] = null;
+            if (defender.id.startsWith('ai-')) {
+                gameState.score += 10;
+                scoreElement.textContent = gameState.score;
+            }
+        }
+
+        // Special abilities
+        if (attacker.type === 'blast') {
+            // Blast destroys adjacent units
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const nx = defender.x + dx;
+                    const ny = defender.y + dy;
+                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                        const adjUnit = gameState.grid[ny][nx];
+                        if (adjUnit && adjUnit.id.startsWith('ai-')) {
+                            adjUnit.health = 0;
+                            gameState.grid[ny][nx] = null;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // AI turn
+    function aiTurn() {
+        if (gameState.turn !== 'ai') return;
+
+        // Simple AI logic
+        const validMoves = [];
+        gameState.aiUnits.forEach(unit => {
+            if (unit.health > 0) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        const nx = unit.x + dx;
+                        const ny = unit.y + dy;
+                        if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                            if (!gameState.grid[ny][nx]) {
+                                validMoves.push({ unit, targetX: nx, targetY: ny });
+                            } else {
+                                const target = gameState.grid[ny][nx];
+                                if (target.id.startsWith('player-')) {
+                                    attackUnit(unit, target);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Move a random valid unit
+        if (validMoves.length > 0) {
+            const move = validMoves[Math.floor(Math.random() * validMoves.length)];
+            moveUnit(move.unit, move.targetX, move.targetY);
+        }
+
+        gameState.turn = 'player';
+    }
+
+    // Game loop
+    function gameLoop() {
+        drawGame();
+
+        if (!gameState.gameOver && gameState.turn === 'ai') {
+            setTimeout(aiTurn, 500); // AI takes some time to think
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Start game
+    function startGame() {
+        initGame();
+        startScreen.style.display = 'none';
+        gameOverScreen.style.display = 'none';
+        gameState.turn = 'player';
+        gameLoop();
+    }
+
+    // Restart game
+    function restartGame() {
+        startGame();
+    }
+
+    // Event listeners
+    canvas.addEventListener('click', handleMouseClick);
+
+    // Start the game on load
+    window.onload = () => {
+        startScreen.style.display = 'block';
+    };
+})();
+</script>
+</body>
+</html>

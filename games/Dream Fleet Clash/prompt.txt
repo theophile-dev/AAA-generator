@@ -1,0 +1,119 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/430x470_grid.png description: Minimalist 6x6 grid background in pixel style
+path: images/512x373_ui_button.png description: Simple pixel-style ship icon
+path: images/287x410_ui_health.png description: Simple pixel-style rocket icon
+path: images/403x411_ui_message.png description: Simple pixel-style star icon
+path: images/512x512_ui_turn.png description: Simple pixel-style shield icon
+path: images/469x448_unit_attack.png description: Simple pixel-style blast icon
+path: images/400x420_unit_aura.png description: Simple pixel-style stealth icon
+path: images/299x238_unit_blast.png description: Simple pixel-style reinforce icon
+path: images/368x375_unit_defense.png description: Minimalist UI button in pixel style
+path: images/407x333_unit_explosive.png description: Minimalist health bar UI in pixel style
+path: images/448x436_unit_magic.png description: Minimalist turn indicator in pixel style
+path: images/464x463_unit_power.png description: Minimalist message box UI in pixel style
+path: images/341x374_unit_reinforce.png description: Simple pixel-style explosive icon
+path: images/490x384_unit_rocket.png description: Simple pixel-style speed icon
+path: images/425x454_unit_shield.png description: Simple pixel-style defense icon
+path: images/257x86_unit_ship.png description: Simple pixel-style attack icon
+path: images/375x427_unit_speed.png description: Simple pixel-style power icon
+path: images/444x427_unit_star.png description: Simple pixel-style magic icon
+path: images/512x512_unit_stealth.png description: Simple pixel-style aura icon
+path: images/263x246_unit_ultimate.png description: Simple pixel-style ultimate icon
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: Dream Fleet Clash**
+
+**Theme:** Dream Tournament  
+**Genre:** Battleship Lite (Strategy + Match-3)  
+**Visual Style:** Minimalist, pixel-style, single-element PNGs
+
+---
+
+**Concept Description:**
+
+In *Dream Fleet Clash*, players take control of a small fleet of dream-constructs, each represented by a simple 2D icon (like a ship, rocket, or star). The goal is to outmaneuver and outsmart opponents in a turn-based tactical battle, using strategic placement and limited moves to destroy their fleet.
+
+---
+
+**Gameplay Mechanics:**
+
+- **Grid-Based Board:** A 6x6 grid represents the battlefield. Each cell can hold one unit or be empty.
+- **Units:** Each player has 6 units, each with a unique ability (e.g., speed, shield, or explosive). These are represented by single PNGs.
+- **Turn-Based Movement:** Players take turns placing or moving their units on the grid. Each unit can move one space per turn.
+- **Attack System:** When two units are adjacent, they can attack. The outcome depends on the unit's strength and the opponent's defense.
+- **Special Abilities:** Some units have special powers like "Blast" (destroys adjacent units), "Stealth" (can't be targeted), or "Reinforce" (adds an extra unit).
+- **Win Condition:** The first player to eliminate all of the opponent’s units wins.
+
+---
+
+**Objectives:**
+
+- Strategically position and move your fleet to maximize damage while avoiding your opponent's attacks.
+- Use special abilities wisely to gain the upper hand in battles.
+- Win by eliminating the opponent’s fleet before they do yours.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Design:** Uses only 20 single-element PNGs (units, backgrounds, and UI elements), making it easy to implement and visually clean.
+- **Turn-Based Strategy:** Encourages thoughtful planning and quick decision-making.
+- **Simple Rules, Deep Strategy:** Easy to learn but challenging to master, with replayability through different unit combinations and tactics.
+- **Single-Player vs. AI:** The game includes a basic AI opponent that learns from your moves, offering a challenge without needing complex programming.
+- **No Spritesheets or Complex Animations:** Everything is static, making the game lightweight and accessible even on low-end devices.
+
+---
+
+**Design Philosophy:**
+
+*Dream Fleet Clash* aims to be a fun, accessible, and engaging game for players of all ages. It balances simplicity with strategic depth, and its minimalist art style ensures it can be implemented with minimal resources while still being visually appealing and easy to understand.
+
+---
+
+**Implementation Notes:**
+
+- The game can be built using only HTML5 Canvas and JavaScript.
+- All assets are single PNGs, which are placed and moved using basic CSS or canvas drawing.
+- Code is kept clean and modular, with clear functions for movement, attack, and AI logic.
+- The game is designed to be completed in under 500 lines of code, using straightforward JavaScript logic.
