@@ -1,0 +1,704 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyward Siege</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        .game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+            display: block;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+        
+        h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #4dabf7;
+        }
+        
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #ffcc00, #ff9900);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            pointer-events: all;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .crystal {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ffcc00, #ff9900);
+            border-radius: 50%;
+            box-shadow: 0 0 15px #ffcc00;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        .powerup {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #00ffcc, #0099cc);
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00ffcc;
+            animation: spin 3s infinite linear;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div class="ui-overlay">
+            <div class="stats">
+                <div>Time: <span id="time">0.00</span>s</div>
+                <div>Crystals: <span id="crystals">0</span>/5</div>
+                <div>Speed Boost: <span id="speedBoost">0</span>s</div>
+            </div>
+            
+            <div class="controls">
+                <p>Controls: <span class="key">←</span> <span class="key">→</span> Move | <span class="key">SPACE</span> Jump | <span class="key">SHIFT</span> Glide</p>
+            </div>
+            
+            <div id="startScreen" class="screen active">
+                <h1>SKYWARD SIEGE</h1>
+                <h2>Platform Time Trial</h2>
+                <p>Navigate through floating fortresses in the sky. Collect crystals, avoid obstacles, and complete each level as fast as possible!</p>
+                <p>Use SPACE to jump, SHIFT to glide, and arrow keys to move.</p>
+                <button id="startBtn" class="btn">START MISSION</button>
+            </div>
+            
+            <div id="gameOverScreen" class="screen">
+                <h1>MISSION COMPLETE</h1>
+                <h2>Your Time: <span id="finalTime">0.00</span>s</h2>
+                <p>You collected <span id="finalCrystals">0</span> crystals!</p>
+                <p>Try to beat your best time in the next level.</p>
+                <button id="restartBtn" class="btn">NEXT LEVEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const startScreen = document.getElementById('startScreen');
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const startBtn = document.getElementById('startBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const timeElement = document.getElementById('time');
+            const crystalsElement = document.getElementById('crystals');
+            const speedBoostElement = document.getElementById('speedBoost');
+            const finalTimeElement = document.getElementById('finalTime');
+            const finalCrystalsElement = document.getElementById('finalCrystals');
+            
+            // Game state
+            let gameRunning = false;
+            let startTime = 0;
+            let currentTime = 0;
+            let crystalsCollected = 0;
+            let speedBoostActive = false;
+            let speedBoostTimer = 0;
+            
+            // Matter.js engine setup
+            const engine = Matter.Engine.create();
+            engine.world.gravity.y = 0.5; // Reduced gravity for floating effect
+            
+            // Matter.js runner
+            const runner = Matter.Runner.create();
+            Matter.Runner.run(runner, engine);
+            
+            // Game objects
+            let player;
+            let platforms = [];
+            let obstacles = [];
+            let crystals = [];
+            let powerups = [];
+            let goal;
+            
+            // Player properties
+            const playerProperties = {
+                x: 100,
+                y: 300,
+                width: 40,
+                height: 40,
+                speed: 5,
+                jumpForce: 12,
+                isJumping: false,
+                isGliding: false,
+                velocityX: 0,
+                velocityY: 0
+            };
+            
+            // Initialize game
+            function initGame() {
+                // Reset game state
+                gameRunning = true;
+                startTime = Date.now();
+                currentTime = 0;
+                crystalsCollected = 0;
+                speedBoostActive = false;
+                speedBoostTimer = 0;
+                
+                // Clear existing bodies
+                Matter.World.clear(engine.world);
+                platforms = [];
+                obstacles = [];
+                crystals = [];
+                powerups = [];
+                
+                // Create player
+                const playerBody = Matter.Bodies.rectangle(
+                    playerProperties.x, 
+                    playerProperties.y, 
+                    playerProperties.width, 
+                    playerProperties.height,
+                    { 
+                        friction: 0.01,
+                        restitution: 0.3,
+                        render: { fillStyle: '#4dabf7' }
+                    }
+                );
+                
+                player = {
+                    body: playerBody,
+                    width: playerProperties.width,
+                    height: playerProperties.height
+                };
+                
+                Matter.World.add(engine.world, player.body);
+                
+                // Create platforms
+                createPlatforms();
+                
+                // Create obstacles
+                createObstacles();
+                
+                // Create crystals
+                createCrystals();
+                
+                // Create power-ups
+                createPowerups();
+                
+                // Create goal
+                createGoal();
+                
+                // Update UI
+                updateUI();
+            }
+            
+            // Create platforms
+            function createPlatforms() {
+                // Ground platform
+                const ground = Matter.Bodies.rectangle(512, 700, 1024, 40, { 
+                    isStatic: true,
+                    render: { fillStyle: '#8B4513' }
+                });
+                platforms.push(ground);
+                
+                // Floating platforms
+                const platform1 = Matter.Bodies.rectangle(300, 600, 200, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#8B4513' }
+                });
+                platforms.push(platform1);
+                
+                const platform2 = Matter.Bodies.rectangle(600, 500, 150, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#8B4513' }
+                });
+                platforms.push(platform2);
+                
+                const platform3 = Matter.Bodies.rectangle(400, 400, 180, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#8B4513' }
+                });
+                platforms.push(platform3);
+                
+                const platform4 = Matter.Bodies.rectangle(700, 300, 120, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#8B4513' }
+                });
+                platforms.push(platform4);
+                
+                const platform5 = Matter.Bodies.rectangle(200, 250, 160, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#8B4513' }
+                });
+                platforms.push(platform5);
+                
+                // Add to world
+                Matter.World.add(engine.world, platforms);
+            }
+            
+            // Create obstacles
+            function createObstacles() {
+                // Rotating spikes
+                const spike1 = Matter.Bodies.rectangle(400, 580, 30, 60, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ff0000' }
+                });
+                obstacles.push(spike1);
+                
+                const spike2 = Matter.Bodies.rectangle(700, 480, 30, 60, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ff0000' }
+                });
+                obstacles.push(spike2);
+                
+                // Falling debris
+                const debris1 = Matter.Bodies.rectangle(500, 100, 40, 40, { 
+                    isStatic: true,
+                    render: { fillStyle: '#696969' }
+                });
+                obstacles.push(debris1);
+                
+                // Add to world
+                Matter.World.add(engine.world, obstacles);
+            }
+            
+            // Create crystals
+            function createCrystals() {
+                const crystal1 = Matter.Bodies.circle(350, 570, 15, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ffcc00' },
+                    collisionFilter: { category: 2 }
+                });
+                crystals.push(crystal1);
+                
+                const crystal2 = Matter.Bodies.circle(650, 470, 15, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ffcc00' },
+                    collisionFilter: { category: 2 }
+                });
+                crystals.push(crystal2);
+                
+                const crystal3 = Matter.Bodies.circle(450, 370, 15, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ffcc00' },
+                    collisionFilter: { category: 2 }
+                });
+                crystals.push(crystal3);
+                
+                const crystal4 = Matter.Bodies.circle(750, 270, 15, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ffcc00' },
+                    collisionFilter: { category: 2 }
+                });
+                crystals.push(crystal4);
+                
+                const crystal5 = Matter.Bodies.circle(250, 220, 15, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ffcc00' },
+                    collisionFilter: { category: 2 }
+                });
+                crystals.push(crystal5);
+                
+                // Add to world
+                Matter.World.add(engine.world, crystals);
+            }
+            
+            // Create power-ups
+            function createPowerups() {
+                const speedBoost = Matter.Bodies.circle(400, 300, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#00ffcc' },
+                    collisionFilter: { category: 3 }
+                });
+                powerups.push(speedBoost);
+                
+                const shield = Matter.Bodies.circle(700, 150, 20, { 
+                    isStatic: true,
+                    render: { fillStyle: '#4dabf7' },
+                    collisionFilter: { category: 3 }
+                });
+                powerups.push(shield);
+                
+                // Add to world
+                Matter.World.add(engine.world, powerups);
+            }
+            
+            // Create goal
+            function createGoal() {
+                const goalBody = Matter.Bodies.rectangle(900, 200, 50, 100, { 
+                    isStatic: true,
+                    render: { fillStyle: '#ffcc00' },
+                    collisionFilter: { category: 4 }
+                });
+                goal = goalBody;
+                
+                // Add to world
+                Matter.World.add(engine.world, goal);
+            }
+            
+            // Update UI elements
+            function updateUI() {
+                const elapsed = (Date.now() - startTime) / 1000;
+                timeElement.textContent = elapsed.toFixed(2);
+                crystalsElement.textContent = crystalsCollected;
+                
+                if (speedBoostActive) {
+                    speedBoostTimer--;
+                    speedBoostElement.textContent = Math.ceil(speedBoostTimer/60);
+                    if (speedBoostTimer <= 0) {
+                        speedBoostActive = false;
+                        player.body.friction = 0.01;
+                    }
+                } else {
+                    speedBoostElement.textContent = "0";
+                }
+            }
+            
+            // Check collisions
+            function checkCollisions() {
+                // Check crystal collection
+                crystals.forEach((crystal, index) => {
+                    if (Matter.Query.collides(player.body, [crystal]).length > 0) {
+                        crystals.splice(index, 1);
+                        crystalsCollected++;
+                        Matter.World.remove(engine.world, crystal);
+                    }
+                });
+                
+                // Check power-up collection
+                powerups.forEach((powerup, index) => {
+                    if (Matter.Query.collides(player.body, [powerup]).length > 0) {
+                        if (powerup.render.fillStyle === '#00ffcc') {
+                            // Speed boost
+                            speedBoostActive = true;
+                            speedBoostTimer = 300; // 5 seconds at 60fps
+                            player.body.friction = 0.001; // Very low friction for speed boost
+                        }
+                        powerups.splice(index, 1);
+                        Matter.World.remove(engine.world, powerup);
+                    }
+                });
+                
+                // Check goal completion
+                if (Matter.Query.collides(player.body, [goal]).length > 0) {
+                    completeLevel();
+                }
+            }
+            
+            // Complete level
+            function completeLevel() {
+                gameRunning = false;
+                const elapsed = (Date.now() - startTime) / 1000;
+                
+                finalTimeElement.textContent = elapsed.toFixed(2);
+                finalCrystalsElement.textContent = crystalsCollected;
+                
+                gameOverScreen.classList.add('active');
+            }
+            
+            // Handle keyboard input
+            const keys = {};
+            
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+                
+                if (e.key === ' ' && gameRunning) {
+                    // Jump
+                    if (!player.body.isSleeping) {
+                        Matter.Body.setVelocity(player.body, { x: player.body.velocity.x, y: -playerProperties.jumpForce });
+                    }
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+            });
+            
+            // Game loop
+            function gameLoop() {
+                if (!gameRunning) return;
+                
+                // Handle player movement
+                let moveSpeed = playerProperties.speed;
+                if (speedBoostActive) moveSpeed *= 2;
+                
+                if (keys['ArrowLeft']) {
+                    Matter.Body.setVelocity(player.body, { x: -moveSpeed, y: player.body.velocity.y });
+                }
+                if (keys['ArrowRight']) {
+                    Matter.Body.setVelocity(player.body, { x: moveSpeed, y: player.body.velocity.y });
+                }
+                
+                // Handle gliding
+                if (keys['Shift'] && !player.body.isSleeping) {
+                    player.body.friction = 0.001;
+                } else {
+                    player.body.friction = 0.01;
+                }
+                
+                // Update UI
+                updateUI();
+                
+                // Check collisions
+                checkCollisions();
+                
+                // Render
+                render();
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Render function
+            function render() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background
+                drawBackground();
+                
+                // Draw platforms
+                platforms.forEach(platform => {
+                    const pos = platform.position;
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(pos.x - platform.bounds.min.x, pos.y - platform.bounds.min.y, 
+                                platform.bounds.max.x - platform.bounds.min.x, 
+                                platform.bounds.max.y - platform.bounds.min.y);
+                });
+                
+                // Draw obstacles
+                obstacles.forEach(obstacle => {
+                    const pos = obstacle.position;
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(pos.x - obstacle.bounds.min.x, pos.y - obstacle.bounds.min.y, 
+                                obstacle.bounds.max.x - obstacle.bounds.min.x, 
+                                obstacle.bounds.max.y - obstacle.bounds.min.y);
+                });
+                
+                // Draw crystals
+                crystals.forEach(crystal => {
+                    const pos = crystal.position;
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add shine effect
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(pos.x - 5, pos.y - 5, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // Draw power-ups
+                powerups.forEach(powerup => {
+                    const pos = powerup.position;
+                    ctx.fillStyle = powerup.render.fillStyle;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Add inner glow
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // Draw goal
+                const goalPos = goal.position;
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillRect(goalPos.x - goal.bounds.min.x, goalPos.y - goal.bounds.min.y, 
+                            goal.bounds.max.x - goal.bounds.min.x, 
+                            goal.bounds.max.y - goal.bounds.min.y);
+                
+                // Draw player
+                const playerPos = player.body.position;
+                ctx.fillStyle = '#4dabf7';
+                ctx.fillRect(playerPos.x - player.width/2, playerPos.y - player.height/2, 
+                            player.width, player.height);
+                
+                // Add player details
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(playerPos.x - 10, playerPos.y - 15, 20, 10); // Cockpit
+                ctx.fillRect(playerPos.x - 5, playerPos.y + 5, 10, 20); // Engine
+            }
+            
+            // Draw background elements
+            function drawBackground() {
+                // Sky gradient
+                const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                skyGradient.addColorStop(0, '#87CEEB');
+                skyGradient.addColorStop(1, '#1E90FF');
+                ctx.fillStyle = skyGradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw clouds
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                drawCloud(100, 100, 60);
+                drawCloud(300, 150, 80);
+                drawCloud(500, 80, 70);
+                drawCloud(700, 120, 90);
+                drawCloud(900, 100, 60);
+                
+                // Draw floating platforms in background
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.5)';
+                ctx.fillRect(100, 500, 200, 10);
+                ctx.fillRect(700, 400, 150, 10);
+                ctx.fillRect(300, 300, 180, 10);
+            }
+            
+            // Draw a cloud
+            function drawCloud(x, y, size) {
+                ctx.beginPath();
+                ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.3, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.6, y, size * 0.4, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.3, y + size * 0.2, size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Event listeners
+            startBtn.addEventListener('click', () => {
+                startScreen.classList.remove('active');
+                initGame();
+                gameLoop();
+            });
+            
+            restartBtn.addEventListener('click', () => {
+                gameOverScreen.classList.remove('active');
+                initGame();
+                gameLoop();
+            });
+            
+            // Initial render
+            drawBackground();
+        });
+    </script>
+</body>
+</html>
