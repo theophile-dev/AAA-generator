@@ -1,0 +1,103 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    No frameworks pure JS  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_hollow_moon_atmosphere.png description: Dark, atmospheric title screen with glowing moon and mysterious symbols
+path: images/512x512_hollow_moon_cavern.png description: Procedurally generated lunar cavern with glowing nodes and dark shadows
+path: images/512x512_hollow_moon_core.png description: Isometric astronaut character navigating a shifting lunar landscape
+path: images/512x512_hollow_moon_crystals.png description: Glowing Echo Crystals floating in the void with subtle light effects
+path: images/512x512_hollow_moon_decision.png description: Dangerous gravitational pulses and collapsing terrain in a dark cavern
+path: images/512x512_hollow_moon_echoes.png description: Visual echoes trailing the player through a dark, empty chamber
+path: images/512x512_hollow_moon_exploration.png description: The moon's core with ancient monoliths and glowing symbols
+path: images/512x512_hollow_moon_final.png description: Environmental storytelling with faded carvings and mysterious ruins
+path: images/512x512_hollow_moon_hazards.png description: Minimalist art style with dark hues and glowing elements
+path: images/489x495_hollow_moon_micro.png description: Different layouts and secrets in each playthrough
+path: images/417x418_hollow_moon_minimalist.png description: Subtle sound design with eerie ambient noises and echoes
+path: images/472x460_hollow_moon_narrative.png description: Final decision screen with the moon's cryptic warning
+path: images/512x512_hollow_moon_player.png description: Eerie, atmospheric moon with shifting shadows and glowing elements
+path: images/483x477_hollow_moon_progression.png description: Player managing stamina and avoiding environmental hazards
+path: images/481x498_hollow_moon_replayability.png description: Player exploring a dark, mysterious chamber with echoes
+path: images/512x416_hollow_moon_sound.png description: Player collecting crystals and progressing deeper into the moon
+path: images/261x498_hollow_moon_story.png description: Final reveal of the moon's core and its ancient message
+path: images/512x512_hollow_moon_style.png description: Clean, atmospheric art style with dark tones and glowing elements
+path: images/263x339_hollow_moon_survival.png description: Micro roguelike design with fast-paced, short gameplay sessions
+path: images/512x512_hollow_moon_title.png description: Narrative depth through environmental storytelling and final reveal
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Hollow Moon: Echoes of the Void*
+
+**Genre:** Micro Roguelike
+
+**Theme:** A mysterious, dark, and eerie moon where players explore fractured landscapes, uncover ancient secrets, and survive the haunting presence of the void.
+
+---
+
+### **Gameplay Overview:**
+
+*Hollow Moon* is a short, fast-paced micro roguelike where players take on the role of a lone astronaut stranded on a decaying moon. The moon is not solid — it's a hollow, shifting world filled with unstable terrain, strange phenomena, and echoes from a forgotten past.
+
+Each playthrough is a 3–5 minute session, where the player must navigate through randomly generated lunar caverns, collect resources, and reach the core of the moon to unlock its final secret.
+
+---
+
+### **Core Mechanics:**
+
+- **Movement & Exploration:** The player moves in a top-down grid, with simple WASD controls. The world is procedurally generated, with unique layouts and hazards each time.
+- **Resource Gathering:** Players collect "Echo Crystals" from glowing nodes scattered across the moon. These crystals are used to power the player’s equipment and progress.
+- **Hazards & Survival:** The moon is alive. It shifts, collapses, and emits gravitational pulses that can knock the player off balance or cause environmental damage. Players must manage stamina and avoid deadly traps.
+- **Echoes System:** As the player moves, they leave behind visual and audio echoes that can be used to navigate dark areas or reveal hidden paths. However, echoes can also attract dangerous entities.
+
+---
+
+### **Objective:**
+
+The player's goal is to reach the core of the moon, which is hidden deep within the structure. Upon arrival, they must decipher the moon’s final message — a cryptic warning or a glimpse into a forgotten civilization — and decide whether to leave or stay, forever changing the moon’s fate.
+
+---
+
+### **Unique Features:**
+
+- **Echo Navigation:** Players can use echoes to "see" through dark areas, adding a layer of strategy and exploration.
+- **Dynamic World Shifts:** The moon’s terrain changes over time, creating a sense of urgency and unpredictability.
+- **Minimalist Aesthetic:** A clean, atmospheric art style with dark hues, glowing elements, and subtle sound design to enhance the eerie mood.
+- **Endless Replayability:** Each playthrough offers different layouts, hazards, and secrets, ensuring variety and replay value.
+- **Narrative Depth in Micro Form:** A short but impactful story unfolds through environmental cues and the final core reveal, giving depth without lengthy cutscenes.
+
+---
+
+### **Why It Stands Out:**
+
+*Hollow Moon* combines the fast-paced, addictive nature of micro roguelikes with a rich, atmospheric setting and a subtle narrative thread. It’s designed to be played in short bursts, making it perfect for casual players who want a quick, engaging experience without the need for long sessions. The interplay between exploration, survival, and subtle storytelling sets it apart in the micro genre.
