@@ -1,0 +1,124 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/460x411_background.png description: A pixel-art pilot character in a futuristic flight suit, standing on a platform.
+path: images/464x404_background2.png description: A simple rectangular platform made of pixel art, floating in the sky.
+path: images/512x512_background3.png description: A soft, white cloud made of pixel art, floating in the background.
+path: images/383x390_background4.png description: A pixel-art rock falling from the sky, representing a hazard.
+path: images/512x475_background5.png description: A small pixel-art enemy with glowing eyes, moving slowly across the platform.
+path: images/509x468_cloud.png description: A glowing pixel-art key, representing a rebellion key to unlock new areas.
+path: images/406x356_collision.png description: A pixel-art background of floating islands and clouds, with a futuristic city in the distance.
+path: images/329x281_enemy.png description: A pixel-art start button with a rocket icon, indicating the beginning of the level.
+path: images/418x386_fall.png description: A pixel-art finish line with a flag, marking the end of the level.
+path: images/147x208_finish.png description: A pixel-art timer display showing the elapsed time in seconds.
+path: images/159x308_jump.png description: A pixel-art score display showing the player's best time.
+path: images/512x512_key.png description: A pixel-art jump animation showing the player in mid-air.
+path: images/512x512_logo.png description: A pixel-art fall animation showing the player falling from a platform.
+path: images/512x512_platform.png description: A pixel-art collision effect showing the player hitting an obstacle.
+path: images/233x465_player.png description: A pixel-art power-up item that appears when the player collects a key.
+path: images/343x178_powerup.png description: A pixel-art background with more floating islands and clouds, for a second level.
+path: images/512x512_rock.png description: A pixel-art background with a more complex layout of platforms and hazards.
+path: images/397x385_score.png description: A pixel-art background with a high-speed level design, including moving platforms and tight gaps.
+path: images/369x395_start.png description: A pixel-art background with a final level, featuring a collapsing city and a large finish zone.
+path: images/387x347_timer.png description: A pixel-art logo for the game, featuring the title 'Skybound Sprint' and a rocket icon.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Skybound Sprint"**
+
+**Theme:** Cloud City Rebellion  
+**Genre:** Platform Time Trial  
+**Style:** Simple, retro, pixel-art-inspired 2D  
+**Total Assets:** 20 .png images (single elements only)  
+**Code Length:** ~500 lines of JavaScript  
+**Target Audience:** All ages, casual and competitive players
+
+---
+
+### **Concept Overview:**
+
+In "Skybound Sprint," players take on the role of a rebel pilot navigating the floating islands of the Cloud City. The city is under the control of a tyrannical AI, and the player must escape through a series of platforming challenges, racing against time to reach the freedom zone before the city collapses.
+
+The game is a **Platform Time Trial**, meaning players can attempt to beat their own best time on each level, with the goal of improving their performance and unlocking new areas or power-ups.
+
+---
+
+### **Gameplay Mechanics:**
+
+- **Movement:** The player can move left, right, and jump. No double-jump or wall-jump, but gravity and momentum are used to create smooth, intuitive control.
+- **Platforms:** Each level consists of a series of floating islands, platforms, and hazards. Players must navigate between them, avoiding falling, enemies, and environmental traps.
+- **Obstacles:** There are simple obstacles like falling rocks, moving platforms, and static enemies. All are made from the 20 single-element PNGs (e.g., a rock, a platform, a cloud, etc.).
+- **Time Trial:** Each level is a time trial. Players are given a countdown and must complete the level as quickly as possible. The best time is saved and can be challenged again.
+
+---
+
+### **Objectives:**
+
+- Complete each level in the fastest time possible.
+- Unlock new levels by achieving a certain time threshold.
+- Collect scattered "Rebellion Keys" to power up the city and unlock new areas.
+- Avoid hazards and enemies to stay alive and maintain a good time.
+
+---
+
+### **Unique Features:**
+
+- **Minimalist Art Style:** Uses only 20 single-element PNGs, which are arranged and animated via simple JavaScript. No sprite sheets or complex animations.
+- **Progressive Difficulty:** Each level gets progressively harder, with more obstacles and tighter platforms.
+- **Time-Based Rewards:** Players who beat their own best time receive visual and audio feedback, encouraging replayability.
+- **Cloud City Theme:** The environment is filled with floating platforms, clouds, and a futuristic, yet simple aesthetic that ties into the rebellion theme.
+- **No Complex Systems:** The game is built around simple physics and movement, making it easy to code and play.
+
+---
+
+### **Implementation Notes:**
+
+- **Game Loop:** A basic game loop using `requestAnimationFrame` to handle movement, collision, and rendering.
+- **Collision Detection:** Simple AABB (Axis-Aligned Bounding Box) for player and platform interactions.
+- **Level Design:** Each level is a separate array of platform and obstacle positions, loaded from a JSON or hardcoded.
+- **Audio:** Basic sound effects (jump, collision, success) can be added using the Web Audio API or HTML5 `<audio>` tags.
+- **Scoring System:** Time is tracked using `performance.now()` and displayed on the screen.
+
+---
+
+### **Conclusion:**
+
+"Skybound Sprint" is a fun, accessible, and visually simple 2D platformer that challenges players to master timing and precision. It’s designed to be easy to code with minimal assets and offers a satisfying, competitive experience. The Cloud City Rebellion theme adds a narrative hook, making it engaging for both casual and competitive players.

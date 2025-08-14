@@ -1,0 +1,128 @@
+Game Idea:
+**Game Title: "Ghost Drift"**
+
+**Theme:** Floating graveyard  
+**Genre:** Avoid the Walls (a simple arcade-style runner)  
+**Visual Style:** Minimalist, pixel-style, with a eerie and calming atmosphere.
+
+---
+
+**Gameplay Mechanics:**
+
+In "Ghost Drift," players take control of a small, translucent ghost who floats through a vast, serene graveyard. The graveyard is filled with floating tombstones, gravestones, and other simple, single-element objects that drift slowly through the screen. The objective is to navigate the ghost through the graveyard while avoiding collisions with the floating structures.
+
+The player controls the ghost using simple left/right movement, and the ghost moves forward automatically. The challenge comes from the shifting positions of the graveyard objects, which float in unpredictable paths, forcing the player to react quickly and dodge.
+
+---
+
+**Objectives:**
+
+- Survive as long as possible by avoiding collisions with the floating graveyard objects.
+- Collect floating "souls" (small glowing orbs) that appear randomly to increase score and unlock special effects.
+- Beat your personal best time or score.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Aesthetic:** Uses only 20 single-element PNG images (ghost, tombstones, gravestones, souls, etc.) to create a visually distinct and atmospheric environment.
+- **Eerie Calm:** The music and ambient sound design complement the gameplay, creating a peaceful yet suspenseful experience.
+- **Simple Controls:** Left/Right movement only, making it accessible to all ages.
+- **No Sprite Sheets or Complex Animations:** Everything is static, making it easy to implement with minimal resources.
+- **Replayability:** Each playthrough has randomized object positions and soul placements, offering a different challenge every time.
+
+---
+
+**Design Philosophy:**
+
+"Ghost Drift" is designed to be a calming yet engaging experience. The game uses the theme of a floating graveyard to evoke a sense of mystery and tranquility, while the "Avoid the Walls" genre adds a layer of challenge and fun. It's ideal for casual players looking for a light-hearted, easy-to-learn game with a unique and peaceful setting.
+
+This concept is easily scalable for future enhancements, such as adding sound effects, increasing difficulty levels, or introducing power-ups, but all can be built on top of this simple, clean foundation.
+
+JSON Data:
+{
+  "name": "Ghost Drift",
+  "description": "Navigate a translucent ghost through a serene, floating graveyard while avoiding drifting tombstones and gravestones. Collect glowing souls to increase your score and enjoy a minimalist, eerie atmosphere with simple controls and endless replayability.",
+  "images": [
+    {
+      "file": "ghost.png",
+      "shortgenerationprompt": "A translucent, floating ghost with soft edges, glowing faintly in a dark graveyard."
+    },
+    {
+      "file": "tombstone.png",
+      "shortgenerationprompt": "A single, simple tombstone with a cross, floating slowly in a graveyard."
+    },
+    {
+      "file": "gravestone.png",
+      "shortgenerationprompt": "A small, weathered gravestone with an inscription, drifting through the air."
+    },
+    {
+      "file": "soul.png",
+      "shortgenerationprompt": "A glowing, floating soul orb with a soft light, appearing randomly in the graveyard."
+    },
+    {
+      "file": "graveyard_background.png",
+      "shortgenerationprompt": "A minimalist graveyard background with floating objects and a calm, eerie atmosphere."
+    },
+    {
+      "file": "ghost_drift_icon.png",
+      "shortgenerationprompt": "A small, stylized icon of the ghost drifting through the graveyard."
+    },
+    {
+      "file": "ghost_drift_splash.png",
+      "shortgenerationprompt": "A splash screen showing the ghost drifting through a serene graveyard."
+    },
+    {
+      "file": "ghost_drift_menu.png",
+      "shortgenerationprompt": "A menu screen with the game title and options for starting a new game or viewing high scores."
+    },
+    {
+      "file": "ghost_drift_pause.png",
+      "shortgenerationprompt": "A pause screen showing the ghost and a prompt to resume or quit."
+    },
+    {
+      "file": "ghost_drift_gameover.png",
+      "shortgenerationprompt": "A game over screen showing the ghost and a prompt to try again or return to the menu."
+    },
+    {
+      "file": "ghost_drift_score.png",
+      "shortgenerationprompt": "A score display showing the player's current score and high score."
+    },
+    {
+      "file": "ghost_drift_powerup.png",
+      "shortgenerationprompt": "A power-up effect showing the ghost glowing with a special effect."
+    },
+    {
+      "file": "ghost_drift_sound.png",
+      "shortgenerationprompt": "A sound icon representing the ambient music and eerie sounds of the graveyard."
+    },
+    {
+      "file": "ghost_drift_controls.png",
+      "shortgenerationprompt": "A simple control guide showing left and right movement for the ghost."
+    },
+    {
+      "file": "ghost_drift_logo.png",
+      "shortgenerationprompt": "A stylized logo of 'Ghost Drift' with a ghost and graveyard elements."
+    },
+    {
+      "file": "ghost_drift_highscore.png",
+      "shortgenerationprompt": "A high score screen showing the player's best score and a leaderboard."
+    },
+    {
+      "file": "ghost_drift_settings.png",
+      "shortgenerationprompt": "A settings screen with options for volume, difficulty, and sound effects."
+    },
+    {
+      "file": "ghost_drift_loading.png",
+      "shortgenerationprompt": "A loading screen showing the ghost drifting through a graveyard while assets load."
+    },
+    {
+      "file": "ghost_drift_achievement.png",
+      "shortgenerationprompt": "An achievement screen showing a completed goal, such as collecting 100 souls."
+    },
+    {
+      "file": "ghost_drift_splash2.png",
+      "shortgenerationprompt": "A second splash screen showing the ghost with a glowing soul in the background."
+    }
+  ]
+}

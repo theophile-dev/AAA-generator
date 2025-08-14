@@ -1,0 +1,676 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insect Breaker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Press Start 2P', cursive, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: #0f3460;
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #score-display, #lives-display {
+            position: absolute;
+            top: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            font-size: 18px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+        
+        #score-display {
+            left: 20px;
+        }
+        
+        #lives-display {
+            right: 20px;
+        }
+        
+        #start-screen, #game-over-screen, #pause-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffd700;
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        #game-over-screen, #pause-screen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+        }
+        
+        p {
+            font-size: 14px;
+            max-width: 80%;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 50px;
+            pointer-events: auto;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn:hover {
+            background: #ffd700;
+            color: #1a1a2e;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .powerup-indicator {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .powerup-icon {
+            width: 40px;
+            height: 40px;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .powerup-icon.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="score-display">SCORE: 0</div>
+            <div id="lives-display">LIVES: 3</div>
+            <div class="powerup-indicator">
+                <img id="shield-icon" class="powerup-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZCI+PHBhdGggZD0iTTEyIDJDNi41IDIgMiA2LjUgMiAxMnM0LjUgMTAgMTAgMTAgMTAtNC41IDEwLTEwUzE3LjUgMiAxMiAyem0wIDdIN3YtMmgxMHYyem0wLTZIN3YtMmgxMHYyeiIvPjwvc3ZnPg==" alt="Shield">
+                <img id="speed-icon" class="powerup-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZCI+PHBhdGggZD0iTTEyIDJDNi41IDIgMiA2LjUgMiAxMnM0LjUgMTAgMTAgMTAgMTAtNC41IDEwLTEwUzE3LjUgMiAxMiAyem0tMSA5SDd2LTJoMTB2MnoiLz48cGF0aCBkPSJNMTIgOGMtMi43NiAwLTUtMi4yNC01LTVzMi4yNC01IDUtNSA1IDIuMjQgNSA1LTIuMjQgNS01IDV6Ii8+PC9zdmc+" alt="Speed">
+            </div>
+        </div>
+        
+        <div id="start-screen">
+            <h1>INSECT BREAKER</h1>
+            <h2>Destroy the Insect Swarm!</h2>
+            <p>Control the giant bug to smash through rows of insect bricks. Avoid falling insects and collect power-ups for special abilities.</p>
+            
+            <div class="controls">
+                <div class="key">← → Move</div>
+                <div class="key">SPACE Attack</div>
+                <div class="key">P Pause</div>
+            </div>
+            
+            <button id="start-btn" class="btn">START GAME</button>
+        </div>
+        
+        <div id="game-over-screen">
+            <h1>GAME OVER</h1>
+            <h2>Your Score: <span id="final-score">0</span></h2>
+            <p>You were overrun by the insect swarm!</p>
+            <button id="restart-btn" class="btn">PLAY AGAIN</button>
+        </div>
+        
+        <div id="pause-screen">
+            <h1>PAUSED</h1>
+            <p>Take a break and continue your mission</p>
+            <button id="resume-btn" class="btn">RESUME</button>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const BUG_WIDTH = 150;
+        const BUG_HEIGHT = 100;
+        const BRICK_WIDTH = 80;
+        const BRICK_HEIGHT = 40;
+        const BRICK_ROWS = 6;
+        const BRICK_COLS = 10;
+        const INSECT_SIZE = 40;
+        const POWERUP_SIZE = 30;
+        const BUG_SPEED = 8;
+        const INSECT_SPEED = 2;
+        const POWERUP_SPEED = 3;
+        
+        // Game state
+        let gameState = 'start'; // start, playing, paused, gameover
+        let score = 0;
+        let lives = 3;
+        let shieldActive = false;
+        let speedBoostActive = false;
+        let bugX = CANVAS_WIDTH / 2 - BUG_WIDTH / 2;
+        let bugY = CANVAS_HEIGHT - 150;
+        let bricks = [];
+        let insects = [];
+        let powerups = [];
+        let jawActive = false;
+        let jawX = 0;
+        let jawY = 0;
+        let jawWidth = 0;
+        let jawHeight = 0;
+        let keys = {};
+        let animationId;
+        
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI elements
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const pauseScreen = document.getElementById('pause-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const finalScore = document.getElementById('final-score');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+        const shieldIcon = document.getElementById('shield-icon');
+        const speedIcon = document.getElementById('speed-icon');
+        
+        // Initialize game
+        function initGame() {
+            score = 0;
+            lives = 3;
+            shieldActive = false;
+            speedBoostActive = false;
+            bugX = CANVAS_WIDTH / 2 - BUG_WIDTH / 2;
+            bugY = CANVAS_HEIGHT - 150;
+            bricks = [];
+            insects = [];
+            powerups = [];
+            jawActive = false;
+            
+            // Create bricks
+            createBricks();
+            
+            // Update UI
+            scoreDisplay.textContent = `SCORE: ${score}`;
+            livesDisplay.textContent = `LIVES: ${lives}`;
+            shieldIcon.classList.remove('active');
+            speedIcon.classList.remove('active');
+            
+            // Hide screens
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            pauseScreen.style.display = 'none';
+        }
+        
+        // Create brick layout
+        function createBricks() {
+            const startX = (CANVAS_WIDTH - (BRICK_COLS * BRICK_WIDTH)) / 2;
+            const startY = 100;
+            
+            for (let row = 0; row < BRICK_ROWS; row++) {
+                for (let col = 0; col < BRICK_COLS; col++) {
+                    bricks.push({
+                        x: startX + col * BRICK_WIDTH,
+                        y: startY + row * BRICK_HEIGHT,
+                        width: BRICK_WIDTH,
+                        height: BRICK_HEIGHT,
+                        color: `hsl(${row * 60}, 100%, 50%)`,
+                        type: Math.floor(Math.random() * 3), // 0=bee, 1=beetle, 2=spider
+                        destroyed: false
+                    });
+                }
+            }
+        }
+        
+        // Draw bug
+        function drawBug() {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(bugX, bugY, BUG_WIDTH, BUG_HEIGHT);
+            
+            // Bug eyes
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bugX + 30, bugY + 30, 8, 0, Math.PI * 2);
+            ctx.arc(bugX + BUG_WIDTH - 30, bugY + 30, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bug legs
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 5;
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(bugX + 20, bugY + 70 + i * 10);
+                ctx.lineTo(bugX + 60, bugY + 70 + i * 10);
+                ctx.stroke();
+            }
+            
+            // Jaw
+            if (jawActive) {
+                ctx.fillStyle = '#FF4500';
+                ctx.fillRect(jawX, jawY, jawWidth, jawHeight);
+                
+                // Jaw teeth
+                ctx.fillStyle = '#000';
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(jawX + 5 + i * 10, jawY);
+                    ctx.lineTo(jawX + 15 + i * 10, jawY + 10);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Draw bricks
+        function drawBricks() {
+            bricks.forEach(brick => {
+                if (!brick.destroyed) {
+                    ctx.fillStyle = brick.color;
+                    ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+                    
+                    // Brick details
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
+                    
+                    // Insect symbol on brick
+                    ctx.fillStyle = '#FFF';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    switch (brick.type) {
+                        case 0: // Bee
+                            ctx.fillText('🐝', brick.x + brick.width/2, brick.y + brick.height/2);
+                            break;
+                        case 1: // Beetle
+                            ctx.fillText('🐞', brick.x + brick.width/2, brick.y + brick.height/2);
+                            break;
+                        case 2: // Spider
+                            ctx.fillText('🕷️', brick.x + brick.width/2, brick.y + brick.height/2);
+                            break;
+                    }
+                }
+            });
+        }
+        
+        // Draw insects
+        function drawInsects() {
+            insects.forEach(insect => {
+                ctx.fillStyle = insect.color;
+                ctx.beginPath();
+                ctx.arc(insect.x, insect.y, INSECT_SIZE/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Insect details
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(insect.x - 8, insect.y - 5, 4, 0, Math.PI * 2);
+                ctx.arc(insect.x + 8, insect.y - 5, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Insect legs
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(insect.x, insect.y);
+                    ctx.lineTo(
+                        insect.x + Math.cos(angle) * 15,
+                        insect.y + Math.sin(angle) * 15
+                    );
+                    ctx.stroke();
+                }
+            });
+        }
+        
+        // Draw power-ups
+        function drawPowerups() {
+            powerups.forEach(powerup => {
+                ctx.fillStyle = powerup.color;
+                ctx.beginPath();
+                ctx.arc(powerup.x, powerup.y, POWERUP_SIZE/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Power-up symbol
+                ctx.fillStyle = '#FFF';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                switch (powerup.type) {
+                    case 'shield':
+                        ctx.fillText('🛡️', powerup.x, powerup.y);
+                        break;
+                    case 'speed':
+                        ctx.fillText('⚡', powerup.x, powerup.y);
+                        break;
+                }
+            });
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+            gradient.addColorStop(0, '#1a2980');
+            gradient.addColorStop(1, '#26d0ce');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Ground
+            ctx.fillStyle = '#5D4037';
+            ctx.fillRect(0, CANVAS_HEIGHT - 50, CANVAS_WIDTH, 50);
+            
+            // Grass details
+            ctx.fillStyle = '#4CAF50';
+            for (let i = 0; i < CANVAS_WIDTH; i += 20) {
+                ctx.fillRect(i, CANVAS_HEIGHT - 50, 10, 10);
+            }
+        }
+        
+        // Update game state
+        function update() {
+            if (gameState !== 'playing') return;
+            
+            // Move bug
+            if (keys['ArrowLeft'] && bugX > 0) {
+                bugX -= BUG_SPEED;
+            }
+            if (keys['ArrowRight'] && bugX < CANVAS_WIDTH - BUG_WIDTH) {
+                bugX += BUG_SPEED;
+            }
+            
+            // Attack with jaw
+            if (keys[' '] && !jawActive) {
+                jawActive = true;
+                jawX = bugX + BUG_WIDTH/2 - 20;
+                jawY = bugY - 30;
+                jawWidth = 40;
+                jawHeight = 30;
+                
+                // Check for brick collisions
+                bricks.forEach(brick => {
+                    if (!brick.destroyed) {
+                        if (jawX < brick.x + brick.width &&
+                            jawX + jawWidth > brick.x &&
+                            jawY < brick.y + brick.height &&
+                            jawY + jawHeight > brick.y) {
+                            brick.destroyed = true;
+                            score += 10;
+                            scoreDisplay.textContent = `SCORE: ${score}`;
+                        }
+                    }
+                });
+            }
+            
+            // Update jaw
+            if (jawActive) {
+                jawY -= 10;
+                if (jawY < -50) {
+                    jawActive = false;
+                }
+            }
+            
+            // Move insects
+            for (let i = insects.length - 1; i >= 0; i--) {
+                insects[i].y += INSECT_SPEED;
+                
+                // Remove insects that go off screen
+                if (insects[i].y > CANVAS_HEIGHT) {
+                    insects.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with bug
+                if (!shieldActive && 
+                    bugX < insects[i].x + INSECT_SIZE &&
+                    bugX + BUG_WIDTH > insects[i].x &&
+                    bugY < insects[i].y + INSECT_SIZE &&
+                    bugY + BUG_HEIGHT > insects[i].y) {
+                    // Player hit
+                    lives--;
+                    livesDisplay.textContent = `LIVES: ${lives}`;
+                    insects.splice(i, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+            
+            // Move power-ups
+            for (let i = powerups.length - 1; i >= 0; i--) {
+                powerups[i].y += POWERUP_SPEED;
+                
+                // Remove power-ups that go off screen
+                if (powerups[i].y > CANVAS_HEIGHT) {
+                    powerups.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with bug
+                if (bugX < powerups[i].x + POWERUP_SIZE &&
+                    bugX + BUG_WIDTH > powerups[i].x &&
+                    bugY < powerups[i].y + POWERUP_SIZE &&
+                    bugY + BUG_HEIGHT > powerups[i].y) {
+                    
+                    // Apply power-up effect
+                    if (powerups[i].type === 'shield') {
+                        shieldActive = true;
+                        shieldIcon.classList.add('active');
+                        setTimeout(() => {
+                            shieldActive = false;
+                            shieldIcon.classList.remove('active');
+                        }, 5000);
+                    } else if (powerups[i].type === 'speed') {
+                        speedBoostActive = true;
+                        speedIcon.classList.add('active');
+                        setTimeout(() => {
+                            speedBoostActive = false;
+                            speedIcon.classList.remove('active');
+                        }, 3000);
+                    }
+                    
+                    powerups.splice(i, 1);
+                }
+            }
+            
+            // Generate new insects
+            if (Math.random() < 0.02) {
+                insects.push({
+                    x: Math.random() * (CANVAS_WIDTH - INSECT_SIZE),
+                    y: -INSECT_SIZE,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                });
+            }
+            
+            // Generate power-ups
+            if (Math.random() < 0.005) {
+                const types = ['shield', 'speed'];
+                powerups.push({
+                    x: Math.random() * (CANVAS_WIDTH - POWERUP_SIZE),
+                    y: -POWERUP_SIZE,
+                    type: types[Math.floor(Math.random() * types.length)],
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                });
+            }
+            
+            // Check if all bricks are destroyed
+            const allDestroyed = bricks.every(brick => brick.destroyed);
+            if (allDestroyed) {
+                // Level complete - reset for next level
+                initGame();
+                createBricks();
+            }
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw game elements
+            drawBricks();
+            drawInsects();
+            drawPowerups();
+            drawBug();
+            
+            // Draw shield effect if active
+            if (shieldActive) {
+                ctx.strokeStyle = '#00FFFF';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(bugX + BUG_WIDTH/2, bugY + BUG_HEIGHT/2, BUG_WIDTH/2 + 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            
+            if (gameState === 'playing') {
+                animationId = requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            initGame();
+            gameState = 'playing';
+            gameLoop();
+        }
+        
+        // Pause game
+        function pauseGame() {
+            if (gameState === 'playing') {
+                gameState = 'paused';
+                cancelAnimationFrame(animationId);
+                pauseScreen.style.display = 'flex';
+            }
+        }
+        
+        // Resume game
+        function resumeGame() {
+            if (gameState === 'paused') {
+                gameState = 'playing';
+                pauseScreen.style.display = 'none';
+                gameLoop();
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState = 'gameover';
+            cancelAnimationFrame(animationId);
+            finalScore.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        resumeBtn.addEventListener('click', resumeGame);
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === 'p' || e.key === 'P') {
+                if (gameState === 'playing') {
+                    pauseGame();
+                } else if (gameState === 'paused') {
+                    resumeGame();
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Initialize the game
+        window.onload = function() {
+            drawBackground();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x413_background.png description: A simple pixel art giant bug with bold colors and clear shapes
+path: images/512x445_ball.png description: A single pixel art brick representing an insect (e.g., bee, beetle)
+path: images/383x380_brick.png description: A falling pixel art insect (e.g., spider, wasp)
+path: images/512x477_bug.png description: A simple pixel art power-up (e.g., shield, speed boost)
+path: images/512x474_gameover.png description: A minimalist pixel art background with a dark sky and ground
+path: images/466x459_insect.png description: A small pixel art ball for the classic brick-breaker feel (optional)
+path: images/373x368_insect_ant.png description: A simple score display with a pixel art style
+path: images/427x411_insect_bee.png description: A simple lives counter in pixel art style
+path: images/404x390_insect_beetle.png description: A start screen with a pixel art bug and title
+path: images/303x373_insect_cicada.png description: A game over screen with pixel art style
+path: images/416x423_insect_spider.png description: A pause menu with pixel art style
+path: images/512x512_insect_wasp.png description: A shield-shaped power-up in pixel art style
+path: images/359x388_lives.png description: A speed boost icon in pixel art style
+path: images/512x512_pause.png description: A pixel art bee falling from the top
+path: images/512x440_powerup.png description: A pixel art spider falling from the top
+path: images/313x354_powerup_shield.png description: A pixel art wasp falling from the top
+path: images/356x287_powerup_speed.png description: A pixel art ant falling from the top
+path: images/512x417_score.png description: A pixel art beetle falling from the top
+path: images/512x512_start.png description: A pixel art cicada falling from the top
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Insect Breaker*
+
+**Theme:** Giant Insect Invasion  
+**Genre:** Brick Breaker  
+**Style:** Simple 2D, Pixel Art, Minimalist Graphics
+
+---
+
+**Concept Overview:**
+
+*Insect Breaker* is a fun and engaging brick-breaking game with a twist — instead of bouncing a ball, players control a giant bug that smashes through rows of bricks representing a swarm of invading insects. The goal is to clear all the bricks by using the bug's powerful jaws and legs to smash them, while avoiding incoming attacks from the insects.
+
+---
+
+**Gameplay Mechanics:**
+
+- **Player Control:** The player controls a giant bug that can move left and right across the top of the screen. The bug can also "bite" by shooting a powerful jaw forward, which can smash a single brick or a cluster of bricks.
+- **Brick Layout:** The screen is filled with rows of bricks that represent different types of insects (e.g., bees, beetles, spiders, etc.). Each brick has a unique color and symbol to distinguish them.
+- **Enemy Insects:** As the player progresses, insects (represented as falling objects) begin to fall from the top of the screen. The player must avoid them or use the bug's jaw to destroy them before they reach the bottom.
+- **Power-ups:** Occasionally, a power-up appears (like a shield or speed boost) that the player can collect to enhance their abilities or protect them from incoming attacks.
+
+---
+
+**Objectives:**
+
+- Clear all the insect bricks from the screen.
+- Survive as long as possible by avoiding falling insects.
+- Collect power-ups to gain advantages and unlock new abilities or levels.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Design:** The game uses only 20 single-element .png images (bug, bricks, falling insects, power-ups, and background elements), making it easy to implement with minimal resources.
+- **Simple Controls:** The player only needs to move left/right and trigger the jaw attack, making it accessible for all ages.
+- **Thematic Appeal:** The bug protagonist and insect enemies create a fun and engaging story that's both whimsical and action-packed.
+- **Progressive Difficulty:** As the game progresses, more insects fall, and the brick layout becomes more complex, keeping the challenge fresh.
+
+---
+
+**Visual and Audio Style:**
+
+- **Graphics:** Simple pixel-style images with bold colors and clear shapes. Each element (bug, brick, insect) is a single image, no sprite sheets or complex animations.
+- **Sound:** Optional background sounds (e.g., buzzing, smashing, and power-up effects) to enhance immersion without requiring advanced audio coding.
+
+---
+
+**Technical Requirements:**
+
+- Written in pure JavaScript (no frameworks or libraries).
+- Uses HTML5 Canvas for rendering.
+- All assets are preloaded and drawn using basic image manipulation and positioning.
+- Only 500 lines of code total, keeping the implementation lightweight and easy to modify.
+
+---
+
+**Target Audience:**
+
+- Families, casual gamers, and anyone looking for a simple, fun, and addictive game with a unique twist on the classic brick-breaker genre.

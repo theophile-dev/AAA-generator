@@ -1,0 +1,293 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghost Ship Puzzle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 16px;
+        }
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+<div id="ui">
+    <div>Level: <span id="level">1</span></div>
+    <div>Moves: <span id="moves">0</span></div>
+</div>
+<div id="startScreen">
+    <h1>Ghost Ship Puzzle</h1>
+    <p>Guide the ghost ship to the exit through icy puzzles</p>
+    <button onclick="startGame()">Start Game</button>
+</div>
+
+<script>
+(() => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const uiLevel = document.getElementById('level');
+    const uiMoves = document.getElementById('moves');
+    const startScreen = document.getElementById('startScreen');
+
+    // Game state
+    let gameState = 'menu'; // menu, playing, gameOver, levelComplete
+    let currentLevel = 1;
+    let moves = 0;
+    let ship = { x: 0, y: 0, width: 64, height: 64 };
+    let exitTile = { x: 0, y: 0, width: 64, height: 64 };
+    let tiles = [];
+    let obstacles = [];
+    let platforms = [];
+    let levelData = [];
+
+    // Load images
+    const images = {};
+    const imageNames = [
+        'images/512x512_exit_tile.png',
+        'images/512x439_ghost_ship.png',
+        'images/247x311_ice_anchor.png',
+        'images/335x296_ice_block.png',
+        'images/268x233_ice_bubble.png',
+        'images/512x223_ice_crack.png',
+        'images/512x503_ice_fog.png',
+        'images/512x446_ice_iceberg.png',
+        'images/510x501_ice_iceberg_large.png',
+        'images/467x349_ice_iceberg_medium.png',
+        'images/512x350_ice_iceberg_small.png',
+        'images/512x512_ice_light.png',
+        'images/512x308_ice_shadow.png',
+        'images/466x469_ice_snowflake.png',
+        'images/512x512_ice_tile.png',
+        'images/366x393_ice_wall.png',
+        'images/512x512_ice_water.png',
+        'images/292x322_ice_wind.png',
+        'images/415x458_moving_ice_platform.png',
+        'images/512x512_ice_tile.png'
+    ];
+
+    imageNames.forEach(name => {
+        images[name] = new Image();
+        images[name].src = name;
+    });
+
+    // Level data (simple grid layout)
+    const levels = [
+        { // Level 1
+            tiles: [
+                [0, 0, 0, 0, 0],
+                [0, 1, 1, 1, 0],
+                [0, 1, 2, 1, 0],
+                [0, 1, 1, 1, 0],
+                [0, 0, 0, 0, 0]
+            ],
+            shipStart: { x: 1, y: 1 },
+            exitPos: { x: 3, y: 1 }
+        },
+        { // Level 2
+            tiles: [
+                [0, 0, 0, 0, 0],
+                [0, 1, 1, 1, 0],
+                [0, 1, 3, 1, 0],
+                [0, 1, 1, 1, 0],
+                [0, 0, 0, 0, 0]
+            ],
+            shipStart: { x: 1, y: 1 },
+            exitPos: { x: 3, y: 1 }
+        }
+    ];
+
+    function initLevel() {
+        const level = levels[currentLevel - 1];
+        if (!level) return;
+
+        tiles = [];
+        obstacles = [];
+        platforms = [];
+
+        ship.x = level.shipStart.x * 64;
+        ship.y = level.shipStart.y * 64;
+
+        exitTile.x = level.exitPos.x * 64;
+        exitTile.y = level.exitPos.y * 64;
+
+        for (let y = 0; y < level.tiles.length; y++) {
+            for (let x = 0; x < level.tiles[y].length; x++) {
+                const tileType = level.tiles[y][x];
+                if (tileType === 1) { // Tile
+                    tiles.push({ x: x * 64, y: y * 64 });
+                } else if (tileType === 2) { // Anchor
+                    obstacles.push({ x: x * 64, y: y * 64, width: 64, height: 64 });
+                } else if (tileType === 3) { // Block
+                    obstacles.push({ x: x * 64, y: y * 64, width: 64, height: 64 });
+                }
+            }
+        }
+
+        moves = 0;
+        uiMoves.textContent = moves;
+        uiLevel.textContent = currentLevel;
+    }
+
+    function startGame() {
+        gameState = 'playing';
+        startScreen.style.display = 'none';
+        initLevel();
+        gameLoop();
+    }
+
+    function checkCollision(x, y) {
+        // Check boundaries
+        if (x < 0 || x >= 1024 || y < 0 || y >= 720) return true;
+
+        // Check obstacles
+        for (const obs of obstacles) {
+            if (
+                x < obs.x + obs.width &&
+                x + ship.width > obs.x &&
+                y < obs.y + obs.height &&
+                y + ship.height > obs.y
+            ) {
+                return true;
+            }
+        }
+
+        // Check tiles
+        for (const tile of tiles) {
+            if (
+                x < tile.x + 64 &&
+                x + ship.width > tile.x &&
+                y < tile.y + 64 &&
+                y + ship.height > tile.y
+            ) {
+                return false; // Allow movement on tiles
+            }
+        }
+
+        return true; // Collision with wall or empty space
+    }
+
+    function moveShip(dx, dy) {
+        if (gameState !== 'playing') return;
+
+        let newX = ship.x;
+        let newY = ship.y;
+
+        // Simple sliding physics
+        while (!checkCollision(newX + dx, newY + dy)) {
+            newX += dx;
+            newY += dy;
+        }
+
+        // Only move if position changed
+        if (newX !== ship.x || newY !== ship.y) {
+            ship.x = newX;
+            ship.y = newY;
+            moves++;
+            uiMoves.textContent = moves;
+
+            // Check win condition
+            if (
+                Math.abs(ship.x - exitTile.x) < 64 &&
+                Math.abs(ship.y - exitTile.y) < 64
+            ) {
+                if (currentLevel < levels.length) {
+                    currentLevel++;
+                    initLevel();
+                } else {
+                    gameState = 'levelComplete';
+                    alert('You escaped the ice!');
+                }
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw tiles
+        for (const tile of tiles) {
+            ctx.drawImage(images['images/512x512_ice_tile.png'], tile.x, tile.y, 64, 64);
+        }
+
+        // Draw obstacles
+        for (const obs of obstacles) {
+            if (obs.width === 64) {
+                ctx.drawImage(images['images/247x311_ice_anchor.png'], obs.x, obs.y, 64, 64);
+            } else {
+                ctx.drawImage(images['images/335x296_ice_block.png'], obs.x, obs.y, 64, 64);
+            }
+        }
+
+        // Draw exit
+        ctx.drawImage(images['images/512x512_exit_tile.png'], exitTile.x, exitTile.y, 64, 64);
+
+        // Draw ship
+        ctx.drawImage(images['images/512x439_ghost_ship.png'], ship.x, ship.y, 64, 64);
+    }
+
+    function gameLoop() {
+        if (gameState === 'playing') {
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+    }
+
+    // Input handling
+    document.addEventListener('keydown', e => {
+        if (gameState !== 'playing') return;
+        switch(e.key) {
+            case 'ArrowUp':
+                moveShip(0, -64);
+                break;
+            case 'ArrowDown':
+                moveShip(0, 64);
+                break;
+            case 'ArrowLeft':
+                moveShip(-64, 0);
+                break;
+            case 'ArrowRight':
+                moveShip(64, 0);
+                break;
+        }
+    });
+})();
+</script>
+</body>
+</html>

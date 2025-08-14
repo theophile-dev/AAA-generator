@@ -1,0 +1,37 @@
+import requests
+import json
+
+def ollama_generate(
+    model: str,
+    prompt: str,
+    base_url: str = "http://localhost:11434/api/generate",
+    stream: bool = False,
+    **extra_params
+) -> dict:
+    """
+    Call Ollama's /api/generate endpoint with stream disabled.
+
+    Args:
+        model: The model name (e.g. "llama3.2").
+        prompt: The text prompt for generation.
+        base_url: Ollama API generate endpoint.
+        **extra_params: Any extra parameters Ollama accepts (e.g., 'options').
+
+    Returns:
+        The parsed JSON response from Ollama.
+    """
+    payload = {
+        "model": model,
+        "prompt": prompt,
+        "stream": stream
+    }
+    payload.update(extra_params)
+
+    resp = requests.post(base_url, json=payload, timeout=300)
+    resp.raise_for_status()
+
+    try:
+        return resp.json()
+    except json.JSONDecodeError:
+        raise RuntimeError(f"Invalid JSON response: {resp.text}")
+    

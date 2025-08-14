@@ -1,0 +1,300 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steam Whistle Hockey</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            font-family: 'Courier New', monospace;
+        }
+        canvas {
+            border: 2px solid #666;
+            box-shadow: 0 0 20px rgba(100, 100, 100, 0.5);
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+<script>
+(function() {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Game state
+    let gameState = 'start'; // start, playing, gameOver
+    let player1Score = 0;
+    let player2Score = 0;
+    let gameActive = false;
+
+    // Images
+    const images = {};
+    const imageNames = [
+        '512x512_arrow_keys.png', '410x408_background.png', '430x435_collision.png',
+        '512x472_game_over.png', '217x215_goal.png', '203x305_goal_celebration.png',
+        '320x329_goal_scored.png', '430x436_movement.png', '406x414_player1.png',
+        '471x474_player2.png', '412x392_play_again.png', '508x485_puck.png',
+        '425x471_scoreboard.png', '361x338_shot.png', '490x474_steam_effect.png',
+        '427x432_steam_hiss.png', '512x512_turn_based.png', '215x328_wasd_keys.png',
+        '439x428_whistle.png', '512x512_whistle_sound.png'
+    ];
+
+    // Load images
+    imageNames.forEach(name => {
+        const img = new Image();
+        img.src = `images/${name}`;
+        images[name] = img;
+    });
+
+    // Game objects
+    const player1 = {
+        x: 100,
+        y: 360,
+        width: 100,
+        height: 100,
+        speed: 5,
+        color: '#4a90e2'
+    };
+
+    const player2 = {
+        x: 820,
+        y: 360,
+        width: 100,
+        height: 100,
+        speed: 5,
+        color: '#e74c3c'
+    };
+
+    const puck = {
+        x: 512,
+        y: 360,
+        radius: 20,
+        speedX: 0,
+        speedY: 0,
+        color: '#f1c40f'
+    };
+
+    const goal1 = {
+        x: 50,
+        y: 310,
+        width: 100,
+        height: 100
+    };
+
+    const goal2 = {
+        x: 870,
+        y: 310,
+        width: 100,
+        height: 100
+    };
+
+    // Key states
+    const keys = {};
+
+    // Event listeners
+    window.addEventListener('keydown', (e) => {
+        keys[e.key] = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+        keys[e.key] = false;
+    });
+
+    // Draw functions
+    function drawBackground() {
+        ctx.drawImage(images['410x408_background.png'], 0, 0, canvas.width, canvas.height);
+    }
+
+    function drawPlayer(player, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+        // Draw player image if loaded
+        if (images['406x414_player1.png']) {
+            ctx.drawImage(images['406x414_player1.png'], player.x, player.y, player.width, player.height);
+        }
+    }
+
+    function drawPuck() {
+        ctx.beginPath();
+        ctx.arc(puck.x, puck.y, puck.radius, 0, Math.PI * 2);
+        ctx.fillStyle = puck.color;
+        ctx.fill();
+        ctx.closePath();
+        // Draw puck image if loaded
+        if (images['508x485_puck.png']) {
+            ctx.drawImage(images['508x485_puck.png'], puck.x - puck.radius, puck.y - puck.radius, puck.radius * 2, puck.radius * 2);
+        }
+    }
+
+    function drawGoal(goal) {
+        ctx.drawImage(images['217x215_goal.png'], goal.x, goal.y, goal.width, goal.height);
+    }
+
+    function drawScoreboard() {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '30px Courier New';
+        ctx.fillText(`Player 1: ${player1Score}`, 50, 50);
+        ctx.fillText(`Player 2: ${player2Score}`, canvas.width - 200, 50);
+    }
+
+    function drawControls() {
+        if (images['361x338_shot.png']) {
+            ctx.drawImage(images['361x338_shot.png'], 50, 600, 100, 100);
+        }
+        if (images['215x328_wasd_keys.png']) {
+            ctx.drawImage(images['215x328_wasd_keys.png'], canvas.width - 150, 600, 100, 100);
+        }
+    }
+
+    function drawStartScreen() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '50px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('STEAM WHISTLE HOCKEY', canvas.width / 2, 200);
+
+        ctx.font = '30px Courier New';
+        ctx.fillText('Press SPACE to start', canvas.width / 2, 300);
+        ctx.fillText('Use arrow keys or WASD to move', canvas.width / 2, 350);
+        ctx.fillText('Spacebar to shoot', canvas.width / 2, 400);
+    }
+
+    function drawGameOverScreen() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '50px Courier New';
+        ctx.textAlign = 'center';
+        if (player1Score >= 5) {
+            ctx.fillText('PLAYER 1 WINS!', canvas.width / 2, 200);
+        } else {
+            ctx.fillText('PLAYER 2 WINS!', canvas.width / 2, 200);
+        }
+
+        ctx.font = '30px Courier New';
+        ctx.fillText('Press SPACE to play again', canvas.width / 2, 350);
+    }
+
+    function drawWhistleEffect() {
+        if (images['512x512_whistle_sound.png']) {
+            ctx.drawImage(images['512x512_whistle_sound.png'], puck.x - 50, puck.y - 50, 100, 100);
+        }
+    }
+
+    // Game loop
+    function gameLoop() {
+        if (gameState === 'start') {
+            drawStartScreen();
+        } else if (gameState === 'playing') {
+            update();
+            render();
+        } else if (gameState === 'gameOver') {
+            drawGameOverScreen();
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Update game state
+    function update() {
+        // Move players
+        if (keys['ArrowLeft'] || keys['a']) player1.x -= player1.speed;
+        if (keys['ArrowRight'] || keys['d']) player1.x += player1.speed;
+        if (keys['w']) player2.y -= player2.speed;
+        if (keys['s']) player2.y += player2.speed;
+
+        // Keep players within bounds
+        player1.x = Math.max(0, Math.min(canvas.width - player1.width, player1.x));
+        player2.x = Math.max(0, Math.min(canvas.width - player2.width, player2.x));
+
+        // Shooting
+        if (keys[' '] && !gameActive) {
+            gameActive = true;
+            puck.speedX = 5;
+            puck.speedY = 0;
+        }
+
+        // Update puck position
+        puck.x += puck.speedX;
+        puck.y += puck.speedY;
+
+        // Wall collisions
+        if (puck.x - puck.radius < 0 || puck.x + puck.radius > canvas.width) {
+            puck.speedX *= -1;
+        }
+        if (puck.y - puck.radius < 0 || puck.y + puck.radius > canvas.height) {
+            puck.speedY *= -1;
+        }
+
+        // Goal detection
+        if (puck.x - puck.radius < goal1.x + goal1.width &&
+            puck.x + puck.radius > goal1.x &&
+            puck.y - puck.radius < goal1.y + goal1.height &&
+            puck.y + puck.radius > goal1.y) {
+            player2Score++;
+            resetPuck();
+        }
+        if (puck.x - puck.radius < goal2.x + goal2.width &&
+            puck.x + puck.radius > goal2.x &&
+            puck.y - puck.radius < goal2.y + goal2.height &&
+            puck.y + puck.radius > goal2.y) {
+            player1Score++;
+            resetPuck();
+        }
+
+        // Check for win
+        if (player1Score >= 5 || player2Score >= 5) {
+            gameState = 'gameOver';
+        }
+    }
+
+    function render() {
+        drawBackground();
+        drawPlayer(player1, '#4a90e2');
+        drawPlayer(player2, '#e74c3c');
+        drawPuck();
+        drawGoal(goal1);
+        drawGoal(goal2);
+        drawScoreboard();
+        drawControls();
+
+        // Draw whistle effect if active
+        if (gameActive) {
+            drawWhistleEffect();
+        }
+    }
+
+    function resetPuck() {
+        puck.x = canvas.width / 2;
+        puck.y = canvas.height / 2;
+        puck.speedX = 0;
+        puck.speedY = 0;
+        gameActive = false;
+    }
+
+    // Start the game
+    window.addEventListener('keydown', (e) => {
+        if (e.key === ' ' && gameState === 'start') {
+            gameState = 'playing';
+        } else if (e.key === ' ' && gameState === 'gameOver') {
+            player1Score = 0;
+            player2Score = 0;
+            resetPuck();
+            gameState = 'playing';
+        }
+    });
+
+    gameLoop();
+})();
+</script>
+</body>
+</html>

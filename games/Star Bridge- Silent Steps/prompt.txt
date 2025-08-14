@@ -1,0 +1,108 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/314x389_arrow_keys.png description: A glowing white sphere, representing the silent explorer, in a minimalist style.
+path: images/512x512_background.png description: A glowing red orb, representing the silent sentinel, with a subtle patrol motion.
+path: images/512x461_bridge_segment.png description: A narrow, floating bridge segment with a dark void below, in a top-down view.
+path: images/512x368_collapsing_bridge.png description: A dark, endless void with faint stars in the background, representing the space beyond the bridge.
+path: images/512x512_game_over.png description: A bridge segment with cracks and falling debris, indicating instability.
+path: images/438x424_instructions.png description: A simple pause button icon, used to avoid detection by sentinels.
+path: images/453x423_level_1.png description: A simple bridge layout with one sentinel and no hazards.
+path: images/395x364_level_2.png description: A slightly more complex bridge layout with two sentinels and one unstable segment.
+path: images/512x512_level_3.png description: A medium-length bridge with multiple sentinels and several unstable segments.
+path: images/512x472_level_4.png description: A longer bridge with fast-moving sentinels and more hazards.
+path: images/509x461_level_5.png description: The final level with a collapsing bridge and multiple sentinels patrolling in different patterns.
+path: images/512x458_loading_screen.png description: A minimalist start screen with the game title and a play button.
+path: images/206x199_pause_icon.png description: A game over screen with a restart button and a message indicating the player was detected.
+path: images/512x470_player.png description: A win screen with a message indicating the player successfully escaped the void.
+path: images/363x364_sentinel.png description: A dark, starry background with faint cosmic lines, setting the tone for the game.
+path: images/382x432_start_screen.png description: Basic UI elements including health bar, timer, and level indicator.
+path: images/430x437_ui_elements.png description: A simple visual representation of arrow keys for movement controls.
+path: images/512x512_void.png description: A simple visual representation of WASD keys for movement controls.
+path: images/512x512_wasd_keys.png description: A minimalist loading screen with a progress bar and game title.
+path: images/512x512_win_screen.png description: A simple instruction screen with movement controls and game objectives.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Star Bridge: Silent Steps*
+
+**Theme:** *Star Bridge* – a futuristic, floating bridge that connects stars in a vast, silent cosmos. Players navigate this bridge in complete silence, avoiding detection by unseen sentinels or environmental hazards.
+
+**Genre:** *Basic Stealth Game*
+
+**Core Gameplay Mechanics:**
+
+- **Movement:** The player controls a small, silent explorer (a glowing sphere or figure) that moves across a long, narrow, floating bridge. The bridge is made up of individual segments that can be traversed in a top-down perspective.
+
+- **Stealth System:** The player must avoid being seen by sentinels—glowing red orbs that patrol the bridge. If detected, the player is "caught" and must restart the level.
+
+- **Environmental Hazards:** Some parts of the bridge are unstable and may collapse if the player steps on them. Players must time their movements carefully to avoid falling into the void below.
+
+- **No Sound:** The game is entirely silent. All cues are visual, encouraging players to rely on observation and timing rather than sound.
+
+**Objective:**
+
+- Traverse the bridge from one end to the other without being detected or falling into the void.
+- Complete all levels to unlock the final star gate and escape the cosmic void.
+
+**Unique Features:**
+
+- **Minimalist Visual Style:** The game uses only 20 simple .png images (single elements like the player, sentinels, bridge segments, void, etc.), making it easy to implement and visually distinct.
+
+- **No Spritesheets or Complex Animations:** Each element is a static image, and movement is simulated through position changes.
+
+- **Simple Controls:** The player uses arrow keys or WASD to move, with a pause feature to avoid detection for short moments.
+
+- **Progression System:** Each level increases in complexity—more sentinels, more hazards, and longer bridge segments.
+
+- **Silent Experience:** The game relies on visual cues only, making it accessible to all players, including those who are hearing-impaired.
+
+**Game Structure:**
+
+- 5 levels of increasing difficulty.
+- Each level consists of a unique bridge layout with varying obstacles and patrol patterns.
+- A final level where the player must navigate a collapsing bridge while avoiding multiple sentinels.
+
+**Why It Works:**
+
+- The game is simple enough for casual players, yet offers strategic depth for those who enjoy stealth and puzzle elements.
+- The minimalist approach ensures it can be coded in under 500 lines of JavaScript, using only basic DOM manipulation and event listeners.
+- The silent, atmospheric setting creates a unique and immersive experience without requiring complex assets or sound design.

@@ -1,0 +1,379 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cosmic Sprint</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            border: 1px solid #333;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="720"><rect width="1024" height="720" fill="%23000"/><circle cx="512" cy="360" r="300" fill="%231a1a2e"/></svg>');
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+            text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+        }
+        #menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: 36px;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+        }
+        button {
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid #0ff;
+            color: white;
+            padding: 10px 20px;
+            font-size: 24px;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #0ff;
+        }
+        button:hover {
+            background: rgba(0, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+<div id="ui">
+    <div>Score: <span id="score">0</span></div>
+    <div>Time: <span id="time">0</span>s</div>
+    <div>Lives: <span id="lives">3</span></div>
+</div>
+<div id="menu">
+    <h1>COSMIC SPRINT</h1>
+    <p>Use Arrow Keys to Move</p>
+    <button id="startButton">START GAME</button>
+</div>
+
+<script>
+    // Game variables
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const timeElement = document.getElementById('time');
+    const livesElement = document.getElementById('lives');
+    const menu = document.getElementById('menu');
+    const startButton = document.getElementById('startButton');
+
+    // Game state
+    let gameRunning = false;
+    let score = 0;
+    let time = 0;
+    let lives = 3;
+
+    // Player object
+    const player = {
+        x: 100,
+        y: canvas.height / 2,
+        width: 411,
+        height: 471,
+        speed: 5,
+        jumpForce: -15,
+        velocityY: 0,
+        gravity: 0.8,
+        jumping: false
+    };
+
+    // Game objects
+    let beasts = [];
+    let obstacles = [];
+    let powerUps = [];
+    let background = [];
+
+    // Load images
+    const images = {};
+    const imageNames = [
+        '512x505_background.png',
+        '239x392_beast1.png',
+        '321x362_beast2.png',
+        '407x446_beast3.png',
+        '414x410_obstacle1.png',
+        '357x354_obstacle2.png',
+        '469x482_obstacle3.png',
+        '450x447_pausemenu.png',
+        '411x319_player.png',
+        '411x471_powerup1.png',
+        '512x512_powerup2.png',
+        '497x482_scoreboard.png',
+        '506x455_startmenu.png',
+        '460x407_ui-button.png',
+        '423x420_ui-health.png',
+        '429x430_ui-icon.png',
+        '425x350_ui-score.png',
+        '267x438_ui-text.png',
+        '284x309_ui-timer.png'
+    ];
+
+    imageNames.forEach(name => {
+        images[name] = new Image();
+        images[name].src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
+    });
+
+    // Input handling
+    const keys = {};
+    window.addEventListener('keydown', (e) => keys[e.key] = true);
+    window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+    startButton.addEventListener('click', () => {
+        gameRunning = true;
+        menu.style.display = 'none';
+        score = 0;
+        time = 0;
+        lives = 3;
+        beasts = [];
+        obstacles = [];
+        powerUps = [];
+        player.x = 100;
+        player.y = canvas.height / 2;
+        updateUI();
+        gameLoop();
+    });
+
+    // Game functions
+    function updateUI() {
+        scoreElement.textContent = score;
+        timeElement.textContent = Math.floor(time);
+        livesElement.textContent = lives;
+    }
+
+    function spawnBeast() {
+        const size = Math.random() > 0.7 ? 'large' : (Math.random() > 0.5 ? 'medium' : 'small');
+        const x = canvas.width + 100;
+        const y = Math.random() * (canvas.height - 100);
+        const speed = 2 + Math.random() * 3;
+        beasts.push({x, y, size, speed});
+    }
+
+    function spawnObstacle() {
+        const type = Math.floor(Math.random() * 3) + 1;
+        const x = canvas.width + 100;
+        const y = Math.random() * (canvas.height - 100);
+        const speed = 2 + Math.random() * 3;
+        obstacles.push({x, y, type, speed});
+    }
+
+    function spawnPowerUp() {
+        const type = Math.floor(Math.random() * 2) + 1;
+        const x = canvas.width + 100;
+        const y = Math.random() * (canvas.height - 100);
+        const speed = 2 + Math.random() * 3;
+        powerUps.push({x, y, type, speed});
+    }
+
+    function updatePlayer() {
+        if (keys['ArrowUp'] || keys['w']) player.y -= player.speed;
+        if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
+        if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
+        if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+
+        // Boundary checks
+        if (player.y < 0) player.y = 0;
+        if (player.y > canvas.height - player.height) player.y = canvas.height - player.height;
+        if (player.x < 0) player.x = 0;
+        if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+
+        // Apply gravity
+        player.velocityY += player.gravity;
+        player.y += player.velocityY;
+
+        // Ground collision
+        if (player.y >= canvas.height - player.height) {
+            player.y = canvas.height - player.height;
+            player.velocityY = 0;
+            player.jumping = false;
+        }
+    }
+
+    function updateGameObjects() {
+        // Update beasts
+        beasts.forEach((beast, index) => {
+            beast.x -= beast.speed;
+            if (beast.x < -100) beasts.splice(index, 1);
+        });
+
+        // Update obstacles
+        obstacles.forEach((obstacle, index) => {
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -100) obstacles.splice(index, 1);
+        });
+
+        // Update power-ups
+        powerUps.forEach((powerUp, index) => {
+            powerUp.x -= powerUp.speed;
+            if (powerUp.x < -100) powerUps.splice(index, 1);
+        });
+    }
+
+    function checkCollisions() {
+        // Player vs Beasts
+        beasts.forEach((beast, index) => {
+            if (
+                player.x < beast.x + 100 &&
+                player.x + player.width > beast.x &&
+                player.y < beast.y + 100 &&
+                player.y + player.height > beast.y
+            ) {
+                score += beast.size === 'large' ? 30 : beast.size === 'medium' ? 20 : 10;
+                beasts.splice(index, 1);
+                updateUI();
+            }
+        });
+
+        // Player vs Obstacles
+        obstacles.forEach((obstacle, index) => {
+            if (
+                player.x < obstacle.x + 100 &&
+                player.x + player.width > obstacle.x &&
+                player.y < obstacle.y + 100 &&
+                player.y + player.height > obstacle.y
+            ) {
+                lives--;
+                updateUI();
+                obstacles.splice(index, 1);
+                if (lives <= 0) gameOver();
+            }
+        });
+
+        // Player vs Power-ups
+        powerUps.forEach((powerUp, index) => {
+            if (
+                player.x < powerUp.x + 100 &&
+                player.x + player.width > powerUp.x &&
+                player.y < powerUp.y + 100 &&
+                player.y + player.height > powerUp.y
+            ) {
+                score += 50;
+                powerUps.splice(index, 1);
+                updateUI();
+            }
+        });
+    }
+
+    function drawPlayer() {
+        ctx.drawImage(images['411x319_player.png'], player.x, player.y, player.width, player.height);
+    }
+
+    function drawBeasts() {
+        beasts.forEach(beast => {
+            if (beast.size === 'large') {
+                ctx.drawImage(images['407x446_beast3.png'], beast.x, beast.y, 100, 100);
+            } else if (beast.size === 'medium') {
+                ctx.drawImage(images['321x362_beast2.png'], beast.x, beast.y, 100, 100);
+            } else {
+                ctx.drawImage(images['239x392_beast1.png'], beast.x, beast.y, 100, 100);
+            }
+        });
+    }
+
+    function drawObstacles() {
+        obstacles.forEach(obstacle => {
+            if (obstacle.type === 1) {
+                ctx.drawImage(images['414x410_obstacle1.png'], obstacle.x, obstacle.y, 100, 100);
+            } else if (obstacle.type === 2) {
+                ctx.drawImage(images['357x354_obstacle2.png'], obstacle.x, obstacle.y, 100, 100);
+            } else {
+                ctx.drawImage(images['469x482_obstacle3.png'], obstacle.x, obstacle.y, 100, 100);
+            }
+        });
+    }
+
+    function drawPowerUps() {
+        powerUps.forEach(powerUp => {
+            if (powerUp.type === 1) {
+                ctx.drawImage(images['411x471_powerup1.png'], powerUp.x, powerUp.y, 100, 100);
+            } else {
+                ctx.drawImage(images['512x512_powerup2.png'], powerUp.x, powerUp.y, 100, 100);
+            }
+        });
+    }
+
+    function drawBackground() {
+        // Simple starfield background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 100; i++) {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            const size = Math.random() * 2;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function gameOver() {
+        gameRunning = false;
+        menu.innerHTML = `
+            <h1>GAME OVER</h1>
+            <p>Final Score: ${score}</p>
+            <button id="restartButton">PLAY AGAIN</button>
+        `;
+        menu.style.display = 'block';
+        document.getElementById('restartButton').addEventListener('click', () => {
+            gameRunning = true;
+            menu.style.display = 'none';
+            score = 0;
+            time = 0;
+            lives = 3;
+            beasts = [];
+            obstacles = [];
+            powerUps = [];
+            player.x = 100;
+            player.y = canvas.height / 2;
+            updateUI();
+            gameLoop();
+        });
+    }
+
+    function gameLoop() {
+        if (!gameRunning) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+
+        updatePlayer();
+        updateGameObjects();
+        checkCollisions();
+
+        // Spawn new objects
+        if (Math.random() < 0.02) spawnBeast();
+        if (Math.random() < 0.01) spawnObstacle();
+        if (Math.random() < 0.005) spawnPowerUp();
+
+        drawPlayer();
+        drawBeasts();
+        drawObstacles();
+        drawPowerUps();
+
+        time += 0.02;
+        updateUI();
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Initial UI
+    updateUI();
+</script>
+</body>
+</html>

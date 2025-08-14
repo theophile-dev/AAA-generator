@@ -1,0 +1,313 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Floating Library Blocks</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f8ff;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            border: 2px solid #4b6584;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Images
+        const images = {};
+        const imageNames = [
+            '343x386_block-placement.png',
+            '465x437_book-icons.png',
+            '407x406_book-unlocked.png',
+            '512x512_educational-twist.png',
+            '416x431_falling-blocks.png',
+            '304x294_floating-library.png',
+            '434x435_game-loop.png',
+            '512x512_game-over.png',
+            '348x206_game-ui.png',
+            '512x512_grid-shelves.png',
+            '512x512_high-score.png',
+            '512x375_in-browser-game.png',
+            '195x235_letters-symbols.png',
+            '464x422_loading-screen.png',
+            '166x189_minimalist-design.png',
+            '331x460_player-interface.png',
+            '390x418_progressive-difficulty.png',
+            '492x228_serene-aesthetic.png',
+            '512x399_time-limit.png',
+            '320x311_word-hint.png'
+        ];
+
+        // Preload images
+        imageNames.forEach(name => {
+            const img = new Image();
+            img.src = `images/${name}`;
+            images[name] = img;
+        });
+
+        // Game state
+        let gameState = 'menu'; // menu, playing, gameOver
+        let score = 0;
+        let timeLeft = 60;
+        let grid = Array(5).fill().map(() => Array(5).fill(null));
+        let fallingBlocks = [];
+        let wordHint = '';
+        let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        let symbols = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'];
+        let blockTypes = [...letters, ...symbols];
+        let lastBlockTime = 0;
+        let gameSpeed = 1000; // milliseconds between blocks
+        let wordList = [
+            "BOOK", "STORY", "LIBRARY", "READ", "WRITE", 
+            "KNOWLEDGE", "LEARN", "EDUCATION", "VOCABULARY", 
+            "PHRASE", "WORD", "TEXT", "PAPER", "CHAPTER"
+        ];
+
+        // Initialize game
+        function initGame() {
+            score = 0;
+            timeLeft = 60;
+            grid = Array(5).fill().map(() => Array(5).fill(null));
+            fallingBlocks = [];
+            wordHint = getRandomWord();
+            lastBlockTime = Date.now();
+            gameSpeed = 1000;
+        }
+
+        // Get random word from list
+        function getRandomWord() {
+            return wordList[Math.floor(Math.random() * wordList.length)];
+        }
+
+        // Create a new falling block
+        function createBlock() {
+            const type = blockTypes[Math.floor(Math.random() * blockTypes.length)];
+            fallingBlocks.push({
+                x: Math.random() * (canvas.width - 50),
+                y: -50,
+                width: 40,
+                height: 40,
+                type: type
+            });
+        }
+
+        // Draw grid
+        function drawGrid() {
+            const cellSize = 120;
+            const offsetX = (canvas.width - (cellSize * 5)) / 2;
+            const offsetY = 150;
+
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const x = offsetX + col * cellSize;
+                    const y = offsetY + row * cellSize;
+                    ctx.strokeStyle = '#4b6584';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+
+                    if (grid[row][col]) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(x, y, cellSize, cellSize);
+                        ctx.fillStyle = '#000000';
+                        ctx.font = 'bold 30px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(grid[row][col], x + cellSize/2, y + cellSize/2);
+                    }
+                }
+            }
+        }
+
+        // Draw falling blocks
+        function drawFallingBlocks() {
+            fallingBlocks.forEach(block => {
+                ctx.fillStyle = '#a0c4ff';
+                ctx.fillRect(block.x, block.y, block.width, block.height);
+                ctx.strokeStyle = '#4b6584';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(block.x, block.y, block.width, block.height);
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(block.type, block.x + block.width/2, block.y + block.height/2);
+            });
+        }
+
+        // Draw word hint
+        function drawWordHint() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, 50);
+            ctx.strokeStyle = '#4b6584';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, canvas.width, 50);
+
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Hint: ${wordHint}`, canvas.width/2, 25);
+        }
+
+        // Draw score and timer
+        function drawUI() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            ctx.strokeStyle = '#4b6584';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, canvas.height - 50, canvas.width, 50);
+
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 20, canvas.height - 20);
+            ctx.fillText(`Time: ${timeLeft}s`, canvas.width - 120, canvas.height - 20);
+        }
+
+        // Draw game over screen
+        function drawGameOver() {
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 50);
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText(`Final Score: ${score}`, canvas.width/2, canvas.height/2 + 20);
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('Press SPACE to restart', canvas.width/2, canvas.height/2 + 70);
+        }
+
+        // Draw start screen
+        function drawMenu() {
+            ctx.fillStyle = '#f0f8ff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#4b6584';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Floating Library Blocks', canvas.width/2, canvas.height/2 - 100);
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('Press SPACE to start', canvas.width/2, canvas.height/2 + 50);
+            ctx.fillText('Match falling blocks to form words!', canvas.width/2, canvas.height/2 + 100);
+        }
+
+        // Update game logic
+        function update() {
+            if (gameState !== 'playing') return;
+
+            const now = Date.now();
+            
+            // Spawn new block
+            if (now - lastBlockTime > gameSpeed) {
+                createBlock();
+                lastBlockTime = now;
+                // Increase difficulty over time
+                gameSpeed = Math.max(300, gameSpeed - 1);
+            }
+
+            // Move falling blocks
+            for (let i = fallingBlocks.length - 1; i >= 0; i--) {
+                const block = fallingBlocks[i];
+                block.y += 2;
+
+                // Check if block reached bottom
+                if (block.y > canvas.height - 50) {
+                    // Try to place in grid
+                    const cellSize = 120;
+                    const offsetX = (canvas.width - (cellSize * 5)) / 2;
+                    const offsetY = 150;
+                    
+                    let placed = false;
+                    for (let row = 0; row < 5 && !placed; row++) {
+                        for (let col = 0; col < 5 && !placed; col++) {
+                            if (!grid[row][col]) {
+                                const x = offsetX + col * cellSize;
+                                const y = offsetY + row * cellSize;
+                                
+                                if (block.x >= x && block.x <= x + cellSize &&
+                                    block.y >= y && block.y <= y + cellSize) {
+                                    grid[row][col] = block.type;
+                                    fallingBlocks.splice(i, 1);
+                                    placed = true;
+                                    score += 10;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!placed) {
+                        // Remove block if not placed
+                        fallingBlocks.splice(i, 1);
+                    }
+                }
+            }
+
+            // Update timer
+            timeLeft -= 0.016; // approx 60fps
+            if (timeLeft <= 0) {
+                gameState = 'gameOver';
+            }
+        }
+
+        // Draw everything
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.fillStyle = '#f0f8ff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === 'menu') {
+                drawMenu();
+            } else if (gameState === 'playing') {
+                drawWordHint();
+                drawGrid();
+                drawFallingBlocks();
+                drawUI();
+            } else if (gameState === 'gameOver') {
+                drawGameOver();
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (gameState === 'menu') {
+                    gameState = 'playing';
+                    initGame();
+                } else if (gameState === 'gameOver') {
+                    gameState = 'playing';
+                    initGame();
+                }
+            }
+        });
+
+        // Start game loop
+        gameLoop();
+    </script>
+</body>
+</html>

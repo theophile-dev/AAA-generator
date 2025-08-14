@@ -1,0 +1,116 @@
+Game Idea:
+**Game Title:** *Storm Sprint*
+
+**Theme:** Weather Disaster Survival  
+**Genre:** Platform Jumper  
+**Core Concept:**  
+*Storm Sprint* is a fast-paced, single-screen platformer where the player controls a character who must navigate through a dangerous, ever-changing environment caused by a severe weather disaster — a storm. The goal is to reach the top of the storm while avoiding hazards, managing limited resources, and surviving the elements.
+
+**Gameplay Mechanics:**  
+- The player controls a character who can jump, double-jump, and crouch to avoid falling debris or water.
+- The environment is dynamic: rain, wind, lightning, and flooding shift the platforms, create hazards, and change the level in real-time.
+- The player must collect "Storm Cores" to power up abilities like wind resistance, temporary invincibility, or platform stabilization.
+- The storm intensifies over time, creating new obstacles and reducing safe spaces.
+
+**Objectives:**  
+- Survive as long as possible while moving upward through the storm.
+- Collect as many Storm Cores as possible.
+- Reach the top of the storm before it collapses or the player is overwhelmed.
+
+**Unique Features:**  
+- **Dynamic Environment:** The level changes with time, creating a sense of urgency and unpredictability.
+- **Limited Resources:** Storm Cores are scarce, forcing the player to make strategic decisions on when and how to use them.
+- **Simple Controls:** Only jump, crouch, and collect — no complex animations or inputs.
+- **Minimal Graphics:** Uses 20 single-element PNGs (player, platforms, water, raindrops, lightning, debris, etc.) to keep the game lightweight and easy to implement.
+- **Retro Aesthetic:** Pixel-style visuals with a focus on color and contrast to emphasize the storm’s intensity.
+
+**Design Philosophy:**  
+*Storm Sprint* is designed to be accessible and fun for all ages. It emphasizes quick reflexes, adaptability, and resource management in a simple, visually engaging world. The game can be played in a single screen, making it ideal for casual play or quick sessions. The minimalistic art style ensures it runs smoothly even on low-end devices, and the challenge escalates naturally without overwhelming the player.
+
+JSON Data:
+{
+  "name": "Storm Sprint",
+  "description": "Storm Sprint is a fast-paced, single-screen platformer where you control a character navigating through a dangerous, ever-changing storm environment. Survive the elements, collect Storm Cores to power up abilities, and reach the top of the storm before it collapses!",
+  "images": [
+    {
+      "file": "player.png",
+      "shortgenerationprompt": "Pixel-style character, simple design, running motion"
+    },
+    {
+      "file": "platform.png",
+      "shortgenerationprompt": "Pixel-style platform, gray and brown tones"
+    },
+    {
+      "file": "water.png",
+      "shortgenerationprompt": "Pixel-style water surface, blue and white waves"
+    },
+    {
+      "file": "raindrop.png",
+      "shortgenerationprompt": "Pixel-style raindrop, falling motion"
+    },
+    {
+      "file": "lightning.png",
+      "shortgenerationprompt": "Pixel-style lightning bolt, bright yellow and white"
+    },
+    {
+      "file": "debris.png",
+      "shortgenerationprompt": "Pixel-style debris, falling rubble"
+    },
+    {
+      "file": "stormcore.png",
+      "shortgenerationprompt": "Pixel-style Storm Core, glowing orange and yellow"
+    },
+    {
+      "file": "background.png",
+      "shortgenerationprompt": "Pixel-style storm background, dark and stormy"
+    },
+    {
+      "file": "ui.png",
+      "shortgenerationprompt": "Pixel-style UI elements, score and core counter"
+    },
+    {
+      "file": "character_jump.png",
+      "shortgenerationprompt": "Pixel-style character jumping, dynamic motion"
+    },
+    {
+      "file": "character_crouch.png",
+      "shortgenerationprompt": "Pixel-style character crouching, low profile"
+    },
+    {
+      "file": "platform_moving.png",
+      "shortgenerationprompt": "Pixel-style moving platform, dynamic movement"
+    },
+    {
+      "file": "platform_floating.png",
+      "shortgenerationprompt": "Pixel-style floating platform, light and unstable"
+    },
+    {
+      "file": "platform_water.png",
+      "shortgenerationprompt": "Pixel-style platform with water, wavy texture"
+    },
+    {
+      "file": "platform_rain.png",
+      "shortgenerationprompt": "Pixel-style platform with rain, droplets falling"
+    },
+    {
+      "file": "platform_lightning.png",
+      "shortgenerationprompt": "Pixel-style platform with lightning, bright effects"
+    },
+    {
+      "file": "platform_debris.png",
+      "shortgenerationprompt": "Pixel-style platform with debris, unstable surface"
+    },
+    {
+      "file": "platform_stormcore.png",
+      "shortgenerationprompt": "Pixel-style platform with Storm Core, glowing center"
+    },
+    {
+      "file": "game_over.png",
+      "shortgenerationprompt": "Pixel-style game over screen, dark and dramatic"
+    },
+    {
+      "file": "title_screen.png",
+      "shortgenerationprompt": "Pixel-style title screen, storm and character logo"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/409x454_ghost.png description: A translucent, floating ghost with soft edges, glowing faintly in a dark graveyard.
+path: images/512x512_ghost_drift_achievement.png description: A single, simple tombstone with a cross, floating slowly in a graveyard.
+path: images/443x444_ghost_drift_controls.png description: A small, weathered gravestone with an inscription, drifting through the air.
+path: images/486x499_ghost_drift_gameover.png description: A glowing, floating soul orb with a soft light, appearing randomly in the graveyard.
+path: images/512x512_ghost_drift_highscore.png description: A minimalist graveyard background with floating objects and a calm, eerie atmosphere.
+path: images/462x451_ghost_drift_icon.png description: A small, stylized icon of the ghost drifting through the graveyard.
+path: images/512x512_ghost_drift_loading.png description: A splash screen showing the ghost drifting through a serene graveyard.
+path: images/385x373_ghost_drift_logo.png description: A menu screen with the game title and options for starting a new game or viewing high scores.
+path: images/474x421_ghost_drift_menu.png description: A pause screen showing the ghost and a prompt to resume or quit.
+path: images/377x278_ghost_drift_pause.png description: A game over screen showing the ghost and a prompt to try again or return to the menu.
+path: images/512x472_ghost_drift_powerup.png description: A score display showing the player's current score and high score.
+path: images/512x512_ghost_drift_score.png description: A power-up effect showing the ghost glowing with a special effect.
+path: images/467x442_ghost_drift_settings.png description: A sound icon representing the ambient music and eerie sounds of the graveyard.
+path: images/401x392_ghost_drift_sound.png description: A simple control guide showing left and right movement for the ghost.
+path: images/512x487_ghost_drift_splash.png description: A stylized logo of 'Ghost Drift' with a ghost and graveyard elements.
+path: images/512x512_ghost_drift_splash2.png description: A high score screen showing the player's best score and a leaderboard.
+path: images/457x512_gravestone.png description: A settings screen with options for volume, difficulty, and sound effects.
+path: images/493x488_graveyard_background.png description: A loading screen showing the ghost drifting through a graveyard while assets load.
+path: images/442x476_soul.png description: An achievement screen showing a completed goal, such as collecting 100 souls.
+path: images/378x444_tombstone.png description: A second splash screen showing the ghost with a glowing soul in the background.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Ghost Drift"**
+
+**Theme:** Floating graveyard  
+**Genre:** Avoid the Walls (a simple arcade-style runner)  
+**Visual Style:** Minimalist, pixel-style, with a eerie and calming atmosphere.
+
+---
+
+**Gameplay Mechanics:**
+
+In "Ghost Drift," players take control of a small, translucent ghost who floats through a vast, serene graveyard. The graveyard is filled with floating tombstones, gravestones, and other simple, single-element objects that drift slowly through the screen. The objective is to navigate the ghost through the graveyard while avoiding collisions with the floating structures.
+
+The player controls the ghost using simple left/right movement, and the ghost moves forward automatically. The challenge comes from the shifting positions of the graveyard objects, which float in unpredictable paths, forcing the player to react quickly and dodge.
+
+---
+
+**Objectives:**
+
+- Survive as long as possible by avoiding collisions with the floating graveyard objects.
+- Collect floating "souls" (small glowing orbs) that appear randomly to increase score and unlock special effects.
+- Beat your personal best time or score.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Aesthetic:** Uses only 20 single-element PNG images (ghost, tombstones, gravestones, souls, etc.) to create a visually distinct and atmospheric environment.
+- **Eerie Calm:** The music and ambient sound design complement the gameplay, creating a peaceful yet suspenseful experience.
+- **Simple Controls:** Left/Right movement only, making it accessible to all ages.
+- **No Sprite Sheets or Complex Animations:** Everything is static, making it easy to implement with minimal resources.
+- **Replayability:** Each playthrough has randomized object positions and soul placements, offering a different challenge every time.
+
+---
+
+**Design Philosophy:**
+
+"Ghost Drift" is designed to be a calming yet engaging experience. The game uses the theme of a floating graveyard to evoke a sense of mystery and tranquility, while the "Avoid the Walls" genre adds a layer of challenge and fun. It's ideal for casual players looking for a light-hearted, easy-to-learn game with a unique and peaceful setting.
+
+This concept is easily scalable for future enhancements, such as adding sound effects, increasing difficulty levels, or introducing power-ups, but all can be built on top of this simple, clean foundation.

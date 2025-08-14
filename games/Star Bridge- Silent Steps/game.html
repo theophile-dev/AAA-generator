@@ -1,0 +1,334 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Star Bridge: Silent Steps</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: monospace;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <script>
+        // Game state management
+        const gameState = {
+            screen: 'loading', // loading, start, playing, paused, gameOver, win
+            level: 1,
+            score: 0,
+            lives: 3,
+            time: 0,
+            player: { x: 50, y: 360, width: 30, height: 30 },
+            sentinels: [],
+            bridges: [],
+            hazards: [],
+            keys: {},
+            paused: false
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Image cache
+        const images = {};
+        const imagePaths = {
+            player: 'images/512x470_player.png',
+            sentinel: 'images/363x364_sentinel.png',
+            bridgeSegment: 'images/512x461_bridge_segment.png',
+            collapsingBridge: 'images/512x368_collapsing_bridge.png',
+            gameOver: 'images/512x512_game_over.png',
+            winScreen: 'images/512x512_win_screen.png',
+            startScreen: 'images/382x432_start_screen.png',
+            loadingScreen: 'images/512x512_loading_screen.png',
+            pauseIcon: 'images/206x199_pause_icon.png',
+            instructions: 'images/438x424_instructions.png'
+        };
+
+        // Load images
+        function loadImages() {
+            let loaded = 0;
+            const total = Object.keys(imagePaths).length;
+
+            for (const key in imagePaths) {
+                images[key] = new Image();
+                images[key].src = imagePaths[key];
+                images[key].onload = () => {
+                    loaded++;
+                    if (loaded === total) {
+                        gameState.screen = 'start';
+                    }
+                };
+            }
+        }
+
+        // Initialize level
+        function initLevel() {
+            gameState.player.x = 50;
+            gameState.player.y = 360;
+            gameState.sentinels = [];
+            gameState.bridges = [];
+            gameState.hazards = [];
+
+            // Level-specific setup
+            switch (gameState.level) {
+                case 1:
+                    for (let i = 0; i < 10; i++) {
+                        gameState.bridges.push({ x: i * 100, y: 360, width: 100, height: 20 });
+                    }
+                    gameState.sentinels.push({ x: 300, y: 360, width: 50, height: 50, direction: 1, speed: 1 });
+                    break;
+                case 2:
+                    for (let i = 0; i < 15; i++) {
+                        gameState.bridges.push({ x: i * 70, y: 360, width: 70, height: 20 });
+                    }
+                    gameState.sentinels.push({ x: 300, y: 360, width: 50, height: 50, direction: 1, speed: 1 });
+                    gameState.sentinels.push({ x: 600, y: 360, width: 50, height: 50, direction: -1, speed: 1.2 });
+                    gameState.hazards.push({ x: 500, y: 360, width: 70, height: 20, active: true });
+                    break;
+                case 3:
+                    for (let i = 0; i < 20; i++) {
+                        gameState.bridges.push({ x: i * 50, y: 360, width: 50, height: 20 });
+                    }
+                    gameState.sentinels.push({ x: 200, y: 360, width: 50, height: 50, direction: 1, speed: 1 });
+                    gameState.sentinels.push({ x: 500, y: 360, width: 50, height: 50, direction: -1, speed: 1.2 });
+                    gameState.sentinels.push({ x: 800, y: 360, width: 50, height: 50, direction: 1, speed: 1.5 });
+                    for (let i = 0; i < 3; i++) {
+                        gameState.hazards.push({ x: 300 + i * 200, y: 360, width: 50, height: 20, active: true });
+                    }
+                    break;
+                case 4:
+                    for (let i = 0; i < 25; i++) {
+                        gameState.bridges.push({ x: i * 40, y: 360, width: 40, height: 20 });
+                    }
+                    gameState.sentinels.push({ x: 100, y: 360, width: 50, height: 50, direction: 1, speed: 1.5 });
+                    gameState.sentinels.push({ x: 400, y: 360, width: 50, height: 50, direction: -1, speed: 1.7 });
+                    gameState.sentinels.push({ x: 700, y: 360, width: 50, height: 50, direction: 1, speed: 2 });
+                    for (let i = 0; i < 4; i++) {
+                        gameState.hazards.push({ x: 200 + i * 150, y: 360, width: 40, height: 20, active: true });
+                    }
+                    break;
+                case 5:
+                    for (let i = 0; i < 30; i++) {
+                        gameState.bridges.push({ x: i * 30, y: 360, width: 30, height: 20 });
+                    }
+                    gameState.sentinels.push({ x: 100, y: 360, width: 50, height: 50, direction: 1, speed: 2 });
+                    gameState.sentinels.push({ x: 400, y: 360, width: 50, height: 50, direction: -1, speed: 2.2 });
+                    gameState.sentinels.push({ x: 700, y: 360, width: 50, height: 50, direction: 1, speed: 2.5 });
+                    for (let i = 0; i < 5; i++) {
+                        gameState.hazards.push({ x: 150 + i * 100, y: 360, width: 30, height: 20, active: true });
+                    }
+                    break;
+            }
+        }
+
+        // Draw functions
+        function drawPlayer() {
+            ctx.drawImage(images.player, gameState.player.x, gameState.player.y, gameState.player.width, gameState.player.height);
+        }
+
+        function drawSentinels() {
+            gameState.sentinels.forEach(sentinel => {
+                ctx.drawImage(images.sentinel, sentinel.x, sentinel.y, sentinel.width, sentinel.height);
+            });
+        }
+
+        function drawBridges() {
+            gameState.bridges.forEach(bridge => {
+                ctx.drawImage(images.bridgeSegment, bridge.x, bridge.y, bridge.width, bridge.height);
+            });
+        }
+
+        function drawHazards() {
+            gameState.hazards.forEach(hazard => {
+                if (hazard.active) {
+                    ctx.drawImage(images.collapsingBridge, hazard.x, hazard.y, hazard.width, hazard.height);
+                }
+            });
+        }
+
+        function drawUI() {
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px monospace';
+            ctx.fillText(`Level: ${gameState.level}`, 20, 30);
+            ctx.fillText(`Score: ${gameState.score}`, 20, 60);
+            ctx.fillText(`Lives: ${gameState.lives}`, 20, 90);
+
+            if (gameState.paused) {
+                ctx.drawImage(images.pauseIcon, canvas.width / 2 - 50, canvas.height / 2 - 50, 100, 100);
+            }
+        }
+
+        function drawScreen() {
+            switch (gameState.screen) {
+                case 'loading':
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(images.loadingScreen, 0, 0, canvas.width, canvas.height);
+                    break;
+                case 'start':
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(images.startScreen, 0, 0, canvas.width, canvas.height);
+                    break;
+                case 'playing':
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    drawBridges();
+                    drawHazards();
+                    drawSentinels();
+                    drawPlayer();
+                    drawUI();
+                    break;
+                case 'gameOver':
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(images.gameOver, 0, 0, canvas.width, canvas.height);
+                    break;
+                case 'win':
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(images.winScreen, 0, 0, canvas.width, canvas.height);
+                    break;
+            }
+        }
+
+        // Update functions
+        function updatePlayer() {
+            if (gameState.keys['ArrowLeft'] || gameState.keys['a']) {
+                gameState.player.x -= 5;
+            }
+            if (gameState.keys['ArrowRight'] || gameState.keys['d']) {
+                gameState.player.x += 5;
+            }
+            if (gameState.keys['ArrowUp'] || gameState.keys['w']) {
+                gameState.player.y -= 5;
+            }
+            if (gameState.keys['ArrowDown'] || gameState.keys['s']) {
+                gameState.player.y += 5;
+            }
+
+            // Boundary checks
+            if (gameState.player.x < 0) gameState.player.x = 0;
+            if (gameState.player.x > canvas.width - gameState.player.width) gameState.player.x = canvas.width - gameState.player.width;
+            if (gameState.player.y < 0) gameState.player.y = 0;
+            if (gameState.player.y > canvas.height - gameState.player.height) gameState.player.y = canvas.height - gameState.player.height;
+        }
+
+        function updateSentinels() {
+            gameState.sentinels.forEach(sentinel => {
+                sentinel.x += sentinel.direction * sentinel.speed;
+                if (sentinel.x < 0 || sentinel.x > canvas.width - sentinel.width) {
+                    sentinel.direction *= -1;
+                }
+            });
+        }
+
+        function checkCollisions() {
+            // Check sentinel collision
+            for (const sentinel of gameState.sentinels) {
+                if (
+                    gameState.player.x < sentinel.x + sentinel.width &&
+                    gameState.player.x + gameState.player.width > sentinel.x &&
+                    gameState.player.y < sentinel.y + sentinel.height &&
+                    gameState.player.y + gameState.player.height > sentinel.y
+                ) {
+                    gameState.lives--;
+                    if (gameState.lives <= 0) {
+                        gameState.screen = 'gameOver';
+                    } else {
+                        initLevel();
+                    }
+                    return;
+                }
+            }
+
+            // Check hazard collision
+            for (const hazard of gameState.hazards) {
+                if (
+                    hazard.active &&
+                    gameState.player.x < hazard.x + hazard.width &&
+                    gameState.player.x + gameState.player.width > hazard.x &&
+                    gameState.player.y < hazard.y + hazard.height &&
+                    gameState.player.y + gameState.player.height > hazard.y
+                ) {
+                    hazard.active = false;
+                    gameState.lives--;
+                    if (gameState.lives <= 0) {
+                        gameState.screen = 'gameOver';
+                    } else {
+                        initLevel();
+                    }
+                    return;
+                }
+            }
+
+            // Check win condition
+            if (gameState.player.x > canvas.width - 100) {
+                gameState.score += 100;
+                gameState.level++;
+                if (gameState.level > 5) {
+                    gameState.screen = 'win';
+                } else {
+                    initLevel();
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (gameState.screen === 'playing') {
+                updatePlayer();
+                updateSentinels();
+                checkCollisions();
+                gameState.time++;
+            }
+            drawScreen();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners
+        window.addEventListener('keydown', e => {
+            gameState.keys[e.key] = true;
+            if (e.key === ' ') {
+                e.preventDefault();
+                gameState.paused = !gameState.paused;
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            gameState.keys[e.key] = false;
+        });
+
+        // Start game
+        loadImages();
+        initLevel();
+        gameLoop();
+
+        // Handle clicks on start screen
+        canvas.addEventListener('click', () => {
+            if (gameState.screen === 'start') {
+                gameState.screen = 'playing';
+            } else if (gameState.screen === 'gameOver' || gameState.screen === 'win') {
+                gameState.screen = 'start';
+                gameState.level = 1;
+                gameState.score = 0;
+                gameState.lives = 3;
+                initLevel();
+            }
+        });
+    </script>
+</body>
+</html>

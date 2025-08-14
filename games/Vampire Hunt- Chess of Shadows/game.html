@@ -1,0 +1,302 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vampire Hunt: Chess of Shadows</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+        canvas {
+            border: 2px solid #555;
+            background-color: #111;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        #instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 10;
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    <div id="ui">
+        <button id="startBtn">Start Game</button>
+        <button id="resetBtn">Reset Level</button>
+        <div id="score">Moves: 0</div>
+        <div id="level">Level: 1</div>
+    </div>
+    <div id="instructions">
+        <p>Move the Hunter (dark figure) to capture all vampires.</p>
+        <p>Each vampire has a unique behavior. Find the correct path!</p>
+    </div>
+
+    <script>
+        // Game constants
+        const BOARD_SIZE = 4;
+        const CELL_SIZE = 256; // 1024/4
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+
+        // Game state
+        let gameState = {
+            board: [],
+            hunter: { x: 0, y: 0 },
+            vampires: [],
+            moves: 0,
+            level: 1,
+            gameStarted: false,
+            gameOver: false,
+            win: false
+        };
+
+        // Image cache
+        const images = {};
+        const imagePaths = [
+            "images/512x512_board.png",
+            "images/512x512_hunter.png",
+            "images/428x452_vampire.png",
+            "images/497x498_vampire_aura.png",
+            "images/345x422_vampire_blood.png",
+            "images/447x445_vampire_castle.png",
+            "images/448x499_vampire_cross.png",
+            "images/406x397_vampire_elder.png",
+            "images/456x475_vampire_eyes.png",
+            "images/291x376_vampire_heart.png",
+            "images/495x484_vampire_mask.png",
+            "images/460x464_vampire_moon.png",
+            "images/512x490_vampire_shadow.png",
+            "images/512x512_vampire_ship.png",
+            "images/477x477_vampire_sun.png",
+            "images/502x502_vampire_surrounded.png",
+            "images/401x473_vampire_sword.png",
+            "images/465x457_vampire_teleport.png",
+            "images/512x512_vampire_undead.png",
+            "images/512x457_vampire_village.png"
+        ];
+
+        // Initialize game
+        function initGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Load images
+            let loadedImages = 0;
+            imagePaths.forEach(path => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedImages++;
+                    if (loadedImages === imagePaths.length) {
+                        setupBoard();
+                        draw(ctx);
+                    }
+                };
+                img.src = path;
+                images[path] = img;
+            });
+
+            // UI event handlers
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('resetBtn').addEventListener('click', resetLevel);
+
+            // Keyboard input
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        function setupBoard() {
+            // Reset game state
+            gameState.board = [];
+            gameState.vampires = [];
+            gameState.moves = 0;
+            gameState.gameOver = false;
+            gameState.win = false;
+
+            // Create board (empty)
+            for (let y = 0; y < BOARD_SIZE; y++) {
+                gameState.board[y] = [];
+                for (let x = 0; x < BOARD_SIZE; x++) {
+                    gameState.board[y][x] = null;
+                }
+            }
+
+            // Place hunter at start position
+            gameState.hunter = { x: 0, y: 0 };
+            gameState.board[0][0] = 'hunter';
+
+            // Level-specific vampire placements
+            switch(gameState.level) {
+                case 1:
+                    // Simple level with one vampire
+                    gameState.vampires.push({ x: 3, y: 3, type: 'vampire', behavior: 'stationary' });
+                    gameState.board[3][3] = 'vampire';
+                    break;
+                case 2:
+                    // Two vampires, one moves
+                    gameState.vampires.push({ x: 1, y: 1, type: 'vampire', behavior: 'moving' });
+                    gameState.vampires.push({ x: 3, y: 3, type: 'vampire', behavior: 'stationary' });
+                    gameState.board[1][1] = 'vampire';
+                    gameState.board[3][3] = 'vampire';
+                    break;
+                case 3:
+                    // Vampire with teleportation
+                    gameState.vampires.push({ x: 2, y: 2, type: 'vampire', behavior: 'teleport' });
+                    gameState.board[2][2] = 'vampire';
+                    break;
+            }
+        }
+
+        function startGame() {
+            gameState.gameStarted = true;
+            document.getElementById('startBtn').disabled = true;
+            updateUI();
+        }
+
+        function resetLevel() {
+            gameState.level = 1;
+            setupBoard();
+            draw(ctx);
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = `Moves: ${gameState.moves}`;
+            document.getElementById('level').textContent = `Level: ${gameState.level}`;
+        }
+
+        function handleKeyDown(e) {
+            if (!gameState.gameStarted || gameState.gameOver) return;
+
+            let newX = gameState.hunter.x;
+            let newY = gameState.hunter.y;
+
+            switch(e.key) {
+                case 'ArrowUp': newY--; break;
+                case 'ArrowDown': newY++; break;
+                case 'ArrowLeft': newX--; break;
+                case 'ArrowRight': newX++; break;
+                default: return;
+            }
+
+            // Check bounds
+            if (newX >= 0 && newX < BOARD_SIZE && newY >= 0 && newY < BOARD_SIZE) {
+                moveHunter(newX, newY);
+            }
+        }
+
+        function moveHunter(x, y) {
+            // Clear old position
+            gameState.board[gameState.hunter.y][gameState.hunter.x] = null;
+
+            // Move hunter
+            gameState.hunter.x = x;
+            gameState.hunter.y = y;
+
+            // Update board
+            gameState.board[y][x] = 'hunter';
+
+            // Check for vampire capture
+            const vampireIndex = gameState.vampires.findIndex(v => v.x === x && v.y === y);
+            if (vampireIndex !== -1) {
+                gameState.vampires.splice(vampireIndex, 1);
+                // Remove from board
+                gameState.board[y][x] = null;
+            }
+
+            gameState.moves++;
+            updateUI();
+            checkWin();
+
+            draw(ctx);
+        }
+
+        function checkWin() {
+            if (gameState.vampires.length === 0) {
+                gameState.win = true;
+                gameState.gameOver = true;
+                gameState.level++;
+                if (gameState.level > 3) {
+                    alert("Congratulations! You've completed all levels!");
+                } else {
+                    alert(`Level ${gameState.level - 1} complete!`);
+                    setTimeout(() => setupBoard(), 500);
+                }
+            }
+        }
+
+        function draw(ctx) {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw board
+            const boardImg = images["images/512x512_board.png"];
+            ctx.drawImage(boardImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw pieces
+            for (let y = 0; y < BOARD_SIZE; y++) {
+                for (let x = 0; x < BOARD_SIZE; x++) {
+                    const piece = gameState.board[y][x];
+                    if (!piece) continue;
+
+                    let img;
+                    if (piece === 'hunter') {
+                        img = images["images/512x512_hunter.png"];
+                    } else if (piece === 'vampire') {
+                        // Simple vampire image for now
+                        img = images["images/428x452_vampire.png"];
+                    }
+
+                    if (img) {
+                        const px = x * CELL_SIZE;
+                        const py = y * CELL_SIZE;
+                        ctx.drawImage(img, px, py, CELL_SIZE, CELL_SIZE);
+                    }
+                }
+            }
+
+            // Draw hunter position indicator
+            if (gameState.gameStarted && !gameState.gameOver) {
+                const px = gameState.hunter.x * CELL_SIZE + CELL_SIZE / 2;
+                const py = gameState.hunter.y * CELL_SIZE + CELL_SIZE / 2;
+                ctx.beginPath();
+                ctx.arc(px, py, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+            }
+        }
+
+        // Start the game
+        const ctx = document.getElementById('gameCanvas').getContext('2d');
+        initGame();
+    </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ghost Drift</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+    canvas {
+      border: 1px solid #333;
+      background-color: #111;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+<script>
+  (function() {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Game state
+    let gameState = 'splash'; // splash, menu, playing, paused, gameover, score
+    let score = 0;
+    let highScore = localStorage.getItem('ghostDriftHighScore') || 0;
+    let playerX = canvas.width / 2;
+    let playerY = canvas.height - 100;
+    let playerSpeed = 5;
+    let obstacles = [];
+    let souls = [];
+    let powerUps = [];
+    let keys = {};
+    let animationId;
+
+    // Images
+    const images = {};
+    const imagePaths = [
+      'images/409x454_ghost.png',
+      'images/512x512_ghost_drift_loading.png',
+      'images/512x512_ghost_drift_logo.png',
+      'images/474x421_ghost_drift_menu.png',
+      'images/377x278_ghost_drift_pause.png',
+      'images/486x499_ghost_drift_gameover.png',
+      'images/512x472_ghost_drift_powerup.png',
+      'images/512x512_ghost_drift_score.png',
+      'images/457x512_gravestone.png',
+      'images/493x488_graveyard_background.png',
+      'images/442x476_soul.png',
+      'images/378x444_tombstone.png'
+    ];
+
+    function loadImages() {
+      let loaded = 0;
+      imagePaths.forEach(path => {
+        const img = new Image();
+        img.src = path;
+        img.onload = () => {
+          loaded++;
+          if (loaded === imagePaths.length) {
+            gameState = 'menu';
+          }
+        };
+        images[path] = img;
+      });
+    }
+
+    // Initialize game
+    function initGame() {
+      score = 0;
+      playerX = canvas.width / 2;
+      obstacles = [];
+      souls = [];
+      powerUps = [];
+      generateObstacles();
+      generateSouls();
+      generatePowerUps();
+    }
+
+    // Generate obstacles
+    function generateObstacles() {
+      for (let i = 0; i < 15; i++) {
+        obstacles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          width: 60 + Math.random() * 80,
+          height: 60 + Math.random() * 80,
+          speed: 0.5 + Math.random() * 1.5
+        });
+      }
+    }
+
+    // Generate souls
+    function generateSouls() {
+      for (let i = 0; i < 5; i++) {
+        souls.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: 10 + Math.random() * 10,
+          speed: 0.5 + Math.random() * 0.5
+        });
+      }
+    }
+
+    // Generate power-ups
+    function generatePowerUps() {
+      for (let i = 0; i < 2; i++) {
+        powerUps.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          width: 30,
+          height: 30,
+          speed: 1 + Math.random() * 2
+        });
+      }
+    }
+
+    // Draw player ghost
+    function drawPlayer() {
+      ctx.drawImage(images['images/409x454_ghost.png'], playerX - 50, playerY - 50, 100, 100);
+    }
+
+    // Draw background
+    function drawBackground() {
+      ctx.drawImage(images['images/493x488_graveyard_background.png'], 0, 0, canvas.width, canvas.height);
+    }
+
+    // Draw obstacles
+    function drawObstacles() {
+      obstacles.forEach(obs => {
+        ctx.drawImage(images['images/457x512_gravestone.png'], obs.x, obs.y, obs.width, obs.height);
+      });
+    }
+
+    // Draw souls
+    function drawSouls() {
+      souls.forEach(soul => {
+        ctx.drawImage(images['images/442x476_soul.png'], soul.x - soul.radius, soul.y - soul.radius, soul.radius * 2, soul.radius * 2);
+      });
+    }
+
+    // Draw power-ups
+    function drawPowerUps() {
+      powerUps.forEach(pu => {
+        ctx.drawImage(images['images/512x472_ghost_drift_powerup.png'], pu.x, pu.y, pu.width, pu.height);
+      });
+    }
+
+    // Update game state
+    function update() {
+      if (gameState !== 'playing') return;
+
+      // Move player
+      if (keys['ArrowLeft'] && playerX > 50) playerX -= playerSpeed;
+      if (keys['ArrowRight'] && playerX < canvas.width - 50) playerX += playerSpeed;
+
+      // Update obstacles
+      obstacles.forEach(obs => {
+        obs.y += obs.speed;
+        if (obs.y > canvas.height) {
+          obs.y = -100;
+          obs.x = Math.random() * canvas.width;
+        }
+      });
+
+      // Update souls
+      souls.forEach(soul => {
+        soul.y += soul.speed;
+        if (soul.y > canvas.height) {
+          soul.y = -50;
+          soul.x = Math.random() * canvas.width;
+        }
+      });
+
+      // Update power-ups
+      powerUps.forEach(pu => {
+        pu.y += pu.speed;
+        if (pu.y > canvas.height) {
+          pu.y = -50;
+          pu.x = Math.random() * canvas.width;
+        }
+      });
+
+      // Check collisions
+      checkCollisions();
+    }
+
+    // Check collisions
+    function checkCollisions() {
+      // Obstacle collision
+      obstacles.forEach(obs => {
+        if (
+          playerX > obs.x &&
+          playerX < obs.x + obs.width &&
+          playerY > obs.y &&
+          playerY < obs.y + obs.height
+        ) {
+          gameOver();
+        }
+      });
+
+      // Soul collection
+      souls.forEach((soul, index) => {
+        const dx = playerX - soul.x;
+        const dy = playerY - soul.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 30) {
+          souls.splice(index, 1);
+          score += 10;
+          generateSouls();
+        }
+      });
+
+      // Power-up collection
+      powerUps.forEach((pu, index) => {
+        const dx = playerX - pu.x;
+        const dy = playerY - pu.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 30) {
+          powerUps.splice(index, 1);
+          score += 50;
+          generatePowerUps();
+        }
+      });
+    }
+
+    // Game over
+    function gameOver() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('ghostDriftHighScore', highScore);
+      }
+      gameState = 'gameover';
+    }
+
+    // Draw UI
+    function drawUI() {
+      ctx.fillStyle = '#fff';
+      ctx.font = '24px "Courier New", monospace';
+      ctx.fillText(`Score: ${score}`, 20, 40);
+      ctx.fillText(`High Score: ${highScore}`, 20, 70);
+
+      if (gameState === 'splash') {
+        ctx.drawImage(images['images/512x512_ghost_drift_loading.png'], 0, 0, canvas.width, canvas.height);
+      } else if (gameState === 'menu') {
+        ctx.drawImage(images['images/512x512_ghost_drift_logo.png'], 0, 0, canvas.width, canvas.height);
+        ctx.fillText('Press SPACE to start', canvas.width / 2 - 100, canvas.height - 50);
+      } else if (gameState === 'paused') {
+        ctx.drawImage(images['images/377x278_ghost_drift_pause.png'], 0, 0, canvas.width, canvas.height);
+      } else if (gameState === 'gameover') {
+        ctx.drawImage(images['images/486x499_ghost_drift_gameover.png'], 0, 0, canvas.width, canvas.height);
+        ctx.fillText(`Final Score: ${score}`, canvas.width / 2 - 80, canvas.height - 150);
+        ctx.fillText('Press R to restart', canvas.width / 2 - 80, canvas.height - 100);
+      }
+    }
+
+    // Game loop
+    function gameLoop() {
+      update();
+      drawBackground();
+      drawObstacles();
+      drawSouls();
+      drawPowerUps();
+      drawPlayer();
+      drawUI();
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    // Event listeners
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if (e.key === ' ' && gameState === 'menu') {
+        gameState = 'playing';
+        initGame();
+      } else if (e.key === 'p' && gameState === 'playing') {
+        gameState = 'paused';
+      } else if (e.key === 'r' && gameState === 'gameover') {
+        gameState = 'playing';
+        initGame();
+      }
+    });
+
+    window.addEventListener('keyup', e => {
+      keys[e.key] = false;
+    });
+
+    loadImages();
+    gameLoop();
+  })();
+</script>
+</body>
+</html>

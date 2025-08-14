@@ -1,0 +1,421 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skybound Sprint</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #fff;
+            background-color: #111;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 16px;
+            z-index: 10;
+        }
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 20;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    <div id="ui">
+        <div>Time: <span id="time">0.00</span>s</div>
+        <div>Keys: <span id="keys">0</span></div>
+        <div>Best: <span id="best">0.00</span>s</div>
+    </div>
+    <div id="start-screen">
+        <h1>Skybound Sprint</h1>
+        <p>Use Arrow Keys or WASD to move and jump</p>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="game-over" style="display: none;">
+        <h2>Level Complete!</h2>
+        <p>Your Time: <span id="final-time">0.00</span>s</p>
+        <p>Best Time: <span id="final-best">0.00</span>s</p>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const timeDisplay = document.getElementById('time');
+        const keysDisplay = document.getElementById('keys');
+        const bestDisplay = document.getElementById('best');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalTime = document.getElementById('final-time');
+        const finalBest = document.getElementById('final-best');
+
+        // Game state
+        let gameState = {
+            player: {
+                x: 50,
+                y: 600,
+                width: 32,
+                height: 48,
+                velX: 0,
+                velY: 0,
+                speed: 5,
+                jumpPower: 12,
+                grounded: false
+            },
+            platforms: [],
+            enemies: [],
+            keys: [],
+            hazards: [],
+            camera: { x: 0, y: 0 },
+            gravity: 0.5,
+            keysCollected: 0,
+            startTime: 0,
+            currentTime: 0,
+            bestTime: parseFloat(localStorage.getItem('skyboundBestTime') || '0'),
+            gameRunning: false
+        };
+
+        // Load images
+        const images = {};
+        const imageNames = [
+            'background.png', 'background2.png', 'background3.png', 'background4.png',
+            'background5.png', 'cloud.png', 'collision.png', 'enemy.png',
+            'fall.png', 'finish.png', 'jump.png', 'key.png',
+            'logo.png', 'platform.png', 'player.png', 'powerup.png',
+            'rock.png', 'score.png', 'start.png', 'timer.png'
+        ];
+
+        imageNames.forEach(name => {
+            images[name] = new Image();
+            images[name].src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==`;
+        });
+
+        // Initialize level
+        function initLevel() {
+            gameState.platforms = [
+                { x: 0, y: 650, width: 200, height: 50 },
+                { x: 300, y: 550, width: 150, height: 30 },
+                { x: 500, y: 450, width: 100, height: 30 },
+                { x: 700, y: 350, width: 200, height: 30 },
+                { x: 900, y: 250, width: 100, height: 30 }
+            ];
+            gameState.enemies = [
+                { x: 400, y: 520, width: 40, height: 40, speed: 1, direction: 1 },
+                { x: 600, y: 420, width: 40, height: 40, speed: 1, direction: -1 }
+            ];
+            gameState.keys = [
+                { x: 350, y: 500, width: 30, height: 30, collected: false },
+                { x: 750, y: 300, width: 30, height: 30, collected: false }
+            ];
+            gameState.hazards = [
+                { x: 200, y: 300, width: 40, height: 40 },
+                { x: 800, y: 150, width: 40, height: 40 }
+            ];
+            gameState.keysCollected = 0;
+        }
+
+        // Draw background
+        function drawBackground() {
+            ctx.fillStyle = '#223366';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw clouds
+            for (let i = 0; i < 5; i++) {
+                const x = (i * 200 + gameState.camera.x * 0.1) % (canvas.width + 400) - 200;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x, 100 + i * 20, 100, 30);
+            }
+        }
+
+        // Draw platforms
+        function drawPlatforms() {
+            gameState.platforms.forEach(platform => {
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(platform.x - gameState.camera.x, platform.y - gameState.camera.y, platform.width, platform.height);
+                ctx.fillStyle = '#A0522D';
+                ctx.fillRect(platform.x - gameState.camera.x, platform.y - gameState.camera.y, platform.width, 5);
+            });
+        }
+
+        // Draw enemies
+        function drawEnemies() {
+            gameState.enemies.forEach(enemy => {
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(enemy.x - gameState.camera.x, enemy.y - gameState.camera.y, enemy.width, enemy.height);
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(enemy.x - gameState.camera.x + 10, enemy.y - gameState.camera.y + 10, 8, 8);
+            });
+        }
+
+        // Draw keys
+        function drawKeys() {
+            gameState.keys.forEach(key => {
+                if (!key.collected) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(key.x - gameState.camera.x, key.y - gameState.camera.y, key.width, key.height);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(key.x - gameState.camera.x + 5, key.y - gameState.camera.y + 5, 20, 20);
+                }
+            });
+        }
+
+        // Draw hazards
+        function drawHazards() {
+            gameState.hazards.forEach(hazard => {
+                ctx.fillStyle = '#8B0000';
+                ctx.fillRect(hazard.x - gameState.camera.x, hazard.y - gameState.camera.y, hazard.width, hazard.height);
+            });
+        }
+
+        // Draw player
+        function drawPlayer() {
+            ctx.fillStyle = '#00FFFF';
+            ctx.fillRect(gameState.player.x - gameState.camera.x, gameState.player.y - gameState.camera.y, 
+                         gameState.player.width, gameState.player.height);
+            
+            // Draw eyes
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(gameState.player.x - gameState.camera.x + 8, gameState.player.y - gameState.camera.y + 12, 6, 6);
+            ctx.fillRect(gameState.player.x - gameState.camera.x + 20, gameState.player.y - gameState.camera.y + 12, 6, 6);
+        }
+
+        // Draw finish line
+        function drawFinish() {
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(950 - gameState.camera.x, 200 - gameState.camera.y, 50, 300);
+        }
+
+        // Update player position
+        function updatePlayer() {
+            gameState.player.velY += gameState.gravity;
+            gameState.player.x += gameState.player.velX;
+            gameState.player.y += gameState.player.velY;
+
+            // Collision with platforms
+            let onGround = false;
+            gameState.platforms.forEach(platform => {
+                if (gameState.player.x < platform.x + platform.width &&
+                    gameState.player.x + gameState.player.width > platform.x &&
+                    gameState.player.y + gameState.player.height <= platform.y &&
+                    gameState.player.y + gameState.player.height + gameState.player.velY >= platform.y) {
+                    
+                    gameState.player.y = platform.y - gameState.player.height;
+                    gameState.player.velY = 0;
+                    onGround = true;
+                }
+            });
+
+            // Collision with enemies
+            gameState.enemies.forEach(enemy => {
+                if (gameState.player.x < enemy.x + enemy.width &&
+                    gameState.player.x + gameState.player.width > enemy.x &&
+                    gameState.player.y < enemy.y + enemy.height &&
+                    gameState.player.y + gameState.player.height > enemy.y) {
+                    
+                    // Reset game on collision
+                    resetGame();
+                }
+            });
+
+            // Collect keys
+            gameState.keys.forEach(key => {
+                if (!key.collected && 
+                    gameState.player.x < key.x + key.width &&
+                    gameState.player.x + gameState.player.width > key.x &&
+                    gameState.player.y < key.y + key.height &&
+                    gameState.player.y + gameState.player.height > key.y) {
+                    
+                    key.collected = true;
+                    gameState.keysCollected++;
+                }
+            });
+
+            // Collision with hazards
+            gameState.hazards.forEach(hazard => {
+                if (gameState.player.x < hazard.x + hazard.width &&
+                    gameState.player.x + gameState.player.width > hazard.x &&
+                    gameState.player.y < hazard.y + hazard.height &&
+                    gameState.player.y + gameState.player.height > hazard.y) {
+                    
+                    // Reset game on hazard collision
+                    resetGame();
+                }
+            });
+
+            // Check if player reached finish
+            if (gameState.player.x > 950 && gameState.player.y < 300) {
+                endGame();
+            }
+
+            // Ground check
+            if (!onGround) {
+                gameState.player.grounded = false;
+            } else {
+                gameState.player.grounded = true;
+            }
+
+            // Apply friction
+            gameState.player.velX *= 0.8;
+
+            // Update camera to follow player
+            gameState.camera.x = gameState.player.x - canvas.width / 2;
+        }
+
+        // Update enemies
+        function updateEnemies() {
+            gameState.enemies.forEach(enemy => {
+                enemy.x += enemy.speed * enemy.direction;
+                
+                // Simple AI: change direction at platform edges
+                let onPlatform = false;
+                gameState.platforms.forEach(platform => {
+                    if (enemy.y + enemy.height === platform.y && 
+                        enemy.x + enemy.width > platform.x && 
+                        enemy.x < platform.x + platform.width) {
+                        onPlatform = true;
+                    }
+                });
+                
+                if (!onPlatform || Math.random() < 0.01) {
+                    enemy.direction *= -1;
+                }
+            });
+        }
+
+        // Handle input
+        function handleInput(e) {
+            if (!gameState.gameRunning) return;
+
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    gameState.player.velX = -gameState.player.speed;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    gameState.player.velX = gameState.player.speed;
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                case ' ':
+                    if (gameState.player.grounded) {
+                        gameState.player.velY = -gameState.player.jumpPower;
+                        gameState.player.grounded = false;
+                    }
+                    break;
+            }
+        }
+
+        // Reset game
+        function resetGame() {
+            gameState.player.x = 50;
+            gameState.player.y = 600;
+            gameState.player.velX = 0;
+            gameState.player.velY = 0;
+            initLevel();
+        }
+
+        // Start game
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameState.gameRunning = true;
+            gameState.startTime = performance.now();
+            initLevel();
+            gameLoop();
+        }
+
+        // Restart game
+        function restartGame() {
+            gameOverScreen.style.display = 'none';
+            gameState.gameRunning = true;
+            gameState.startTime = performance.now();
+            initLevel();
+            gameLoop();
+        }
+
+        // End game
+        function endGame() {
+            gameState.gameRunning = false;
+            const endTime = (performance.now() - gameState.startTime) / 1000;
+            
+            if (gameState.bestTime === 0 || endTime < gameState.bestTime) {
+                gameState.bestTime = endTime;
+                localStorage.setItem('skyboundBestTime', gameState.bestTime.toString());
+            }
+
+            finalTime.textContent = endTime.toFixed(2);
+            finalBest.textContent = gameState.bestTime.toFixed(2);
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Main game loop
+        function gameLoop() {
+            if (!gameState.gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBackground();
+            drawPlatforms();
+            drawEnemies();
+            drawKeys();
+            drawHazards();
+            drawPlayer();
+            drawFinish();
+
+            updatePlayer();
+            updateEnemies();
+
+            // Update time display
+            gameState.currentTime = (performance.now() - gameState.startTime) / 1000;
+            timeDisplay.textContent = gameState.currentTime.toFixed(2);
+            keysDisplay.textContent = gameState.keysCollected;
+            bestDisplay.textContent = gameState.bestTime.toFixed(2);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', handleInput);
+
+        // Initialize UI
+        bestDisplay.textContent = gameState.bestTime.toFixed(2);
+    </script>
+</body>
+</html>

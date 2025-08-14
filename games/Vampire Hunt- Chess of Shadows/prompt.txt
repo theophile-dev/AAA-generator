@@ -1,0 +1,119 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_board.png description: Minimalist 4x4 grid board with dark tiles and subtle shadow effects
+path: images/512x512_hunter.png description: Simple stylized hunter character with a crossbow, dark clothing, and a determined look
+path: images/428x452_vampire.png description: Basic vampire character with pale skin, red eyes, and a dark cloak
+path: images/497x498_vampire_aura.png description: Vampire with a glowing moon symbol above its head, indicating it can only be captured during a full moon
+path: images/345x422_vampire_blood.png description: Vampire with a swirling vortex effect, indicating teleportation ability
+path: images/447x445_vampire_castle.png description: Vampire surrounded by a circle of light, indicating it can only be captured when surrounded
+path: images/448x499_vampire_cross.png description: Vampire in a gothic castle setting, with dark stone walls and stained glass
+path: images/406x397_vampire_elder.png description: Vampire on a decaying ship, with creaking wood and fog in the background
+path: images/456x475_vampire_eyes.png description: Vampire in a cursed village, with dark trees and a red moon in the sky
+path: images/291x376_vampire_heart.png description: Vampire with a skeletal appearance, emphasizing its undead nature
+path: images/495x484_vampire_mask.png description: Vampire with a dark shadowy form, suggesting it moves in the dark
+path: images/460x464_vampire_moon.png description: Elder vampire with a regal appearance, suggesting power and strength
+path: images/512x490_vampire_shadow.png description: Vampire with a blood-stained cloak, indicating a recent kill
+path: images/512x512_vampire_ship.png description: Vampire wearing a mask, suggesting it's a cursed or cursed noble
+path: images/477x477_vampire_sun.png description: Vampire with glowing red eyes, emphasizing its supernatural nature
+path: images/502x502_vampire_surrounded.png description: Vampire with a glowing sword, indicating it's a warrior
+path: images/401x473_vampire_sword.png description: Vampire with a cross symbol on its chest, indicating it's cursed
+path: images/465x457_vampire_teleport.png description: Vampire with a glowing heart, indicating it's vulnerable to holy items
+path: images/512x512_vampire_undead.png description: Vampire with a sun symbol, indicating it's weakened by sunlight
+path: images/512x457_vampire_village.png description: Vampire with a dark aura around it, indicating its power and danger
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Vampire Hunt: Chess of Shadows"**
+
+**Concept Summary:**
+"Vampire Hunt: Chess of Shadows" is a **Minimal Chess Puzzle** game set in a **vampire hunter** theme. Players take on the role of a lone hunter who must outsmart and eliminate vampires using a simple, strategic board-based puzzle system. The game combines elements of **chess logic** with **vampire lore**, creating a fun, challenging, and accessible experience that can be played in under a minute per puzzle.
+
+---
+
+**Gameplay Mechanics:**
+
+- The game uses a **4x4 grid** where each cell represents a position on the board.
+- There are **two types of pieces**: the **Hunter** (player-controlled) and **Vampires** (enemies).
+- The player starts with **one Hunter piece** and must strategically move it across the board to **capture all vampires**.
+- Vampires have **unique behaviors**: some move, some are stationary, and some can only be captured under specific conditions (e.g., during a full moon, or when surrounded by certain items).
+- The player must **use the minimal number of moves** to win, akin to a chess puzzle. Each move is a single step, and the Hunter can move in **any direction** (like a king in chess).
+- Each puzzle has **a single correct solution**, and the player must figure out the right sequence of moves to eliminate all vampires.
+
+---
+
+**Objectives:**
+
+- **Primary Objective:** Capture all vampires on the board using the fewest moves possible.
+- **Secondary Objective:** Complete each level within a time limit or without using certain types of moves (e.g., no diagonal moves, no backtracking).
+
+---
+
+**Unique Features:**
+
+- **Minimalist Art Style:** Each piece is a simple, stylized PNG (no sprite sheets), with the Hunter, vampires, and board tiles being distinct and recognizable.
+- **Single-Piece Movement:** The game revolves around a single Hunter piece, making it easy to learn and play.
+- **Thematic Puzzles:** Each level is themed around a different vampire myth (e.g., Dracula’s castle, Nosferatu’s ship, a cursed village), with unique vampire behaviors and visual cues.
+- **Progressive Difficulty:** Levels start with simple setups and gradually introduce more complex vampire behaviors, such as movement, teleportation, or special vulnerabilities.
+- **No Complex Animations:** The game is built using pure JavaScript and CSS, with only 20 PNGs (each being a single tile or character), and no advanced animation or physics.
+
+---
+
+**Implementation Notes:**
+
+- The game can be played in a **single HTML file** with embedded JavaScript, CSS, and images.
+- All images are single elements, with no need for sprite sheets or animations.
+- The game is designed to be **playable in under a minute per level**, ensuring it remains engaging and fun for a wide audience.
+
+---
+
+**Target Audience:**
+
+- Casual gamers looking for a quick, strategic challenge.
+- Fans of puzzle games and chess logic.
+- Players interested in vampire lore and minimalistic design.
+- Educators and parents looking for a simple, educational game for kids.
+
+---
+
+**Conclusion:**
+
+"Vampire Hunt: Chess of Shadows" offers a fresh take on the puzzle genre by blending the strategic depth of chess with the dark allure of vampire lore. It’s a game that is easy to learn, hard to master, and perfectly suited for a minimalist, code-light implementation using only 20 images and 500 lines of JavaScript.

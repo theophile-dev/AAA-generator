@@ -1,0 +1,91 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_exit_tile.png description: A ghost ship with a dark, eerie silhouette on icy waters
+path: images/512x439_ghost_ship.png description: A smooth, white ice tile with a subtle texture
+path: images/247x311_ice_anchor.png description: A glowing blue exit tile with a light source
+path: images/335x296_ice_block.png description: A frozen anchor embedded in the ice
+path: images/268x233_ice_bubble.png description: A large, solid ice block blocking the path
+path: images/512x223_ice_crack.png description: A floating ice platform that moves slowly
+path: images/512x503_ice_fog.png description: A solid wall of ice blocking movement
+path: images/512x446_ice_iceberg.png description: A thin, glowing crack in the ice
+path: images/510x501_ice_iceberg_large.png description: A transparent ice bubble with light inside
+path: images/467x349_ice_iceberg_medium.png description: A misty, hazy layer of ice fog
+path: images/512x350_ice_iceberg_small.png description: A large, jagged iceberg in the background
+path: images/512x512_ice_light.png description: A faint blue water texture beneath the ice
+path: images/512x308_ice_shadow.png description: A single, delicate snowflake on the ice
+path: images/466x469_ice_snowflake.png description: A shadow of the ship on the ice surface
+path: images/512x512_ice_tile.png description: A soft, ambient light source on the ice
+path: images/366x393_ice_wall.png description: A subtle wind effect moving across the ice
+path: images/512x512_ice_water.png description: A small, rounded iceberg in the corner
+path: images/292x322_ice_wind.png description: A medium-sized iceberg blocking the path
+path: images/415x458_moving_ice_platform.png description: A massive iceberg in the background
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Ghost Ship Puzzle*
+
+**Theme:** A ghost ship drifting through icy waters, trapped in a frozen labyrinth. The player must guide the ship through a series of sliding puzzle levels to escape the ice.
+
+**Gameplay Mechanics:**  
+The game is a simple ice sliding puzzle where the player slides the ghost ship across a grid of frozen tiles. Each tile is a single image, and the player can move the ship in four directions (up, down, left, right). When the ship moves, it slides across the ice, and if it collides with a wall or another object, it stops. The goal is to maneuver the ship through a series of levels, avoiding obstacles and reaching the exit.
+
+**Objective:**  
+The player must solve each puzzle level by sliding the ghost ship to the exit tile. Each level increases in complexity, introducing new obstacles such as ice anchors, ice blocks, and moving ice platforms. The player must figure out the correct sequence of moves to free the ship and escape the frozen sea.
+
+**Unique Features:**  
+- **Minimalist Aesthetic:** Uses only 20 single-element .png images (ship, ice tiles, exit, obstacles, etc.) to create a clean and engaging visual style.
+- **Simple Controls:** Move the ship with arrow keys, with physics-based sliding movement for a sense of realism without complex animations.
+- **Increasing Difficulty:** Each level introduces new challenges, such as moving obstacles or limited movement space, keeping the gameplay engaging and challenging.
+- **No Sprite Sheets:** All images are individual, making it easy to implement and customize.
+- **Replayability:** Players can revisit levels to find faster or more efficient paths.
+
+**Design Philosophy:**  
+*Ghost Ship Puzzle* is designed to be accessible and fun for players of all ages. It emphasizes logic, spatial reasoning, and trial-and-error, with a whimsical and atmospheric theme that adds to the charm. The game is built to be easily expandable, with potential for future levels or features without requiring major code changes.
+
+**Technical Requirements:**  
+- Pure JavaScript with HTML5 Canvas
+- Only 20 single-element .png images
+- Limited to 500 lines of code
+- No complex animations or external libraries
+
+**Conclusion:**  
+*Ghost Ship Puzzle* is a charming, simple, and engaging 2D sliding puzzle game that uses minimal resources to create a fun and atmospheric experience. It balances challenge and accessibility, making it ideal for casual players and puzzle enthusiasts alike.

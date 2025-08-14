@@ -1,0 +1,113 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/343x386_block-placement.png description: A serene floating library with shelves and books in the background.
+path: images/465x437_book-icons.png description: Falling blocks with letters and symbols in a grid layout.
+path: images/407x406_book-unlocked.png description: A 5x5 grid representing library shelves with empty slots.
+path: images/512x512_educational-twist.png description: A word hint displayed at the top of the screen.
+path: images/416x431_falling-blocks.png description: A book icon being unlocked on a shelf.
+path: images/304x294_floating-library.png description: A block being placed in an empty grid cell.
+path: images/434x435_game-loop.png description: A timer showing the remaining time for the player.
+path: images/512x512_game-over.png description: Minimalist design with simple PNG elements and clean UI.
+path: images/348x206_game-ui.png description: A calm, peaceful library environment with soft lighting.
+path: images/512x512_grid-shelves.png description: Increasing complexity of words and phrases over time.
+path: images/512x512_high-score.png description: A player forming a word to unlock a book and build vocabulary.
+path: images/512x375_in-browser-game.png description: A browser-based game with HTML5 Canvas and JavaScript.
+path: images/195x235_letters-symbols.png description: Various book icons representing different genres and themes.
+path: images/464x422_loading-screen.png description: Letters and symbols used as falling blocks in the game.
+path: images/166x189_minimalist-design.png description: A high score display showing the player's best performance.
+path: images/331x460_player-interface.png description: A simple game UI with grid, falling blocks, and hints.
+path: images/390x418_progressive-difficulty.png description: Player interface with controls and game status.
+path: images/492x228_serene-aesthetic.png description: A visual representation of the game loop with falling blocks and grid updates.
+path: images/512x399_time-limit.png description: A game over screen showing the final score and unlocked books.
+path: images/320x311_word-hint.png description: A loading screen with the game title and a floating library background.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Floating Library Blocks*
+
+**Theme:** A serene, puzzle-based experience set in a floating library where players must arrange falling blocks to restore balance and unlock knowledge.
+
+---
+
+**Gameplay Overview:**
+
+In *Floating Library Blocks*, players control a floating library that hovers over a grid of shelves. Blocks fall from the top of the screen, each labeled with a letter or symbol. The objective is to arrange these falling blocks into complete words or phrases that correspond to books on the shelves. As blocks land, they form a grid, and when a correct word or phrase is formed, the book is unlocked and the shelf is filled.
+
+---
+
+**Gameplay Mechanics:**
+
+- **Falling Blocks:** Simple, single-element PNGs (letters, symbols, or small icons) fall from the top of the screen at a steady pace.
+- **Grid System:** A 5x5 grid represents the library shelves. Each cell can hold one block.
+- **Matching Words:** Players must match falling blocks into complete words or short phrases (like "book", "story", "library") that appear as hints at the top of the screen.
+- **Block Placement:** When a block lands, it can be moved to any empty cell in the grid. Once placed, it can't be moved again.
+- **Unlocking Books:** When a word or phrase is completed in the grid, the corresponding book (represented by a simple icon) is unlocked and added to the shelf.
+
+---
+
+**Objectives:**
+
+- Complete as many words or phrases as possible within a time limit.
+- Unlock all books in the library by forming the correct combinations.
+- Achieve a high score by completing words quickly and efficiently.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Design:** Uses only 20 single-element PNGs (letters, book icons, and block placeholders), keeping the game visually simple and easy to implement.
+- **Serene Aesthetic:** The floating library theme offers a calm, engaging environment that appeals to a wide audience.
+- **No Complex Animations:** All movement and interactions are basic, relying on simple positioning and collision detection.
+- **Progressive Difficulty:** As the game progresses, more complex words and phrases are introduced, increasing the challenge.
+- **Educational Twist:** The game subtly encourages word recognition and vocabulary building, making it both fun and intellectually stimulating.
+
+---
+
+**Implementation Notes:**
+
+- All game elements are built using pure JavaScript and the HTML5 Canvas API.
+- The 20 PNGs include letters (A-Z), basic symbols, and book icons.
+- The game runs in-browser with minimal dependencies, making it ideal for casual play on any device.
+
+---
+
+*Floating Library Blocks* blends puzzle mechanics with a peaceful, educational theme, offering an accessible and rewarding experience that can be developed quickly with minimal resources.

@@ -1,0 +1,91 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_background.png description: Pixel-style character, simple design, running motion
+path: images/512x512_character_crouch.png description: Pixel-style platform, gray and brown tones
+path: images/321x327_character_jump.png description: Pixel-style water surface, blue and white waves
+path: images/512x512_debris.png description: Pixel-style raindrop, falling motion
+path: images/252x288_game_over.png description: Pixel-style lightning bolt, bright yellow and white
+path: images/303x377_lightning.png description: Pixel-style debris, falling rubble
+path: images/336x415_platform.png description: Pixel-style Storm Core, glowing orange and yellow
+path: images/385x450_platform_debris.png description: Pixel-style storm background, dark and stormy
+path: images/512x512_platform_floating.png description: Pixel-style UI elements, score and core counter
+path: images/256x328_platform_lightning.png description: Pixel-style character jumping, dynamic motion
+path: images/512x512_platform_moving.png description: Pixel-style character crouching, low profile
+path: images/292x211_platform_rain.png description: Pixel-style moving platform, dynamic movement
+path: images/512x473_platform_stormcore.png description: Pixel-style floating platform, light and unstable
+path: images/355x358_platform_water.png description: Pixel-style platform with water, wavy texture
+path: images/321x362_player.png description: Pixel-style platform with rain, droplets falling
+path: images/512x512_raindrop.png description: Pixel-style platform with lightning, bright effects
+path: images/512x512_stormcore.png description: Pixel-style platform with debris, unstable surface
+path: images/489x478_title_screen.png description: Pixel-style platform with Storm Core, glowing center
+path: images/512x512_ui.png description: Pixel-style game over screen, dark and dramatic
+path: images/512x494_water.png description: Pixel-style title screen, storm and character logo
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Storm Sprint*
+
+**Theme:** Weather Disaster Survival  
+**Genre:** Platform Jumper  
+**Core Concept:**  
+*Storm Sprint* is a fast-paced, single-screen platformer where the player controls a character who must navigate through a dangerous, ever-changing environment caused by a severe weather disaster — a storm. The goal is to reach the top of the storm while avoiding hazards, managing limited resources, and surviving the elements.
+
+**Gameplay Mechanics:**  
+- The player controls a character who can jump, double-jump, and crouch to avoid falling debris or water.
+- The environment is dynamic: rain, wind, lightning, and flooding shift the platforms, create hazards, and change the level in real-time.
+- The player must collect "Storm Cores" to power up abilities like wind resistance, temporary invincibility, or platform stabilization.
+- The storm intensifies over time, creating new obstacles and reducing safe spaces.
+
+**Objectives:**  
+- Survive as long as possible while moving upward through the storm.
+- Collect as many Storm Cores as possible.
+- Reach the top of the storm before it collapses or the player is overwhelmed.
+
+**Unique Features:**  
+- **Dynamic Environment:** The level changes with time, creating a sense of urgency and unpredictability.
+- **Limited Resources:** Storm Cores are scarce, forcing the player to make strategic decisions on when and how to use them.
+- **Simple Controls:** Only jump, crouch, and collect — no complex animations or inputs.
+- **Minimal Graphics:** Uses 20 single-element PNGs (player, platforms, water, raindrops, lightning, debris, etc.) to keep the game lightweight and easy to implement.
+- **Retro Aesthetic:** Pixel-style visuals with a focus on color and contrast to emphasize the storm’s intensity.
+
+**Design Philosophy:**  
+*Storm Sprint* is designed to be accessible and fun for all ages. It emphasizes quick reflexes, adaptability, and resource management in a simple, visually engaging world. The game can be played in a single screen, making it ideal for casual play or quick sessions. The minimalistic art style ensures it runs smoothly even on low-end devices, and the challenge escalates naturally without overwhelming the player.

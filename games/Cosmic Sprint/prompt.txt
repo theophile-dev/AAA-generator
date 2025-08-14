@@ -1,0 +1,110 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x505_background.png description: A futuristic space vehicle, simple triangular shape with glowing lines
+path: images/239x392_beast1.png description: A small alien beast, represented by a green triangle
+path: images/321x362_beast2.png description: A medium alien beast, represented by a red circle
+path: images/407x446_beast3.png description: A large alien beast, represented by a yellow star
+path: images/414x410_obstacle1.png description: A rocky asteroid, represented by a gray circle
+path: images/357x354_obstacle2.png description: An energy field, represented by a glowing blue square
+path: images/469x482_obstacle3.png description: A gravitational pull, represented by a dark spiral
+path: images/450x447_pausemenu.png description: A shield booster, represented by a shield icon
+path: images/411x319_player.png description: A speed burst, represented by a lightning bolt
+path: images/411x471_powerup1.png description: A cosmic tunnel background, with stars and nebula patterns
+path: images/512x512_powerup2.png description: A simple start menu with a cosmic theme
+path: images/497x482_scoreboard.png description: A pause menu with a cosmic theme
+path: images/506x455_startmenu.png description: A scoreboard showing points and time
+path: images/460x407_ui-button.png description: A generic UI button with a glowing border
+path: images/423x420_ui-health.png description: A generic UI icon with a cosmic glow
+path: images/429x430_ui-icon.png description: A generic UI text element with a glowing outline
+path: images/425x350_ui-score.png description: A timer display with glowing numbers
+path: images/267x438_ui-text.png description: A score display with glowing numbers
+path: images/284x309_ui-timer.png description: A health bar with glowing segments
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Cosmic Sprint*
+
+**Theme:** Space Beast Hunting  
+**Genre:** Side View Racing  
+**Core Concept:** A fast-paced, simple side-scrolling racing game where players control a space vehicle racing through an endless cosmic landscape, hunting for alien beasts to collect and eliminate.
+
+---
+
+### **Gameplay Mechanics:**
+
+- **Player Movement:** The player controls a futuristic space vehicle using arrow keys (or touch controls for mobile). The vehicle can move forward, jump over obstacles, and shoot beams to stun or destroy space beasts.
+- **Racing Mechanic:** The player races through a procedurally generated space tunnel, with the goal of reaching the end of the track as quickly as possible.
+- **Beast Hunting:** Randomly appearing alien beasts (represented as simple shapes or symbols) are scattered across the track. Players must shoot them to score points. Each beast has a different point value based on size or speed.
+- **Obstacles:** The track includes hazards like asteroid rocks, energy fields, and gravitational pulls that can slow or damage the player's vehicle.
+- **Power-Ups:** Occasionally, power-up items like shield boosters or speed bursts appear, which can be collected to enhance the player's abilities temporarily.
+
+---
+
+### **Objectives:**
+
+- **Main Goal:** Reach the end of the track while collecting as many beasts as possible.
+- **Scoring:** Points are awarded for each beast collected, and for completing the track within a time limit.
+- **Progression:** After completing a track, the player can unlock new vehicle skins, or the difficulty increases slightly by adding more obstacles and faster beasts.
+
+---
+
+### **Unique Features:**
+
+- **Minimalist Art Style:** All elements (player, beasts, obstacles, power-ups) are made from just 20 simple .png images, each a single element (e.g., a triangle for a beast, a circle for a power-up).
+- **No Sprite Sheets:** Each game element is a separate image, making it easy to manage and render with pure JavaScript.
+- **Simple Physics:** The game uses basic movement and collision detection without complex animations, making it easy to code within 500 lines.
+- **Endless Track:** The track is generated randomly, ensuring replayability and variety.
+- **Fun and Engaging:** The fast-paced nature, combined with the thrill of hunting beasts and avoiding obstacles, makes it appealing to a wide audience, including casual players.
+
+---
+
+### **Implementation Notes:**
+
+- The game will be built using HTML5 Canvas and JavaScript.
+- All images are loaded via simple image tags or `Image` objects.
+- Game loop uses `requestAnimationFrame` for smooth updates.
+- Collision detection is handled with bounding box checks between the player, beasts, and obstacles.
+- Score and time are displayed in the top-left corner, with a start and pause menu.
+
+---
+
+**In Summary:** *Cosmic Sprint* is a fast-paced, side-scrolling racing game with a twist of alien beast hunting. It uses minimal graphics, simple mechanics, and a fun concept to create an engaging experience that can be coded efficiently using just 20 images and 500 lines of JavaScript.
