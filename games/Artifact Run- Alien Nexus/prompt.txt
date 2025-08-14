@@ -1,0 +1,97 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    PlayCanvas  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_alien_maze_1.png description: A vibrant alien maze with glowing pathways and mysterious symbols, set in a futuristic, otherworldly environment.
+path: images/512x512_alien_maze_10.png description: A dynamic alien maze with floating platforms, energy beams, and a glowing exit portal.
+path: images/423x420_alien_maze_11.png description: A dark, eerie alien maze with glowing symbols and hidden traps, surrounded by glowing energy fields.
+path: images/512x512_alien_maze_12.png description: A fast-paced alien maze with moving platforms and alien creatures lurking in the shadows.
+path: images/512x512_alien_maze_13.png description: A procedurally generated alien maze with shifting walls and glowing power-up items.
+path: images/443x441_alien_maze_14.png description: A high-speed alien maze with traps, energy beams, and a glowing exit portal in the distance.
+path: images/512x512_alien_maze_15.png description: A mysterious alien maze with glowing symbols, floating obstacles, and hidden paths.
+path: images/512x512_alien_maze_16.png description: A labyrinthine alien maze with shifting walls and glowing energy fields.
+path: images/512x512_alien_maze_17.png description: A fast-paced alien maze with moving platforms and alien guardians in the background.
+path: images/512x512_alien_maze_18.png description: An alien maze with a glowing exit, surrounded by energy beams and traps.
+path: images/512x512_alien_maze_19.png description: A procedurally generated alien maze with glowing symbols and hidden power-up items.
+path: images/512x512_alien_maze_2.png description: A dark alien maze with glowing symbols, traps, and a hidden exit.
+path: images/512x512_alien_maze_20.png description: A fast-paced alien maze with energy beams, moving platforms, and a glowing exit.
+path: images/512x512_alien_maze_3.png description: A mysterious alien maze with glowing symbols, floating obstacles, and hidden paths.
+path: images/512x512_alien_maze_4.png description: A procedurally generated alien maze with shifting walls, energy beams, and hidden traps.
+path: images/512x512_alien_maze_5.png description: An alien maze with glowing symbols, traps, and a hidden exit portal.
+path: images/512x512_alien_maze_6.png description: A fast-paced alien maze with energy beams, moving platforms, and alien guardians.
+path: images/390x393_alien_maze_7.png description: A dark alien maze with glowing symbols, hidden traps, and a glowing exit.
+path: images/512x512_alien_maze_8.png description: A procedurally generated alien maze with glowing symbols, floating obstacles, and hidden power-ups.
+path: images/412x415_alien_maze_9.png description: An alien maze with energy beams, traps, and a glowing exit in the distance.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Artifact Run: Alien Nexus*
+
+**Genre:** Timed Maze Run  
+**Theme:** Alien Artifact Wars  
+
+---
+
+**Concept Overview:**  
+In *Artifact Run: Alien Nexus*, players navigate through a series of procedurally generated mazes, each representing a fragment of an ancient alien artifact. The goal is to escape each maze before time runs out, while avoiding deadly traps and battling alien guardians. The game blends fast-paced reflexes with strategic thinking, all wrapped in a sci-fi, alien-themed aesthetic.
+
+---
+
+**Gameplay Mechanics:**  
+- **Timed Maze Run:** Each level is a randomly generated maze with a limited time to escape. Players must move quickly and efficiently to avoid traps and reach the exit.  
+- **Alien Traps:** The maze is filled with hazards like energy beams, gravitational pulls, and alien creatures that attack on sight.  
+- **Power-Ups:** Scattered throughout the maze are power-ups that grant temporary abilities like speed bursts, shield protection, or teleportation.  
+- **Alien Guardians:** At the end of each maze, players face a boss-like alien guardian. Defeating it requires timing and precise movement, with each hit reducing the guardian’s health.  
+
+---
+
+**Objectives:**  
+- Complete each maze within the time limit.  
+- Collect as many power-ups as possible to improve performance.  
+- Defeat the alien guardian to progress to the next level.  
+- Unlock new maze themes and alien artifact types as you advance.  
+
+---
+
+**Unique Features:**  
+- **Procedural Maze Generation:** No two mazes are the same, ensuring replayability and a fresh challenge every time.  
+- **Dynamic Difficulty:** As players progress, mazes become more complex, traps more dangerous, and guardians stronger.  
+- **Alien Aesthetic:** The game features vibrant, alien-inspired visuals, including glowing pathways, mysterious symbols, and eerie ambient sounds.  
+- **Score and Replay System:** Players can compete for the fastest time and try to beat their own high scores, encouraging repeated play.  
+
+---
+
+**Why It's Fun and Engaging:**  
+*Artifact Run: Alien Nexus* combines the excitement of a timed runner with the mystery of an alien artifact. The fast-paced action keeps players on their toes, while the procedural generation and power-up system add depth and replay value. The sci-fi theme and visual design make the experience feel immersive and otherworldly, perfect for a quick, fun, and challenging game session.

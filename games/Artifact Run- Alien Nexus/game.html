@@ -1,0 +1,486 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artifact Run: Alien Nexus</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0ff;
+            font-size: 18px;
+            text-shadow: 0 0 5px #0ff;
+        }
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #0ff;
+            text-align: center;
+            z-index: 10;
+        }
+        #gameOverScreen {
+            display: none;
+        }
+        button {
+            background-color: transparent;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 10px 20px;
+            font-size: 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            text-shadow: 0 0 5px #0ff;
+        }
+        button:hover {
+            background-color: rgba(0, 255, 255, 0.2);
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #0ff;
+        }
+        p {
+            font-size: 20px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h1>Artifact Run: Alien Nexus</h1>
+        <p>Navigate through procedurally generated mazes, avoid deadly traps, and defeat alien guardians!</p>
+        <p>Collect power-ups to gain speed bursts and shields.</p>
+        <button id="startButton">Start Game</button>
+    </div>
+
+    <div id="gameOverScreen">
+        <h1>Game Over</h1>
+        <p>Your score: <span id="finalScore">0</span></p>
+        <button id="restartButton">Play Again</button>
+    </div>
+
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <div id="ui">
+        <div>Score: <span id="score">0</span></div>
+        <div>Time: <span id="time">60</span>s</div>
+        <div>Lives: <span id="lives">3</span></div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const scoreElement = document.getElementById('score');
+        const timeElement = document.getElementById('time');
+        const livesElement = document.getElementById('lives');
+        const finalScoreElement = document.getElementById('finalScore');
+
+        // Game state
+        let gameState = 'menu'; // menu, playing, gameOver
+        let score = 0;
+        let timeLeft = 60;
+        let lives = 3;
+        let player = {
+            x: 50,
+            y: 50,
+            radius: 15,
+            speed: 5,
+            color: '#0ff'
+        };
+        let maze = [];
+        let powerUps = [];
+        let guardians = [];
+        let traps = [];
+        let keys = {};
+        let animationId;
+        let lastTime = 0;
+        let level = 1;
+
+        // Maze generation
+        function generateMaze(width, height) {
+            const grid = Array(height).fill().map(() => Array(width).fill(1));
+            
+            // Simple maze generation using recursive backtracking
+            function carve(x, y) {
+                grid[y][x] = 0;
+                
+                const directions = [
+                    [0, -2], [2, 0], [0, 2], [-2, 0]
+                ];
+                
+                shuffle(directions);
+                
+                for (const [dx, dy] of directions) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    
+                    if (nx >= 1 && nx < width - 1 && ny >= 1 && ny < height - 1 && grid[ny][nx] === 1) {
+                        grid[y + dy/2][x + dx/2] = 0;
+                        carve(nx, ny);
+                    }
+                }
+            }
+            
+            carve(1, 1);
+            
+            // Ensure start and end points are clear
+            grid[1][1] = 0;
+            grid[height-2][width-2] = 0;
+            
+            return grid;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            score = 0;
+            timeLeft = 60;
+            lives = 3;
+            level = 1;
+            player.x = 50;
+            player.y = 50;
+            
+            updateUI();
+            
+            const width = Math.floor(1024 / 32);
+            const height = Math.floor(720 / 32);
+            maze = generateMaze(width, height);
+            
+            powerUps = [];
+            guardians = [];
+            traps = [];
+            
+            // Add power-ups
+            for (let i = 0; i < 5; i++) {
+                const x = Math.floor(Math.random() * (width - 4)) + 2;
+                const y = Math.floor(Math.random() * (height - 4)) + 2;
+                
+                if (maze[y][x] === 0) {
+                    powerUps.push({
+                        x: x * 32,
+                        y: y * 32,
+                        radius: 10,
+                        type: ['speed', 'shield', 'teleport'][Math.floor(Math.random() * 3)],
+                        collected: false
+                    });
+                }
+            }
+            
+            // Add traps
+            for (let i = 0; i < 8; i++) {
+                const x = Math.floor(Math.random() * (width - 2)) + 1;
+                const y = Math.floor(Math.random() * (height - 2)) + 1;
+                
+                if (maze[y][x] === 0) {
+                    traps.push({
+                        x: x * 32,
+                        y: y * 32,
+                        width: 20,
+                        height: 20
+                    });
+                }
+            }
+            
+            // Add guardian at exit
+            guardians.push({
+                x: (width - 2) * 32,
+                y: (height - 2) * 32,
+                width: 40,
+                height: 40,
+                health: 3,
+                maxHealth: 3
+            });
+        }
+
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            livesElement.textContent = lives;
+        }
+
+        // Draw maze
+        function drawMaze() {
+            const cellSize = 32;
+            
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    if (maze[y][x] === 1) {
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        
+                        // Draw glow effect
+                        ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+            
+            // Draw exit
+            const width = maze[0].length;
+            const height = maze.length;
+            ctx.fillStyle = '#ff0';
+            ctx.fillRect((width - 2) * cellSize, (height - 2) * cellSize, cellSize, cellSize);
+        }
+
+        // Draw player
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            
+            // Draw glow effect
+            ctx.shadowColor = player.color;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        // Draw power-ups
+        function drawPowerUps() {
+            for (const powerUp of powerUps) {
+                if (!powerUp.collected) {
+                    ctx.fillStyle = '#0f0';
+                    ctx.beginPath();
+                    ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw glow effect
+                    ctx.shadowColor = '#0f0';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        // Draw traps
+        function drawTraps() {
+            for (const trap of traps) {
+                ctx.fillStyle = '#f00';
+                ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                
+                // Draw glow effect
+                ctx.shadowColor = '#f00';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Draw guardians
+        function drawGuardians() {
+            for (const guardian of guardians) {
+                ctx.fillStyle = '#f0f';
+                ctx.fillRect(guardian.x, guardian.y, guardian.width, guardian.height);
+                
+                // Draw glow effect
+                ctx.shadowColor = '#f0f';
+                ctx.shadowBlur = 15;
+                ctx.fillRect(guardian.x, guardian.y, guardian.width, guardian.height);
+                ctx.shadowBlur = 0;
+                
+                // Draw health bar
+                const barWidth = guardian.width;
+                const barHeight = 5;
+                const barX = guardian.x;
+                const barY = guardian.y - 10;
+                
+                ctx.fillStyle = '#333';
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                ctx.fillStyle = '#f00';
+                ctx.fillRect(barX, barY, barWidth * (guardian.health / guardian.maxHealth), barHeight);
+            }
+        }
+
+        // Check collisions
+        function checkCollisions() {
+            // Player with power-ups
+            for (const powerUp of powerUps) {
+                if (!powerUp.collected) {
+                    const dx = player.x - powerUp.x;
+                    const dy = player.y - powerUp.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < player.radius + powerUp.radius) {
+                        powerUp.collected = true;
+                        score += 100;
+                        
+                        // Apply power-up effect
+                        switch (powerUp.type) {
+                            case 'speed':
+                                player.speed = 8;
+                                setTimeout(() => player.speed = 5, 5000);
+                                break;
+                            case 'shield':
+                                // Shield effect would be implemented here
+                                break;
+                            case 'teleport':
+                                player.x = Math.random() * 900 + 62;
+                                player.y = Math.random() * 600 + 60;
+                                break;
+                        }
+                    }
+                }
+            }
+            
+            // Player with traps
+            for (const trap of traps) {
+                if (player.x > trap.x && 
+                    player.x < trap.x + trap.width &&
+                    player.y > trap.y && 
+                    player.y < trap.y + trap.height) {
+                    lives--;
+                    updateUI();
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    } else {
+                        // Reset player position
+                        player.x = 50;
+                        player.y = 50;
+                    }
+                }
+            }
+            
+            // Player with guardian
+            for (const guardian of guardians) {
+                if (player.x > guardian.x && 
+                    player.x < guardian.x + guardian.width &&
+                    player.y > guardian.y && 
+                    player.y < guardian.y + guardian.height) {
+                    guardian.health--;
+                    score += 50;
+                    
+                    if (guardian.health <= 0) {
+                        // Level complete
+                        level++;
+                        initGame();
+                    }
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            if (gameState !== 'playing') return;
+            
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update timer
+            timeLeft -= deltaTime / 1000;
+            if (timeLeft <= 0) {
+                lives--;
+                updateUI();
+                
+                if (lives <= 0) {
+                    gameOver();
+                } else {
+                    timeLeft = 60;
+                    player.x = 50;
+                    player.y = 50;
+                }
+            }
+            
+            // Player movement
+            if (keys['ArrowUp'] || keys['w']) player.y -= player.speed;
+            if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
+            if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
+            if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+            
+            // Boundary checks
+            player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+            
+            // Check collisions
+            checkCollisions();
+            
+            // Draw game elements
+            drawMaze();
+            drawPowerUps();
+            drawTraps();
+            drawGuardians();
+            drawPlayer();
+            
+            updateUI();
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        function startGame() {
+            gameState = 'playing';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            initGame();
+            lastTime = performance.now();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Game over
+        function gameOver() {
+            gameState = 'gameOver';
+            cancelAnimationFrame(animationId);
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>
