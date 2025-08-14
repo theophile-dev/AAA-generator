@@ -1,0 +1,90 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x476_alien_health_bar.png description: A small spaceship with a retro design, positioned at the top of the screen.
+path: images/386x410_alien_invader.png description: A classic alien invader with a simple, pixelated design.
+path: images/455x463_background_stars.png description: A single image representing an alien's health bar, which shrinks when damaged.
+path: images/454x449_explosion.png description: A star-filled background with a deep space feel.
+path: images/238x310_laser_shot.png description: A glowing shield icon representing a power-up.
+path: images/463x451_level_1_background.png description: A double bullet icon representing a power-up.
+path: images/289x329_level_2_background.png description: A clock icon with a pause symbol, representing a time slowdown power-up.
+path: images/512x512_level_3_background.png description: A simple laser beam shooting upward from the player's ship.
+path: images/469x404_level_4_background.png description: A small explosion animation, used when aliens are destroyed.
+path: images/381x393_level_5_background.png description: A glowing star icon used as a collectible and level reward.
+path: images/443x365_player_ship.png description: A tribal alien design representing the Zorak tribe.
+path: images/512x512_power_up_double_shot.png description: A tribal alien design representing the Virex tribe.
+path: images/357x393_power_up_shield.png description: A tribal alien design representing the Korrak tribe.
+path: images/307x264_power_up_slow_time.png description: A simple background for the first level with a tribal theme.
+path: images/494x477_star_icon.png description: A more complex background for the second level with alien motifs.
+path: images/433x433_tribe_korrak.png description: A vibrant background for the third level with star patterns.
+path: images/379x386_tribe_virex.png description: A dark and mysterious background for the fourth level.
+path: images/299x474_tribe_zorak.png description: A final level background with a cosmic warlord theme.
+path: images/512x487_warlord.png description: A large, menacing alien warlord with a glowing eye.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: Star Nomad Clash**
+
+**Concept:**
+Star Nomad Clash is a retro-style Space Invaders clone set in a vast, star-filled universe. Players take on the role of a nomadic space tribe, defending their home planet from waves of alien invaders. The game is built with minimal resources — just 20 single-element .png images and 500 lines of JavaScript — making it simple, fun, and accessible for all ages.
+
+**Gameplay Mechanics:**
+- The player controls a small spaceship that can move left and right across the top of the screen.
+- Below the player’s ship, multiple rows of alien invaders move horizontally across the screen, slowly descending as they progress.
+- The player can shoot bullets upward to destroy the aliens.
+- Each alien has a health bar (represented by a single image), and when hit, they shrink and eventually vanish.
+- The game has 5 levels, each with increasing difficulty and more alien types.
+- After defeating all aliens in a level, the player earns a star and moves to the next level.
+
+**Objectives:**
+- Survive as long as possible by defeating waves of aliens.
+- Collect stars to unlock new ship designs and power-ups.
+- Reach the final level and defeat the alien warlord for a victory screen.
+
+**Unique Features:**
+- **Minimalist Graphics:** All elements are single .png images, making the game easy to implement and visually clean.
+- **Tribal Themes:** Each level is themed after a different space nomad tribe (e.g., the Zorak, Virex, and Korrak), each with unique alien designs and movement patterns.
+- **Power-Ups:** Randomly appearing power-ups like "Shield," "Double Shot," and "Slow Time" add strategic depth and replayability.
+- **Sound Effects:** Simple, retro-style sound effects (like laser shots and explosion noises) enhance the gaming experience.
+- **No Sprite Sheets:** All assets are single images, making the code clean and efficient.
+
+**Why It Works:**
+Star Nomad Clash is designed to be easy to code, fun to play, and visually engaging without relying on complex animations or large asset libraries. Its retro aesthetic and simple mechanics make it ideal for casual players and developers looking for a lightweight, impactful game idea.
