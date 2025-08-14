@@ -1,0 +1,792 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elemental Quiz Storm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: #0a0a2a;
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 10, 42, 0.9);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff8c00, 0 0 20px #ff8c00;
+            color: #ffd700;
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #ff8c00, #ff4500);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            pointer-events: all;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(to bottom, #ff9d2d, #ff5a1f);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.8rem;
+            color: #ffd700;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+        
+        .timer-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.8rem;
+            color: #4fc3f7;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+        
+        .element-icon {
+            width: 60px;
+            height: 60px;
+            margin: 10px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .fire { background: linear-gradient(to bottom, #ff4500, #ff8c00); }
+        .water { background: linear-gradient(to bottom, #1e90ff, #00bfff); }
+        .earth { background: linear-gradient(to bottom, #8b4513, #a0522d); }
+        .air { background: linear-gradient(to bottom, #f0f8ff, #e6e6fa); }
+        
+        .question-container {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 80%;
+            text-align: center;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .question-text {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .option-btn {
+            background: linear-gradient(to bottom, #4a4a8a, #2a2a6a);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            min-width: 150px;
+            transition: all 0.2s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .option-btn:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(to bottom, #5a5a9a, #3a3a7a);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .option-btn.correct {
+            background: linear-gradient(to bottom, #00c853, #009624);
+            box-shadow: 0 0 15px rgba(0, 200, 83, 0.5);
+        }
+        
+        .option-btn.incorrect {
+            background: linear-gradient(to bottom, #ff5252, #d32f2f);
+            box-shadow: 0 0 15px rgba(255, 82, 82, 0.5);
+        }
+        
+        .zone-indicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #ffd700;
+        }
+        
+        .zone-name {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .progress-bar {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #ff8c00, #ffd700);
+            width: 100%;
+            transition: width 0.5s;
+        }
+        
+        .instructions {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            border: 1px solid #4fc3f7;
+        }
+        
+        .instructions h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 5px;
+        }
+        
+        .leaderboard-entry:nth-child(odd) {
+            background: rgba(79, 195, 247, 0.1);
+        }
+        
+        .player-name {
+            font-weight: bold;
+        }
+        
+        .player-score {
+            color: #ffd700;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .question-text {
+                font-size: 1.4rem;
+            }
+            
+            .option-btn {
+                min-width: 120px;
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div class="score-display">Score: <span id="score">0</span></div>
+        <div class="timer-display">Time: <span id="timer">30</span>s</div>
+        <div class="zone-indicator">
+            <div class="element-icon fire"></div>
+            <span class="zone-name">Fire Zone</span>
+        </div>
+        
+        <div class="question-container" id="questionContainer">
+            <div class="question-text" id="questionText">Loading question...</div>
+            <div class="options-container" id="optionsContainer"></div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+        
+        <div id="ui-overlay">
+            <!-- Start Screen -->
+            <div class="screen active" id="startScreen">
+                <h1>Elemental Quiz Storm</h1>
+                <p>Survive the storm by answering trivia questions correctly! Each zone has a different elemental theme and category.</p>
+                
+                <div class="instructions">
+                    <h3>How to Play</h3>
+                    <ul>
+                        <li>Answer questions before time runs out to calm the storm</li>
+                        <li>Each correct answer stabilizes the zone</li>
+                        <li>Incorrect answers intensify the storm</li>
+                        <li>Survive as many zones as possible to achieve a high score!</li>
+                    </ul>
+                </div>
+                
+                <button class="btn" id="startBtn">Start Game</button>
+            </div>
+            
+            <!-- Game Over Screen -->
+            <div class="screen" id="gameOverScreen">
+                <h2>Game Over</h2>
+                <p>You survived <span id="survivedZones">0</span> zones!</p>
+                <p>Your final score: <span id="finalScore">0</span></p>
+                
+                <div class="leaderboard-entry">
+                    <span class="player-name">Player</span>
+                    <span class="player-score" id="highScore">0</span>
+                </div>
+                
+                <button class="btn" id="restartBtn">Play Again</button>
+            </div>
+            
+            <!-- Leaderboard Screen -->
+            <div class="screen" id="leaderboardScreen">
+                <h2>Leaderboard</h2>
+                <p>Top Scores from Elemental Quiz Storm</p>
+                
+                <div id="leaderboardEntries">
+                    <!-- Entries will be populated by JS -->
+                </div>
+                
+                <button class="btn" id="backBtn">Back to Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const ZONE_COUNT = 4;
+        const MAX_TIME = 30;
+        const TIME_DECREMENT = 0.1;
+        const INITIAL_STORM_INTENSITY = 10;
+        
+        // Game state
+        let gameState = 'start'; // start, playing, gameOver, leaderboard
+        let score = 0;
+        let currentZone = 0;
+        let timeLeft = MAX_TIME;
+        let stormIntensity = INITIAL_STORM_INTENSITY;
+        let questions = [];
+        let currentQuestion = null;
+        let isAnswered = false;
+        let zoneName = '';
+        let zoneColor = '';
+        let playerPosition = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+        let zoneTimer = 0;
+        
+        // DOM Elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const leaderboardScreen = document.getElementById('leaderboardScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const backBtn = document.getElementById('backBtn');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const questionContainer = document.getElementById('questionContainer');
+        const progressBar = document.getElementById('progressBar');
+        const survivedZones = document.getElementById('survivedZones');
+        const finalScore = document.getElementById('finalScore');
+        const highScore = document.getElementById('highScore');
+        const leaderboardEntries = document.getElementById('leaderboardEntries');
+        const zoneIndicator = document.querySelector('.zone-name');
+        const elementIcon = document.querySelector('.element-icon');
+        
+        // Zone data
+        const zones = [
+            {
+                name: 'Fire',
+                color: '#ff4500',
+                icon: '🔥',
+                category: 'history',
+                background: 'linear-gradient(135deg, #8B0000, #FF4500)',
+                questions: [
+                    { q: "Which ancient civilization invented the wheel?", a: ["Mesopotamians", "Egyptians", "Greeks", "Romans"], correct: 0 },
+                    { q: "Who painted the Mona Lisa?", a: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"], correct: 0 },
+                    { q: "What is the capital of Japan?", a: ["Beijing", "Seoul", "Tokyo", "Bangkok"], correct: 2 }
+                ]
+            },
+            {
+                name: 'Water',
+                color: '#1e90ff',
+                icon: '💧',
+                category: 'science',
+                background: 'linear-gradient(135deg, #006994, #1e90ff)',
+                questions: [
+                    { q: "What is the chemical symbol for water?", a: ["H2O", "CO2", "NaCl", "O2"], correct: 0 },
+                    { q: "Which planet is known as the Blue Planet?", a: ["Mars", "Jupiter", "Earth", "Venus"], correct: 2 },
+                    { q: "What is the largest ocean on Earth?", a: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], correct: 3 }
+                ]
+            },
+            {
+                name: 'Earth',
+                color: '#8b4513',
+                icon: '🌍',
+                category: 'geography',
+                background: 'linear-gradient(135deg, #5d2906, #8b4513)',
+                questions: [
+                    { q: "What is the longest river in the world?", a: ["Amazon River", "Nile River", "Yangtze River", "Mississippi River"], correct: 1 },
+                    { q: "Which country has the most time zones?", a: ["United States", "Russia", "China", "Australia"], correct: 1 },
+                    { q: "What is the capital of Australia?", a: ["Sydney", "Melbourne", "Canberra", "Perth"], correct: 2 }
+                ]
+            },
+            {
+                name: 'Air',
+                color: '#f0f8ff',
+                icon: '💨',
+                category: 'literature',
+                background: 'linear-gradient(135deg, #d0e8ff, #f0f8ff)',
+                questions: [
+                    { q: "Who wrote 'To Kill a Mockingbird'?", a: ["Harper Lee", "Mark Twain", "Ernest Hemingway", "F. Scott Fitzgerald"], correct: 0 },
+                    { q: "Which Shakespeare play features the character Hamlet?", a: ["Romeo and Juliet", "Macbeth", "Hamlet", "Othello"], correct: 2 },
+                    { q: "What is the first book of the Bible?", a: ["Genesis", "Exodus", "Leviticus", "Numbers"], correct: 0 }
+                ]
+            }
+        ];
+        
+        // Initialize game
+        function init() {
+            setupEventListeners();
+            generateQuestions();
+            updateUI();
+            
+            // Start the game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', startGame);
+            backBtn.addEventListener('click', () => {
+                gameState = 'start';
+                showScreen('startScreen');
+            });
+            
+            // Handle keyboard input
+            document.addEventListener('keydown', (e) => {
+                if (gameState !== 'playing') return;
+                
+                if (e.key >= '1' && e.key <= '4') {
+                    handleAnswer(parseInt(e.key) - 1);
+                }
+            });
+        }
+        
+        // Start the game
+        function startGame() {
+            gameState = 'playing';
+            showScreen('startScreen');
+            
+            score = 0;
+            currentZone = 0;
+            timeLeft = MAX_TIME;
+            stormIntensity = INITIAL_STORM_INTENSITY;
+            playerPosition = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+            zoneTimer = 0;
+            
+            updateUI();
+            nextZone();
+        }
+        
+        // Show a specific screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        // Generate questions for all zones
+        function generateQuestions() {
+            questions = [];
+            zones.forEach(zone => {
+                questions.push(...zone.questions);
+            });
+        }
+        
+        // Move to the next zone
+        function nextZone() {
+            if (currentZone >= ZONE_COUNT) {
+                endGame();
+                return;
+            }
+            
+            const zone = zones[currentZone];
+            zoneName = zone.name;
+            zoneColor = zone.color;
+            elementIcon.style.background = `linear-gradient(to bottom, ${zone.color}, ${darkenColor(zone.color, 30)})`;
+            zoneIndicator.textContent = zoneName + ' Zone';
+            
+            // Select a random question from this zone
+            const zoneQuestions = zones[currentZone].questions;
+            currentQuestion = zoneQuestions[Math.floor(Math.random() * zoneQuestions.length)];
+            
+            // Display the question
+            questionText.textContent = currentQuestion.q;
+            optionsContainer.innerHTML = '';
+            
+            currentQuestion.a.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.dataset.index = index;
+                btn.addEventListener('click', () => handleAnswer(index));
+                optionsContainer.appendChild(btn);
+            });
+            
+            isAnswered = false;
+            questionContainer.style.display = 'block';
+            timeLeft = MAX_TIME;
+        }
+        
+        // Handle answer selection
+        function handleAnswer(selectedIndex) {
+            if (isAnswered || gameState !== 'playing') return;
+            
+            isAnswered = true;
+            const correctIndex = currentQuestion.correct;
+            const options = document.querySelectorAll('.option-btn');
+            
+            // Highlight correct and incorrect answers
+            options.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === correctIndex) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && index !== correctIndex) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            
+            // Update score and storm intensity
+            if (selectedIndex === correctIndex) {
+                score += 100 + Math.floor(timeLeft * 5);
+                stormIntensity = Math.max(0, stormIntensity - 2);
+            } else {
+                stormIntensity = Math.min(30, stormIntensity + 3);
+            }
+            
+            // Move to next zone after delay
+            setTimeout(() => {
+                questionContainer.style.display = 'none';
+                currentZone++;
+                nextZone();
+            }, 1500);
+        }
+        
+        // End the game
+        function endGame() {
+            gameState = 'gameOver';
+            showScreen('gameOverScreen');
+            
+            survivedZones.textContent = currentZone;
+            finalScore.textContent = score;
+            highScore.textContent = Math.max(score, parseInt(highScore.textContent) || 0);
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = Math.ceil(timeLeft);
+            progressBar.style.width = `${(timeLeft / MAX_TIME) * 100}%`;
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (gameState === 'playing') {
+                update();
+                render();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update game state
+        function update() {
+            if (gameState !== 'playing') return;
+            
+            // Decrease time
+            timeLeft -= TIME_DECREMENT;
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                handleAnswer(-1); // Time's up - incorrect answer
+            }
+            
+            // Update storm intensity effect
+            zoneTimer += 0.02;
+            
+            updateUI();
+        }
+        
+        // Render the game
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background based on current zone
+            const zone = zones[currentZone % ZONE_COUNT];
+            ctx.fillStyle = zone.background;
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw storm effects
+            drawStormEffects();
+            
+            // Draw player character
+            drawPlayer();
+            
+            // Draw UI elements
+            drawUI();
+        }
+        
+        // Draw storm effects based on intensity
+        function drawStormEffects() {
+            const zone = zones[currentZone % ZONE_COUNT];
+            
+            // Draw floating question bubble
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.arc(CANVAS_WIDTH / 2 + Math.sin(zoneTimer) * 50, CANVAS_HEIGHT / 3, 60, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw storm particles
+            for (let i = 0; i < stormIntensity * 5; i++) {
+                const x = Math.sin(zoneTimer + i) * CANVAS_WIDTH;
+                const y = Math.cos(zoneTimer + i) * CANVAS_HEIGHT;
+                const size = Math.random() * 3 + 1;
+                
+                ctx.fillStyle = zone.color;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw lightning if intense storm
+            if (stormIntensity > 20) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(CANVAS_WIDTH / 2, 0);
+                ctx.lineTo(CANVAS_WIDTH / 2 + Math.sin(zoneTimer * 10) * 100, CANVAS_HEIGHT);
+                ctx.stroke();
+                
+                // Draw additional lightning bolts
+                for (let i = 0; i < 5; i++) {
+                    const x = Math.random() * CANVAS_WIDTH;
+                    const y = Math.random() * CANVAS_HEIGHT / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + Math.sin(zoneTimer * 10 + i) * 30, y + 50);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Draw player character
+        function drawPlayer() {
+            const zone = zones[currentZone % ZONE_COUNT];
+            
+            // Draw player body
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(playerPosition.x, playerPosition.y, 40, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw player face
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(playerPosition.x - 10, playerPosition.y - 5, 5, 0, Math.PI * 2);
+            ctx.arc(playerPosition.x + 10, playerPosition.y - 5, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw mouth
+            ctx.beginPath();
+            ctx.arc(playerPosition.x, playerPosition.y + 10, 8, 0, Math.PI);
+            ctx.stroke();
+            
+            // Draw elemental effect around player
+            const gradient = ctx.createRadialGradient(
+                playerPosition.x, playerPosition.y, 40,
+                playerPosition.x, playerPosition.y, 60
+            );
+            gradient.addColorStop(0, zone.color + '80');
+            gradient.addColorStop(1, zone.color + '00');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(playerPosition.x, playerPosition.y, 60, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Draw UI elements
+        function drawUI() {
+            // Draw score and timer
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(10, 10, 150, 50);
+            
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(`Score: ${score}`, 20, 40);
+            
+            // Draw zone indicator
+            ctx.fillRect(CANVAS_WIDTH - 200, 10, 180, 50);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(`${zoneName} Zone`, CANVAS_WIDTH - 190, 40);
+        }
+        
+        // Helper function to darken a color
+        function darkenColor(color, percent) {
+            let R = parseInt(color.substring(1,3), 16);
+            let G = parseInt(color.substring(3,5), 16);
+            let B = parseInt(color.substring(5,7), 16);
+            
+            R = Math.floor(R * (100 - percent) / 100);
+            G = Math.floor(G * (100 - percent) / 100);
+            B = Math.floor(B * (100 - percent) / 100);
+            
+            return `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
+        }
+        
+        // Initialize the game when the page loads
+        window.onload = init;
+    </script>
+</body>
+</html>

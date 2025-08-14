@@ -1,0 +1,84 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    No frameworks pure JS  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_elemental_quiz_storm_1.png description: A vibrant, cartoonish image of a player standing in a fiery red zone with lightning and flames in the background, surrounded by floating questions.
+path: images/414x499_elemental_quiz_storm_10.png description: A stylized water zone with waves and splashes, a player holding a floating question bubble in a calm ocean-like environment.
+path: images/512x512_elemental_quiz_storm_11.png description: A dynamic earth zone with rocks, trees, and tremors, a player standing on a shaking ground with a question floating above them.
+path: images/512x462_elemental_quiz_storm_12.png description: A wind zone with gusts of air, a player floating in the sky with a question bubble being blown by the wind.
+path: images/458x512_elemental_quiz_storm_13.png description: A player surrounded by a storm of elemental forces, with lightning, water, fire, and wind swirling around them.
+path: images/512x472_elemental_quiz_storm_14.png description: A leaderboard screen showing high scores with elemental icons next to each player's name.
+path: images/415x419_elemental_quiz_storm_15.png description: A player answering a quick-fire trivia question with a timer counting down in the background.
+path: images/512x512_elemental_quiz_storm_16.png description: A game over screen with a storm raging and the player falling into the chaos.
+path: images/512x512_elemental_quiz_storm_17.png description: A player successfully calming a fire zone, with flames turning into a calm, glowing fire.
+path: images/512x512_elemental_quiz_storm_18.png description: A player in a calm, serene environment after surviving multiple elemental zones, with a glowing score display.
+path: images/316x440_elemental_quiz_storm_19.png description: A character portrait of the player with a storm helmet and elemental badges representing their progress.
+path: images/512x512_elemental_quiz_storm_2.png description: A dynamic transition between elemental zones with a swirling storm effect and a floating question mark.
+path: images/512x512_elemental_quiz_storm_20.png description: A close-up of a player's hand tapping a mobile screen to answer a question in a stormy environment.
+path: images/512x512_elemental_quiz_storm_3.png description: A player in a calm zone with a glowing timer and a floating question bubble.
+path: images/512x512_elemental_quiz_storm_4.png description: A vibrant UI with elemental icons, a score counter, and a timer in the center of the screen.
+path: images/512x512_elemental_quiz_storm_5.png description: A player in a stormy environment with a floating question and a countdown timer above their head.
+path: images/512x512_elemental_quiz_storm_6.png description: A player standing on a floating platform in a storm, with elemental zones around them and a question floating in the air.
+path: images/439x448_elemental_quiz_storm_7.png description: A global leaderboard screen with player names, scores, and elemental badges.
+path: images/512x512_elemental_quiz_storm_8.png description: A player in a calm, glowing zone with a score display and a message 'You Survived!'.
+path: images/413x411_elemental_quiz_storm_9.png description: A stylized logo of the game with elemental symbols and a storm effect in the background.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Elemental Quiz Storm*
+
+**Concept:**  
+Welcome to *Elemental Quiz Storm*, a fast-paced, simple quiz game set in a chaotic elemental world where knowledge is the only shield against the storm. Players take on the role of a storm survivor who must answer trivia questions to calm the elements and avoid being swept away.
+
+**Gameplay Mechanics:**  
+- The game is played in a stylized, dynamic world made up of four elemental zones: Fire, Water, Earth, and Air. Each zone represents a different quiz category (e.g., history, science, pop culture, and literature).  
+- Players are thrown into a storm that randomly generates elemental zones. Each zone has a timer, and the player must answer a series of quick-fire trivia questions to "calm the storm."  
+- If the player answers correctly, the storm weakens, and the zone stabilizes. If they fail to answer in time or answer incorrectly, the storm intensifies, and the zone becomes more chaotic.  
+- After successfully calming a zone, the player is transported to the next, and the storm moves on. The goal is to survive as many zones as possible before the storm overwhelms them.
+
+**Objectives:**  
+- Survive as many elemental zones as possible by answering trivia questions correctly.  
+- Earn points for each correct answer and bonus points for speed.  
+- Unlock new elemental zones and categories as the player progresses.  
+- Compete with friends or the global leaderboard for the highest score.
+
+**Unique Features:**  
+- **Dynamic Elemental Zones:** Each zone visually and audibly represents its element (e.g., fiery red lightning, water splashes, earth tremors, and wind gusts).  
+- **Rapid Fire Trivia:** Quick, fun, and challenging questions that test general knowledge across multiple categories.  
+- **Storm Intensity System:** The difficulty increases as the player progresses, with more complex questions and faster timers.  
+- **Leaderboards & Challenges:** Compete with others globally or challenge friends in local multiplayer mode.  
+- **Stylish UI & Sound Design:** A vibrant, cartoonish art style with sound effects that match each elemental zone for an immersive experience.
+
+*Elemental Quiz Storm* is designed to be easy to pick up, fun to play, and addictive with its mix of trivia and survival mechanics. Perfect for casual players and trivia lovers alike.
