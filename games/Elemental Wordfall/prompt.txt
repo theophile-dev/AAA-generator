@@ -1,0 +1,103 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    Babylon.js  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_elemental-wordfall-1.jpg description: A young elemental mage standing on a floating platform, surrounded by glowing elemental symbols and falling words.
+path: images/512x512_elemental-wordfall-10.jpg description: A dynamic scene showing a player catching falling words mid-air with their hands, surrounded by fire, water, and earth effects.
+path: images/512x422_elemental-wordfall-11.jpg description: A level overview with a fiery background, water waves, and earthy terrain, showing the player's character in action.
+path: images/366x436_elemental-wordfall-12.jpg description: A close-up of the game interface showing falling words, elemental symbols, and a shield being created from water.
+path: images/408x405_elemental-wordfall-13.jpg description: A side-scrolling view of a level with elemental storms, terrain hazards, and a boss enemy in the distance.
+path: images/433x452_elemental-wordfall-14.jpg description: A character unlocking a new elemental skin with a glowing fire effect and a background of elemental kingdoms.
+path: images/512x512_elemental-wordfall-15.jpg description: A player casting a fire burst attack, with flames engulfing the screen and destroying incoming enemies.
+path: images/512x512_elemental-wordfall-16.jpg description: A serene scene of a water kingdom with flowing rivers, floating islands, and the player casting a water shield.
+path: images/490x512_elemental-wordfall-17.jpg description: A character using an earth barrier to block incoming waves of falling words and enemies.
+path: images/460x462_elemental-wordfall-18.jpg description: A futuristic-looking character with elemental runes glowing on their body, surrounded by glowing words and energy.
+path: images/482x499_elemental-wordfall-19.jpg description: A player mid-game, typing words quickly while elemental effects are bursting around them.
+path: images/512x512_elemental-wordfall-2.jpg description: A character standing on a floating platform, surrounded by glowing elemental symbols and falling words.
+path: images/441x512_elemental-wordfall-20.jpg description: A close-up of the game's UI showing the player's elemental power meter, word count, and level progress.
+path: images/512x480_elemental-wordfall-3.jpg description: A character casting an air-based attack, with wind effects and falling words being blown away.
+path: images/444x446_elemental-wordfall-4.jpg description: A dramatic scene of a boss battle with elemental forces colliding, fire, water, and earth effects in the background.
+path: images/512x512_elemental-wordfall-5.jpg description: A player using a power-up to summon a massive elemental burst, clearing the screen of enemies.
+path: images/477x484_elemental-wordfall-6.jpg description: A character unlocking a new elemental skin with a glowing fire effect and a background of elemental kingdoms.
+path: images/512x512_elemental-wordfall-7.jpg description: A player mid-game, typing words quickly while elemental effects are bursting around them.
+path: images/512x512_elemental-wordfall-8.jpg description: A character standing on a floating platform, surrounded by glowing elemental symbols and falling words.
+path: images/491x425_elemental-wordfall-9.jpg description: A close-up of the game's UI showing the player's elemental power meter, word count, and level progress.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Elemental Wordfall*
+
+**Theme:** Elemental Kingdom Wars  
+**Genre:** Falling Word Catcher (Similar to "Word Fall" or "Word Drop")
+
+---
+
+**Concept Description:**
+
+In *Elemental Wordfall*, players take on the role of a young elemental mage who must defend their kingdom from an onslaught of elemental forces. The game blends fast-paced word-based gameplay with elemental magic, offering a fresh twist on the falling word catcher genre.
+
+---
+
+**Gameplay Mechanics:**
+
+- Players control a character who can catch falling words by typing them before they reach the bottom of the screen.
+- Each word corresponds to an elemental force (fire, water, earth, air).
+- As words are caught, they are transformed into elemental symbols, which can be used to summon elemental attacks or defend against incoming waves.
+- The game is played in levels, each representing a different elemental kingdom. Each level has unique challenges, such as elemental storms, terrain hazards, or boss battles.
+
+---
+
+**Objectives:**
+
+- Catch words to build up elemental power.
+- Use elemental abilities to clear obstacles and defeat enemies.
+- Complete each level by defending the kingdom from an elemental invasion.
+- Unlock new elements and power-ups as you progress.
+
+---
+
+**Unique Features:**
+
+- **Elemental Word Types:** Words are categorized by their elemental type, and matching them in sequence creates stronger elemental bursts.
+- **Dynamic Elemental Effects:** Catching words triggers elemental effects like fire bursts, water shields, or earth barriers that can be used to clear the screen or protect the player.
+- **Level Themes:** Each level is themed around a different elemental kingdom, with unique visual styles, music, and challenges.
+- **Simple Tap-and-Type Control:** Intuitive gameplay where players just need to type falling words quickly and accurately.
+- **Progression System:** Unlock new elements, power-ups, and character skins by completing levels and mastering word catching skills.
+
+---
+
+**Why It Stands Out:**
+
+*Elemental Wordfall* combines the addictive simplicity of word-catching games with the strategic depth of elemental magic. It’s designed to be accessible to all ages, with fast-paced action and satisfying elemental interactions that keep players engaged and coming back for more.

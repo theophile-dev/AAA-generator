@@ -1,0 +1,325 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elemental Wordfall</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        #gameUI {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 0 0 5px black;
+        }
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+        #gameOverScreen {
+            display: none;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 24px;
+            margin-top: 20px;
+            cursor: pointer;
+            background: #ff6600;
+            border: none;
+            color: white;
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 48px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+        p {
+            font-size: 20px;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h1>ELEMENTAL WORDFALL</h1>
+        <p>Catch falling words to build elemental power!</p>
+        <p>Type words before they reach the bottom to summon powerful elemental attacks.</p>
+        <button onclick="startGame()">START GAME</button>
+    </div>
+    
+    <div id="gameOverScreen">
+        <h1>GAME OVER</h1>
+        <p>Your Score: <span id="finalScore">0</span></p>
+        <button onclick="restartGame()">PLAY AGAIN</button>
+    </div>
+
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    
+    <div id="gameUI">
+        <div>Score: <span id="score">0</span></div>
+        <div>Level: <span id="level">1</span></div>
+        <div>Power: <span id="power">0</span></div>
+        <div>Words: <span id="words">0</span></div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const powerElement = document.getElementById('power');
+        const wordsElement = document.getElementById('words');
+        const finalScoreElement = document.getElementById('finalScore');
+
+        let gameRunning = false;
+        let score = 0;
+        let level = 1;
+        let power = 0;
+        let wordsTyped = 0;
+        let words = [];
+        let typedWord = '';
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 50,
+            width: 60,
+            height: 60,
+            color: '#44aaff'
+        };
+        let keys = {};
+        let gameSpeed = 1;
+        let lastTime = 0;
+
+        // Word types with elemental effects
+        const wordTypes = [
+            {word: 'fire', color: '#ff3300', effect: 'fire'},
+            {word: 'water', color: '#0066ff', effect: 'water'},
+            {word: 'earth', color: '#8b4513', effect: 'earth'},
+            {word: 'air', color: '#ffffff', effect: 'air'}
+        ];
+
+        // Initialize game
+        function initGame() {
+            score = 0;
+            level = 1;
+            power = 0;
+            wordsTyped = 0;
+            words = [];
+            typedWord = '';
+            player.x = canvas.width / 2;
+            gameSpeed = 1;
+            updateUI();
+        }
+
+        // Start game
+        function startGame() {
+            initGame();
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Restart game
+        function restartGame() {
+            gameOverScreen.style.display = 'none';
+            startGame();
+        }
+
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = score;
+            levelElement.textContent = level;
+            powerElement.textContent = power;
+            wordsElement.textContent = wordsTyped;
+        }
+
+        // Create a new falling word
+        function createWord() {
+            const type = wordTypes[Math.floor(Math.random() * wordTypes.length)];
+            const word = {
+                text: type.word,
+                x: Math.random() * (canvas.width - 100),
+                y: -20,
+                width: 80,
+                height: 30,
+                speed: 1 + Math.random() * 2,
+                color: type.color,
+                effect: type.effect
+            };
+            words.push(word);
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            
+            if (e.key === 'Backspace') {
+                typedWord = typedWord.slice(0, -1);
+            } else if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+                typedWord += e.key.toLowerCase();
+            }
+            
+            // Check for matching word
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                if (word.text === typedWord) {
+                    // Word matched!
+                    score += 10;
+                    power += 5;
+                    wordsTyped++;
+                    words.splice(i, 1);
+                    typedWord = '';
+                    
+                    // Trigger elemental effect
+                    triggerEffect(word.effect);
+                    updateUI();
+                    break;
+                }
+            }
+        });
+
+        // Trigger elemental effect
+        function triggerEffect(type) {
+            if (type === 'fire') {
+                // Fire explosion effect
+                for (let i = 0; i < 20; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * 3;
+                    const x = player.x + player.width / 2;
+                    const y = player.y + player.height / 2;
+                    // Simple effect - in a real game this would be more complex
+                }
+            } else if (type === 'water') {
+                // Water shield effect
+                power += 10; // Bonus for water
+                updateUI();
+            } else if (type === 'earth') {
+                // Earth barrier effect
+                power += 15; // Bonus for earth
+                updateUI();
+            }
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // Clear canvas with a gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Draw player eyes
+            ctx.fillStyle = 'white';
+            ctx.fillRect(player.x + 15, player.y + 15, 8, 8);
+            ctx.fillRect(player.x + 37, player.y + 15, 8, 8);
+            
+            // Draw player pupils
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x + 17, player.y + 17, 4, 4);
+            ctx.fillRect(player.x + 39, player.y + 17, 4, 4);
+
+            // Update and draw words
+            for (let i = words.length - 1; i >= 0; i--) {
+                const word = words[i];
+                word.y += word.speed * gameSpeed;
+                
+                // Draw word
+                ctx.fillStyle = word.color;
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText(word.text, word.x, word.y);
+                
+                // Remove if reached bottom
+                if (word.y > canvas.height) {
+                    words.splice(i, 1);
+                    // Lose a point for missing a word
+                    score = Math.max(0, score - 5);
+                    updateUI();
+                }
+            }
+
+            // Create new words occasionally
+            if (Math.random() < 0.03) {
+                createWord();
+            }
+
+            // Increase difficulty over time
+            if (score > 0 && score % 100 === 0) {
+                level = Math.floor(score / 100) + 1;
+                gameSpeed = 1 + level * 0.2;
+                updateUI();
+            }
+
+            // Check for game over condition
+            if (score < 0) {
+                gameOver();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Initialize
+        window.onload = () => {
+            // Draw initial screen elements
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('ELEMENTAL WORDFALL', canvas.width / 2, canvas.height / 2 - 50);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '20px Arial';
+            ctx.fillText('Press START to play', canvas.width / 2, canvas.height / 2 + 30);
+        };
+    </script>
+</body>
+</html>
