@@ -1,0 +1,97 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/387x425_arrow.png description: A low-poly, stylized supernatural detective character in a dark coat, standing in a mysterious environment.
+path: images/364x430_artifact.png description: A single, low-poly book with a magical aura, placed on a shelf in a haunted library.
+path: images/340x439_background.png description: A cracked, low-poly mirror reflecting ghostly shapes in a haunted mansion.
+path: images/373x431_book.png description: A small, low-poly key with a mystical glow, hidden beneath a stack of objects.
+path: images/443x461_chest.png description: A simple, low-poly ghost floating in a ghostly forest, with a translucent, eerie shape.
+path: images/192x486_detective.png description: A low-poly torch with a flickering flame, placed on a wall in a dark corridor.
+path: images/217x401_door.png description: A low-poly skull with a faint glowing eye, sitting on a table in a cursed room.
+path: images/456x441_ghost.png description: A low-poly scroll with glowing runes, lying on a stone table in a mysterious temple.
+path: images/398x408_key.png description: A low-poly wooden chest with a mysterious symbol, partially open to reveal a hidden artifact.
+path: images/353x459_ladder.png description: A low-poly door with an ancient symbol, slightly ajar in a haunted mansion.
+path: images/512x442_mirror.png description: A low-poly spider with glowing eyes, crawling on a wall in a dark, eerie environment.
+path: images/467x503_platform.png description: A low-poly vase with a cracked surface, holding a glowing crystal in a cursed room.
+path: images/512x498_scroll.png description: A low-poly window with a faint ghostly figure visible through the glass in a haunted house.
+path: images/512x381_skull.png description: A low-poly statue of a mysterious figure, placed in a dark, mysterious temple.
+path: images/512x469_spider.png description: A low-poly arrow pointing upwards, embedded in a wall in a cursed library.
+path: images/512x512_statue.png description: A low-poly ladder leaning against a wall, leading to a higher platform in a haunted mansion.
+path: images/225x467_torch.png description: A low-poly platform with a mysterious symbol, placed on a floating stone in a ghostly forest.
+path: images/512x512_vase.png description: A low-poly supernatural artifact with glowing runes, hidden beneath a stack of objects.
+path: images/341x462_window.png description: A low-poly background of a haunted mansion with dark, mysterious architecture.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Clue Stack: The Supernatural Files*
+
+**Concept Overview:**  
+*Clue Stack: The Supernatural Files* is a simple, physics-based puzzle game where players take on the role of a supernatural detective solving mysterious cases by stacking objects in a 2D world. The game combines intuitive physics-based mechanics with a charming, low-poly art style, using only 20 single-element PNG images and 500 lines of JavaScript code.
+
+**Gameplay Mechanics:**  
+Players control a supernatural detective who can pick up and throw objects into a 2D environment. The core mechanic is a physics-based stacking puzzle where the player must balance and stack objects to uncover hidden clues and progress through a series of cases. Each case presents a different environment—such as a haunted mansion, a cursed library, or a ghostly forest—each with unique challenges and environmental hazards.
+
+When an object is thrown, it falls under gravity and interacts with the environment, including other objects, walls, and obstacles. The player must carefully plan each throw to create stable stacks that reveal hidden clues or open new pathways. The physics engine is simple but responsive, allowing for fun and intuitive interactions.
+
+**Objectives:**  
+- Solve 5 unique supernatural cases by stacking objects in the correct way.
+- Uncover hidden clues by creating stable stacks that reveal items or trigger events.
+- Navigate through environments by clearing obstacles and using stacked objects to reach new areas.
+- Collect all 5 supernatural artifacts to unlock the final mystery.
+
+**Unique Features:**  
+- **Minimalist Art Style:** Uses only 20 single-element PNG images, each representing a unique object or environment piece. No sprite sheets or complex animations.
+- **Physics-Based Interaction:** Simple yet engaging physics that responds to player input, allowing for intuitive stacking and throwing.
+- **Mystery-Driven Narrative:** Each case is a self-contained mystery with a short story, making the gameplay feel purposeful and rewarding.
+- **Progressive Difficulty:** Cases increase in complexity, introducing new objects, physics interactions, and environmental hazards.
+- **No Complex Graphics:** Relies on simple shapes and color to create a clean, fun, and approachable look.
+
+**Target Audience:**  
+Designed for a wide audience, including casual gamers and puzzle lovers. The game is easy to pick up, with simple controls and clear objectives, making it suitable for both younger and older players.
+
+**Implementation Notes:**  
+- Built using only HTML5 Canvas and JavaScript.
+- All game logic, physics, and rendering are handled with minimal code for simplicity and performance.
+- Each object is a single PNG image, loaded and positioned dynamically.
+- No external libraries or complex animations are used—everything is hand-coded for efficiency and clarity.
+
+**Conclusion:**  
+*Clue Stack: The Supernatural Files* is a fun, engaging, and easy-to-implement 2D puzzle game that marries simple physics mechanics with a supernatural mystery theme. It’s an excellent example of how minimal resources can create a compelling and immersive experience.

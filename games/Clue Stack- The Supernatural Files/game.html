@@ -1,0 +1,851 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clue Stack: The Supernatural Files</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #e6e6e6;
+        }
+        
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: #0d0d1a;
+            display: block;
+        }
+        
+        #uiOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            pointer-events: none;
+        }
+        
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(13, 13, 26, 0.9);
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+        }
+        
+        #gameOverScreen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+        
+        h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #4ecdc4;
+        }
+        
+        p {
+            font-size: 20px;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        #scoreBoard {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        #caseInfo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+        }
+        
+        .artifact {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            background: rgba(78, 205, 196, 0.3);
+            border-radius: 50%;
+            border: 2px solid #4ecdc4;
+        }
+        
+        .artifact.collected {
+            background: rgba(255, 107, 107, 0.5);
+            border: 2px solid #ff6b6b;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="uiOverlay">
+            <div id="scoreBoard">
+                <div>Case: <span id="caseNum">1</span>/5</div>
+                <div>Artifacts: <span id="artifacts">0</span>/5</div>
+                <div>Lives: <span id="lives">3</span></div>
+            </div>
+            
+            <div id="caseInfo">
+                <h2>Case <span id="currentCase">1</span></h2>
+                <p id="caseDescription">Solve the mystery by stacking objects to uncover hidden clues.</p>
+                <div>Artifacts Collected: 
+                    <span class="artifact" id="artifact1"></span>
+                    <span class="artifact" id="artifact2"></span>
+                    <span class="artifact" id="artifact3"></span>
+                    <span class="artifact" id="artifact4"></span>
+                    <span class="artifact" id="artifact5"></span>
+                </div>
+            </div>
+            
+            <div id="controls">
+                <p>Controls: Mouse to aim, Click to throw</p>
+                <p>Press SPACE to restart after game over</p>
+            </div>
+            
+            <div id="startScreen">
+                <h1>Clue Stack: The Supernatural Files</h1>
+                <h2>Case 1: The Haunted Mansion</h2>
+                <p>You are a supernatural detective investigating mysterious events in a haunted mansion. Your task is to stack objects to uncover hidden clues and artifacts.</p>
+                <p>Each case presents unique challenges. Use physics to build stable stacks and reveal the mysteries!</p>
+                <div class="instructions">
+                    <p>• Collect all 5 artifacts to solve the case</p>
+                    <p>• Build stable stacks to reveal clues</p>
+                    <p>• Avoid letting objects fall off the screen</p>
+                    <p>• You have 3 lives per case</p>
+                </div>
+                <button id="startBtn" class="btn">Begin Investigation</button>
+            </div>
+            
+            <div id="gameOverScreen">
+                <h1 id="gameResult">Case Complete!</h1>
+                <h2 id="caseComplete">You solved Case 1!</h2>
+                <p id="completionMessage">Great work detective! You've uncovered the first clue. Prepare for the next mystery.</p>
+                <button id="nextCaseBtn" class="btn">Next Case</button>
+                <button id="restartBtn" class="btn">Restart Case</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const GRAVITY = 0.5;
+        const FRICTION = 0.98;
+        const BOUNCE_FACTOR = 0.7;
+        const OBJECT_TYPES = [
+            'detective', 'book', 'key', 'chest', 
+            'ghost', 'scroll', 'spider', 'skull',
+            'torch', 'vase', 'window', 'statue',
+            'ladder', 'door', 'mirror', 'artifact'
+        ];
+        
+        // Game state
+        let gameState = {
+            currentCase: 1,
+            artifacts: 0,
+            lives: 3,
+            score: 0,
+            gameStarted: false,
+            gameOver: false,
+            caseComplete: false,
+            objects: [],
+            background: null,
+            player: null,
+            throwPower: 0,
+            throwDirection: { x: 0, y: 0 },
+            isThrowing: false,
+            mouseX: 0,
+            mouseY: 0,
+            lastTime: 0
+        };
+        
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI Elements
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startBtn = document.getElementById('startBtn');
+        const nextCaseBtn = document.getElementById('nextCaseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const caseNumElement = document.getElementById('caseNum');
+        const artifactsElement = document.getElementById('artifacts');
+        const livesElement = document.getElementById('lives');
+        const currentCaseElement = document.getElementById('currentCase');
+        const caseDescriptionElement = document.getElementById('caseDescription');
+        const gameResultElement = document.getElementById('gameResult');
+        const caseCompleteElement = document.getElementById('caseComplete');
+        const completionMessageElement = document.getElementById('completionMessage');
+        
+        // Artifact elements
+        const artifactElements = [
+            document.getElementById('artifact1'),
+            document.getElementById('artifact2'),
+            document.getElementById('artifact3'),
+            document.getElementById('artifact4'),
+            document.getElementById('artifact5')
+        ];
+        
+        // Preload images
+        const images = {};
+        const imageCount = OBJECT_TYPES.length;
+        let loadedImages = 0;
+        
+        function loadImage(name, src) {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                images[name] = img;
+                loadedImages++;
+                if (loadedImages === imageCount) {
+                    initGame();
+                }
+            };
+        }
+        
+        // Load all images
+        OBJECT_TYPES.forEach(type => {
+            loadImage(type, `images/${type}.png`);
+        });
+        
+        // Case descriptions
+        const caseDescriptions = [
+            "The Haunted Mansion",
+            "The Cursed Library",
+            "The Ghostly Forest",
+            "The Ancient Temple",
+            "The Final Mystery"
+        ];
+        
+        const caseDescriptionsDetail = [
+            "Solve the mystery by stacking objects to uncover hidden clues in a haunted mansion.",
+            "Navigate through the cursed library, using books and scrolls to create stable platforms.",
+            "In the ghostly forest, use torches and ladders to reach new areas and collect artifacts.",
+            "The ancient temple holds secrets behind locked doors. Use your skills to solve the puzzles.",
+            "The final case combines all elements. Collect all artifacts to solve the ultimate mystery."
+        ];
+        
+        // Initialize game
+        function initGame() {
+            gameState.gameStarted = true;
+            startScreen.style.display = 'none';
+            resetCase();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Reset current case
+        function resetCase() {
+            gameState.objects = [];
+            gameState.lives = 3;
+            gameState.throwPower = 0;
+            gameState.isThrowing = false;
+            
+            // Create player
+            gameState.player = {
+                x: CANVAS_WIDTH / 2,
+                y: CANVAS_HEIGHT - 150,
+                width: 60,
+                height: 80,
+                image: images.detective,
+                vx: 0,
+                vy: 0,
+                isGrounded: true
+            };
+            
+            // Add initial objects for this case
+            addInitialObjects();
+            
+            updateUI();
+        }
+        
+        // Add objects for the current case
+        function addInitialObjects() {
+            const caseNum = gameState.currentCase;
+            
+            // Add platform
+            gameState.objects.push({
+                x: 0,
+                y: CANVAS_HEIGHT - 50,
+                width: CANVAS_WIDTH,
+                height: 50,
+                image: images.platform,
+                type: 'platform',
+                isStatic: true
+            });
+            
+            // Add case-specific objects
+            switch(caseNum) {
+                case 1: // Haunted Mansion
+                    gameState.objects.push({
+                        x: 200,
+                        y: CANVAS_HEIGHT - 150,
+                        width: 80,
+                        height: 100,
+                        image: images.book,
+                        type: 'book',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 300,
+                        y: CANVAS_HEIGHT - 200,
+                        width: 60,
+                        height: 80,
+                        image: images.key,
+                        type: 'key',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 400,
+                        y: CANVAS_HEIGHT - 250,
+                        width: 100,
+                        height: 120,
+                        image: images.chest,
+                        type: 'chest',
+                        isStatic: false
+                    });
+                    break;
+                    
+                case 2: // Cursed Library
+                    gameState.objects.push({
+                        x: 300,
+                        y: CANVAS_HEIGHT - 200,
+                        width: 80,
+                        height: 100,
+                        image: images.scroll,
+                        type: 'scroll',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 500,
+                        y: CANVAS_HEIGHT - 250,
+                        width: 70,
+                        height: 90,
+                        image: images.spider,
+                        type: 'spider',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 700,
+                        y: CANVAS_HEIGHT - 300,
+                        width: 80,
+                        height: 100,
+                        image: images.skull,
+                        type: 'skull',
+                        isStatic: false
+                    });
+                    break;
+                    
+                case 3: // Ghostly Forest
+                    gameState.objects.push({
+                        x: 200,
+                        y: CANVAS_HEIGHT - 200,
+                        width: 70,
+                        height: 90,
+                        image: images.torch,
+                        type: 'torch',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 400,
+                        y: CANVAS_HEIGHT - 250,
+                        width: 80,
+                        height: 100,
+                        image: images.vase,
+                        type: 'vase',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 600,
+                        y: CANVAS_HEIGHT - 300,
+                        width: 90,
+                        height: 120,
+                        image: images.window,
+                        type: 'window',
+                        isStatic: false
+                    });
+                    break;
+                    
+                case 4: // Ancient Temple
+                    gameState.objects.push({
+                        x: 300,
+                        y: CANVAS_HEIGHT - 200,
+                        width: 90,
+                        height: 120,
+                        image: images.statue,
+                        type: 'statue',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 500,
+                        y: CANVAS_HEIGHT - 250,
+                        width: 70,
+                        height: 90,
+                        image: images.ladder,
+                        type: 'ladder',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 700,
+                        y: CANVAS_HEIGHT - 300,
+                        width: 80,
+                        height: 100,
+                        image: images.door,
+                        type: 'door',
+                        isStatic: false
+                    });
+                    break;
+                    
+                case 5: // Final Mystery
+                    gameState.objects.push({
+                        x: 200,
+                        y: CANVAS_HEIGHT - 200,
+                        width: 80,
+                        height: 100,
+                        image: images.artifact,
+                        type: 'artifact',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 400,
+                        y: CANVAS_HEIGHT - 250,
+                        width: 70,
+                        height: 90,
+                        image: images.book,
+                        type: 'book',
+                        isStatic: false
+                    });
+                    gameState.objects.push({
+                        x: 600,
+                        y: CANVAS_HEIGHT - 300,
+                        width: 100,
+                        height: 120,
+                        image: images.chest,
+                        type: 'chest',
+                        isStatic: false
+                    });
+                    break;
+            }
+            
+            // Add some floating platforms
+            for (let i = 0; i < 3; i++) {
+                gameState.objects.push({
+                    x: 100 + i * 200,
+                    y: CANVAS_HEIGHT - 350 - i * 100,
+                    width: 120,
+                    height: 20,
+                    image: images.platform,
+                    type: 'platform',
+                    isStatic: true
+                });
+            }
+            
+            // Add artifact to find (if not case 5)
+            if (caseNum < 5) {
+                gameState.objects.push({
+                    x: 800,
+                    y: CANVAS_HEIGHT - 300,
+                    width: 60,
+                    height: 80,
+                    image: images.artifact,
+                    type: 'artifact',
+                    isStatic: false
+                });
+            }
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            caseNumElement.textContent = gameState.currentCase;
+            artifactsElement.textContent = gameState.artifacts;
+            livesElement.textContent = gameState.lives;
+            currentCaseElement.textContent = gameState.currentCase;
+            caseDescriptionElement.textContent = caseDescriptionsDetail[gameState.currentCase - 1];
+            
+            // Update artifact indicators
+            artifactElements.forEach((el, i) => {
+                if (i < gameState.artifacts) {
+                    el.classList.add('collected');
+                } else {
+                    el.classList.remove('collected');
+                }
+            });
+        }
+        
+        // Handle mouse movement
+        function handleMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            gameState.mouseX = e.clientX - rect.left;
+            gameState.mouseY = e.clientY - rect.top;
+        }
+        
+        // Handle mouse click for throwing
+        function handleMouseClick() {
+            if (!gameState.gameStarted || gameState.gameOver || gameState.caseComplete) return;
+            
+            if (!gameState.isThrowing) {
+                // Start throwing
+                const dx = gameState.mouseX - (gameState.player.x + gameState.player.width/2);
+                const dy = gameState.mouseY - (gameState.player.y + gameState.player.height/2);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 10) {
+                    gameState.throwDirection = {
+                        x: dx / distance,
+                        y: dy / distance
+                    };
+                    gameState.throwPower = Math.min(distance / 5, 15);
+                    gameState.isThrowing = true;
+                    
+                    // Create a new object to throw
+                    const newObject = {
+                        x: gameState.player.x + gameState.player.width/2 - 20,
+                        y: gameState.player.y + gameState.player.height/2 - 20,
+                        width: 40,
+                        height: 40,
+                        image: images.book,
+                        type: 'thrown',
+                        isStatic: false,
+                        vx: gameState.throwDirection.x * gameState.throwPower,
+                        vy: gameState.throwDirection.y * gameState.throwPower
+                    };
+                    
+                    gameState.objects.push(newObject);
+                }
+            }
+        }
+        
+        // Check collisions between objects
+        function checkCollisions(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+        
+        // Update game objects
+        function updateGame() {
+            if (gameState.gameOver || gameState.caseComplete) return;
+            
+            // Apply gravity to all non-static objects
+            for (let i = 0; i < gameState.objects.length; i++) {
+                const obj = gameState.objects[i];
+                
+                if (!obj.isStatic) {
+                    obj.vy += GRAVITY;
+                    
+                    // Apply friction
+                    obj.vx *= FRICTION;
+                    obj.vy *= FRICTION;
+                    
+                    // Update position
+                    obj.x += obj.vx;
+                    obj.y += obj.vy;
+                    
+                    // Boundary collisions
+                    if (obj.x < 0) {
+                        obj.x = 0;
+                        obj.vx = -obj.vx * BOUNCE_FACTOR;
+                    } else if (obj.x + obj.width > CANVAS_WIDTH) {
+                        obj.x = CANVAS_WIDTH - obj.width;
+                        obj.vx = -obj.vx * BOUNCE_FACTOR;
+                    }
+                    
+                    // Ground collision
+                    if (obj.y + obj.height > CANVAS_HEIGHT - 50) {
+                        obj.y = CANVAS_HEIGHT - 50 - obj.height;
+                        obj.vy = -obj.vy * BOUNCE_FACTOR;
+                        
+                        // If object is nearly at rest, make it static
+                        if (Math.abs(obj.vy) < 0.5 && Math.abs(obj.vx) < 0.5) {
+                            obj.vy = 0;
+                            obj.vx = 0;
+                        }
+                    }
+                    
+                    // Platform collisions
+                    for (let j = 0; j < gameState.objects.length; j++) {
+                        const platform = gameState.objects[j];
+                        if (platform.type === 'platform' && !platform.isStatic) continue;
+                        
+                        if (obj.x < platform.x + platform.width &&
+                            obj.x + obj.width > platform.x &&
+                            obj.y + obj.height > platform.y &&
+                            obj.y + obj.height < platform.y + 20 &&
+                            obj.vy > 0) {
+                            
+                            obj.y = platform.y - obj.height;
+                            obj.vy = -obj.vy * BOUNCE_FACTOR;
+                        }
+                    }
+                    
+                    // Check if object fell off screen
+                    if (obj.y > CANVAS_HEIGHT + 100) {
+                        gameState.objects.splice(i, 1);
+                        i--;
+                        
+                        // If it was a thrown object, lose a life
+                        if (obj.type === 'thrown') {
+                            gameState.lives--;
+                            updateUI();
+                            
+                            if (gameState.lives <= 0) {
+                                gameOver();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check for artifact collection
+            for (let i = 0; i < gameState.objects.length; i++) {
+                const obj = gameState.objects[i];
+                if (obj.type === 'artifact') {
+                    // Check if player is near the artifact
+                    const dx = (gameState.player.x + gameState.player.width/2) - (obj.x + obj.width/2);
+                    const dy = (gameState.player.y + gameState.player.height/2) - (obj.y + obj.height/2);
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 50) {
+                        // Collect artifact
+                        gameState.artifacts++;
+                        updateUI();
+                        
+                        // Remove the artifact from the game
+                        gameState.objects.splice(i, 1);
+                        i--;
+                        
+                        // Check if all artifacts collected
+                        if (gameState.artifacts >= 5) {
+                            completeCase();
+                        }
+                    }
+                }
+            }
+            
+            // Update player position
+            gameState.player.x += gameState.player.vx;
+            gameState.player.y += gameState.player.vy;
+            
+            // Apply friction to player
+            gameState.player.vx *= FRICTION;
+            gameState.player.vy *= FRICTION;
+        }
+        
+        // Draw game objects
+        function drawGame() {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background (simple gradient for now)
+            const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+            gradient.addColorStop(0, "#1a1a2e");
+            gradient.addColorStop(1, "#16213e");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw objects
+            gameState.objects.forEach(obj => {
+                if (obj.image) {
+                    ctx.drawImage(obj.image, obj.x, obj.y, obj.width, obj.height);
+                } else {
+                    // Fallback for debugging
+                    ctx.fillStyle = obj.type === 'platform' ? '#8B4513' : '#FF6B6B';
+                    ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                }
+            });
+            
+            // Draw player
+            if (gameState.player.image) {
+                ctx.drawImage(gameState.player.image, gameState.player.x, gameState.player.y, gameState.player.width, gameState.player.height);
+            } else {
+                ctx.fillStyle = '#4ECDC4';
+                ctx.fillRect(gameState.player.x, gameState.player.y, gameState.player.width, gameState.player.height);
+            }
+            
+            // Draw throw direction indicator
+            if (gameState.isThrowing && !gameState.gameOver) {
+                const dx = gameState.mouseX - (gameState.player.x + gameState.player.width/2);
+                const dy = gameState.mouseY - (gameState.player.y + gameState.player.height/2);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 10) {
+                    ctx.beginPath();
+                    ctx.moveTo(gameState.player.x + gameState.player.width/2, gameState.player.y + gameState.player.height/2);
+                    ctx.lineTo(gameState.mouseX, gameState.mouseY);
+                    ctx.strokeStyle = 'rgba(255, 107, 107, 0.7)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                    // Draw power indicator
+                    const power = Math.min(distance / 5, 15);
+                    ctx.beginPath();
+                    ctx.arc(gameState.player.x + gameState.player.width/2, gameState.player.y + gameState.player.height/2, power * 3, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 107, 107, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!gameState.gameStarted) return;
+            
+            const deltaTime = timestamp - gameState.lastTime;
+            gameState.lastTime = timestamp;
+            
+            updateGame();
+            drawGame();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState.gameOver = true;
+            gameOverScreen.style.display = 'flex';
+            gameResultElement.textContent = 'Case Failed!';
+            caseCompleteElement.textContent = `You ran out of lives in Case ${gameState.currentCase}`;
+            completionMessageElement.textContent = 'Try again to solve the case!';
+        }
+        
+        // Complete case
+        function completeCase() {
+            gameState.caseComplete = true;
+            gameOverScreen.style.display = 'flex';
+            gameResultElement.textContent = 'Case Complete!';
+            caseCompleteElement.textContent = `You solved Case ${gameState.currentCase}!`;
+            completionMessageElement.textContent = 'Great work detective! Prepare for the next mystery.';
+        }
+        
+        // Next case
+        function nextCase() {
+            gameState.currentCase++;
+            if (gameState.currentCase > 5) {
+                // Game completed
+                gameOverScreen.style.display = 'flex';
+                gameResultElement.textContent = 'Game Completed!';
+                caseCompleteElement.textContent = 'You solved all cases!';
+                completionMessageElement.textContent = 'Congratulations, supernatural detective!';
+                document.getElementById('nextCaseBtn').style.display = 'none';
+            } else {
+                resetCase();
+                gameOverScreen.style.display = 'none';
+                gameState.caseComplete = false;
+            }
+        }
+        
+        // Restart case
+        function restartCase() {
+            resetCase();
+            gameOverScreen.style.display = 'none';
+            gameState.caseComplete = false;
+        }
+        
+        // Event listeners
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('click', handleMouseClick);
+        startBtn.addEventListener('click', initGame);
+        nextCaseBtn.addEventListener('click', nextCase);
+        restartBtn.addEventListener('click', restartCase);
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (gameState.gameOver || gameState.caseComplete) {
+                    restartCase();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
