@@ -1,0 +1,273 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal Flip</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 10;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    <div id="ui">
+        <button id="startBtn">Start Game</button>
+        <button id="restartBtn">Restart</button>
+        <div id="score">Score: 0</div>
+        <div id="moves">Moves: 0</div>
+    </div>
+    <div id="instructions">
+        Click cards to flip them. Find the portal path.
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const CARD_WIDTH = 200;
+        const CARD_HEIGHT = 200;
+        const GRID_COLS = 4;
+        const GRID_ROWS = 5;
+        const CARD_BACKS = [
+            'images/512x512_card_back_ceiling.png',
+            'images/512x512_card_back_clue.png',
+            'images/502x480_card_back_corner.png',
+            'images/277x443_card_back_door.png',
+            'images/357x397_card_back_exit.png',
+            'images/512x512_card_back_floor.png',
+            'images/512x72_card_back_light.png',
+            'images/39x43_card_back_liquid.png',
+            'images/459x451_card_back_portal.png',
+            'images/259x321_card_back_powerup.png',
+            'images/460x455_card_back_rock.png',
+            'images/437x438_card_back_shadow.png',
+            'images/433x419_card_back_trap.png',
+            'images/512x512_card_back_unknown.png',
+            'images/268x277_card_back_wall.png'
+        ];
+        const CARD_FACES = [
+            'images/512x512_card_front_1.png',
+            'images/512x495_card_front_2.png',
+            'images/512x512_card_front_3.png',
+            'images/512x460_card_front_4.png',
+            'images/268x357_card_front_5.png'
+        ];
+
+        // Game state
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+        let cards = [];
+        let score = 0;
+        let moves = 0;
+        let flippedCards = [];
+        let gameStarted = false;
+        let gameOver = false;
+
+        // DOM elements
+        let startBtn = document.getElementById('startBtn');
+        let restartBtn = document.getElementById('restartBtn');
+        let scoreElement = document.getElementById('score');
+        let movesElement = document.getElementById('moves');
+
+        // Card class
+        class Card {
+            constructor(x, y, backImage, frontImage) {
+                this.x = x;
+                this.y = y;
+                this.backImage = new Image();
+                this.frontImage = new Image();
+                this.backImage.src = backImage;
+                this.frontImage.src = frontImage;
+                this.flipped = false;
+                this.isPortal = false;
+                this.isExit = false;
+                this.isPowerUp = false;
+                this.isTrap = false;
+                this.isClue = false;
+            }
+
+            draw() {
+                ctx.drawImage(this.flipped ? this.frontImage : this.backImage, this.x, this.y, CARD_WIDTH, CARD_HEIGHT);
+            }
+
+            flip() {
+                if (!this.flipped) {
+                    this.flipped = true;
+                    moves++;
+                    movesElement.textContent = `Moves: ${moves}`;
+                    checkWinCondition();
+                }
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            cards = [];
+            flippedCards = [];
+            score = 0;
+            moves = 0;
+            gameOver = false;
+            scoreElement.textContent = `Score: ${score}`;
+            movesElement.textContent = `Moves: ${moves}`;
+
+            let startX = (CANVAS_WIDTH - GRID_COLS * CARD_WIDTH) / 2;
+            let startY = (CANVAS_HEIGHT - GRID_ROWS * CARD_HEIGHT) / 2;
+
+            for (let row = 0; row < GRID_ROWS; row++) {
+                for (let col = 0; col < GRID_COLS; col++) {
+                    let x = startX + col * CARD_WIDTH;
+                    let y = startY + row * CARD_HEIGHT;
+                    let backImage = CARD_BACKS[Math.floor(Math.random() * CARD_BACKS.length)];
+                    let frontImage = CARD_FACES[Math.floor(Math.random() * CARD_FACES.length)];
+                    cards.push(new Card(x, y, backImage, frontImage));
+                }
+            }
+
+            // Randomly assign special types
+            for (let i = 0; i < 5; i++) {
+                let idx = Math.floor(Math.random() * cards.length);
+                if (!cards[idx].isPortal) {
+                    cards[idx].isPortal = true;
+                }
+            }
+
+            let exitIndex = Math.floor(Math.random() * cards.length);
+            cards[exitIndex].isExit = true;
+
+            let powerUpIndex = Math.floor(Math.random() * cards.length);
+            cards[powerUpIndex].isPowerUp = true;
+
+            let trapIndex = Math.floor(Math.random() * cards.length);
+            cards[trapIndex].isTrap = true;
+
+            let clueIndex = Math.floor(Math.random() * cards.length);
+            cards[clueIndex].isClue = true;
+        }
+
+        // Draw game
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw background
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            cards.forEach(card => card.draw());
+        }
+
+        // Handle click on a card
+        function handleCardClick(x, y) {
+            if (!gameStarted || gameOver) return;
+
+            for (let i = 0; i < cards.length; i++) {
+                let card = cards[i];
+                if (x > card.x && x < card.x + CARD_WIDTH &&
+                    y > card.y && y < card.y + CARD_HEIGHT) {
+                    if (!card.flipped) {
+                        card.flip();
+                        checkSpecialType(card);
+                        updateScore();
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Check for special card types
+        function checkSpecialType(card) {
+            if (card.isPortal) {
+                score += 100;
+            } else if (card.isExit) {
+                score += 200;
+            } else if (card.isPowerUp) {
+                score += 50;
+            } else if (card.isTrap) {
+                score -= 30;
+            } else if (card.isClue) {
+                score += 75;
+            }
+            scoreElement.textContent = `Score: ${score}`;
+        }
+
+        // Update score display
+        function updateScore() {
+            scoreElement.textContent = `Score: ${score}`;
+        }
+
+        // Check win condition
+        function checkWinCondition() {
+            let allFlipped = cards.every(card => card.flipped);
+            if (allFlipped) {
+                gameOver = true;
+                alert(`You won! Final Score: ${score}`);
+            }
+        }
+
+        // Event listeners
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            handleCardClick(x, y);
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!gameStarted) {
+                gameStarted = true;
+                initGame();
+                draw();
+            }
+        });
+
+        restartBtn.addEventListener('click', () => {
+            gameStarted = false;
+            gameOver = false;
+            initGame();
+            draw();
+        });
+
+        // Game loop
+        function gameLoop() {
+            if (gameStarted && !gameOver) {
+                draw();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>

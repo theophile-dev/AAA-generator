@@ -1,0 +1,104 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_card_back_ceiling.png description: Flat metal panel with a clean, minimalist design
+path: images/512x512_card_back_clue.png description: Control panel with glowing buttons and circuit patterns
+path: images/502x480_card_back_corner.png description: Blank space with a subtle grid texture
+path: images/277x443_card_back_door.png description: Metal floor panel with a faint glow
+path: images/357x397_card_back_exit.png description: Glass panel with a reflective surface
+path: images/512x512_card_back_floor.png description: Portal entrance with a glowing blue circle
+path: images/512x72_card_back_light.png description: White question mark on a dark background
+path: images/39x43_card_back_liquid.png description: Red warning symbol with an exclamation mark
+path: images/459x451_card_back_portal.png description: Yellow power-up icon with a lightning bolt
+path: images/259x321_card_back_powerup.png description: Green exit arrow pointing forward
+path: images/460x455_card_back_rock.png description: Solid wall with a textured surface
+path: images/437x438_card_back_shadow.png description: Smooth floor with a slight gradient
+path: images/433x419_card_back_trap.png description: Ceiling with a subtle pattern
+path: images/512x512_card_back_unknown.png description: Corner panel with a diagonal texture
+path: images/268x277_card_back_wall.png description: Metal door with a handle and hinges
+path: images/512x353_card_front_1.png description: White light source with a soft glow
+path: images/512x495_card_front_2.png description: Dark shadow with a subtle gradient
+path: images/512x512_card_front_3.png description: Rugged rock texture with a natural look
+path: images/512x460_card_front_4.png description: Transparent liquid with a shimmering effect
+path: images/268x357_card_front_5.png description: Unknown panel with a mysterious design
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Portal Flip"**
+
+**Concept Overview:**
+
+"Portal Flip" is a simple, fun, and engaging 2D card-flipping game inspired by the Portal universe. Players take on the role of a scientist trying to unlock the secrets of a mysterious portal chamber by flipping cards to uncover hidden paths, portals, and clues. The game is designed to be easy to learn, quick to play, and visually clean, using only 20 individual .png images and minimal code (under 500 lines of JavaScript).
+
+---
+
+**Gameplay Mechanics:**
+
+- Players are presented with a 4x5 grid of cards, each representing a panel in a portal chamber.
+- Each card is a flat, single-element image (like a metal panel, control panel, or blank space).
+- When a player clicks on a card, it flips to reveal its hidden content: a portal, a clue, a trap, or a power-up.
+- The goal is to flip all cards in a specific sequence or to find a hidden path through the chamber using the revealed portals.
+- Certain cards may act as "portal gates" that allow movement to another card in the grid.
+- Some cards may trigger events like revealing a hidden path or unlocking a new area.
+- The game is designed to be turn-based and puzzle-oriented, with a focus on strategy and observation.
+
+---
+
+**Objectives:**
+
+- **Main Goal:** Unlock all the hidden portals and reveal the exit path by flipping the correct sequence of cards.
+- **Bonus Objective:** Complete the level in the fewest moves or find all hidden clues to unlock a secret bonus level.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Design:** Uses only 20 single-element .png images, making it easy to implement and lightweight.
+- **Portal Logic:** Cards can act as portals, allowing players to jump between different parts of the grid, adding a strategic layer.
+- **Simple Controls:** Click to flip cards; no complex animations or physics required.
+- **Progressive Difficulty:** The game can include multiple levels with increasing complexity in card arrangements and hidden paths.
+- **Engaging Puzzle Elements:** Each level presents a unique challenge, encouraging replay and exploration.
+
+---
+
+**Why It Stands Out:**
+
+"Portal Flip" stands out by combining the iconic Portal theme with a simple card-flipping mechanic, creating a fresh and accessible puzzle experience. It’s ideal for casual players and those new to game development, offering a rewarding and intuitive gameplay loop that doesn’t require complex graphics or animations. Its design is perfectly suited for a browser-based implementation with minimal resources.
