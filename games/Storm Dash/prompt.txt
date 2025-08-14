@@ -1,0 +1,104 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    Matter.js  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_storm_dash_1.png description: A top-down view of a storm-chasing vehicle speeding through a thunderstorm, lightning crackling in the sky.
+path: images/512x512_storm_dash_10.png description: A dramatic shot of a storm approaching from the horizon, with rain and lightning lighting up the sky.
+path: images/512x512_storm_dash_11.png description: A close-up of the player's vehicle with storm-themed customization and glowing power-up icons.
+path: images/512x512_storm_dash_12.png description: A player dodging a tornado while racing through a storm, with lightning in the background.
+path: images/512x512_storm_dash_13.png description: A dynamic view of a storm with intense rain, lightning, and wind effects.
+path: images/512x512_storm_dash_14.png description: A map view showing the player's progress through a storm, with storm cores and collectible coins marked.
+path: images/502x478_storm_dash_15.png description: A player in a high-speed chase through a storm, with a dramatic lightning strike in the distance.
+path: images/512x512_storm_dash_16.png description: A vehicle with a storm-themed skin, glowing with energy and surrounded by storm effects.
+path: images/512x512_storm_dash_17.png description: A player collecting Storm Coins while racing through a storm, with rain and wind effects.
+path: images/512x512_storm_dash_18.png description: A multiplayer mode screenshot showing two players racing through a storm, with lightning and wind effects.
+path: images/512x440_storm_dash_19.png description: A dramatic shot of a storm with intense lightning, rain, and a glowing storm core in the center.
+path: images/512x512_storm_dash_2.png description: A close-up of a storm core with glowing energy, surrounded by lightning and wind effects.
+path: images/512x512_storm_dash_20.png description: A player dodging a hailstorm while racing through a storm, with rain and lightning in the background.
+path: images/512x512_storm_dash_3.png description: A player's vehicle being damaged by a lightning strike, with sparks and rain effects.
+path: images/512x512_storm_dash_4.png description: A player unlocking a new storm-themed vehicle skin with a glowing interface and storm effects.
+path: images/512x512_storm_dash_5.png description: A view of a storm with a glowing core, surrounded by lightning, rain, and wind effects.
+path: images/512x512_storm_dash_6.png description: A player racing through a storm with a dynamic camera showing the chaos of the environment.
+path: images/512x512_storm_dash_7.png description: A player collecting Storm Coins while avoiding hazards in a fast-paced storm chase.
+path: images/512x512_storm_dash_8.png description: A storm-chasing vehicle with glowing upgrades and storm-themed decorations in motion.
+path: images/512x512_storm_dash_9.png description: A dramatic storm scene with a glowing storm core, lightning, and rain effects in motion.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Storm Dash"**
+
+**Genre:** Top-Down Racing  
+**Theme:** Storm-Chasing Adventure  
+
+---
+
+**Concept Description:**  
+"Storm Dash" is a high-energy, top-down racing game where players take control of a storm-chasing vehicle, racing through dramatic, fast-moving weather systems across a dynamic, open-world map. The game blends the thrill of chasing storms with the chaos and speed of racing, all while navigating unpredictable environments and weather events.
+
+---
+
+**Gameplay Mechanics:**  
+- **Top-Down Racing:** Players control a vehicle from a top-down perspective, navigating through wide-open environments with the goal of reaching the center of a developing storm.  
+- **Dynamic Weather System:** The environment changes in real-time as storms form, intensify, and dissipate. Players must adjust their routes and speed based on lightning, hail, wind, and rain.  
+- **Storm Chasing Elements:** The player must "catch" storms by reaching their core, which triggers special events and rewards. The faster you reach the storm's center, the higher the score and the more powerful the rewards.  
+- **Obstacles and Hazards:** Lightning strikes, hailstorms, and tornadoes can appear suddenly, forcing players to dodge or take cover. Some hazards can damage the vehicle or slow it down.  
+- **Power-Ups and Upgrades:** Collectibles like "Storm Coins" can be used to upgrade speed, durability, and weather resistance. Players can also customize their vehicle with storm-themed skins and abilities.
+
+---
+
+**Game Objectives:**  
+- **Primary Goal:** Reach the center of a storm before it moves out of range.  
+- **Secondary Goals:**  
+  - Collect as many Storm Coins as possible.  
+  - Complete challenges like "No Downtime" (race without stopping), "Lightning Avoidance," or "Storm Rush" (race through multiple storms in quick succession).  
+  - Unlock and upgrade your vehicle for better performance in different weather conditions.
+
+---
+
+**Unique Features:**  
+- **Live Storm Simulation:** Each storm is procedurally generated with unique patterns and intensity, ensuring no two races are the same.  
+- **Weather Effects Impact Gameplay:** Rain affects speed and traction, lightning can damage the vehicle, and strong winds can push the player off course.  
+- **Multiplayer Mode (Optional):** Compete with friends in a storm-chasing race, trying to reach the storm core first while avoiding hazards.  
+- **Narrative-Driven Missions:** Players can follow a storyline where they're part of a storm-chasing team, with missions that progress the story and unlock new regions or storm types.
+
+---
+
+**Tone & Atmosphere:**  
+"Storm Dash" is designed to be fast-paced, exciting, and visually stunning. The game emphasizes the awe and danger of storm-chasing, with dramatic lighting, powerful sound effects, and a soundtrack that builds tension as storms intensify. The tone is adventurous, thrilling, and slightly risky — perfect for players who enjoy a mix of racing and survival elements.
+
+---
+
+**Target Audience:**  
+Casual and competitive players who enjoy fast-paced, engaging gameplay with a unique theme. Ideal for mobile and console platforms, with optional multiplayer and replayability through varied weather and storm patterns.

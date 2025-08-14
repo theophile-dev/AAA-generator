@@ -1,0 +1,394 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storm Dash</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(0, 100, 255, 0.5);
+        }
+        #gameUI {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 0 0 5px black;
+        }
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+        #gameOverScreen {
+            display: none;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            margin-top: 20px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #357ABD;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4a90e2;
+        }
+        p {
+            font-size: 20px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h1>STORM DASH</h1>
+        <p>Race through dramatic storms, collect coins, and avoid hazards!</p>
+        <p>Use WASD or Arrow Keys to move your vehicle</p>
+        <button onclick="startGame()">START RACE</button>
+    </div>
+
+    <div id="gameOverScreen">
+        <h1>GAME OVER</h1>
+        <p>Your Score: <span id="finalScore">0</span></p>
+        <button onclick="restartGame()">PLAY AGAIN</button>
+    </div>
+
+    <div id="gameUI">
+        <div>Score: <span id="score">0</span></div>
+        <div>Lives: <span id="lives">3</span></div>
+        <div>Coins: <span id="coins">0</span></div>
+    </div>
+
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const coinsElement = document.getElementById('coins');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreElement = document.getElementById('finalScore');
+
+        // Matter.js engine setup
+        const engine = Matter.Engine.create();
+        engine.world.gravity.y = 0; // No gravity for top-down view
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let coins = 0;
+        let player, obstacles = [], coinsArray = [], stormCores = [];
+        let keys = {};
+        let cameraOffsetX = 0;
+        let cameraOffsetY = 0;
+
+        // Asset loading
+        const assets = {
+            player: new Image(),
+            obstacle: new Image(),
+            coin: new Image(),
+            stormCore: new Image()
+        };
+
+        // Load assets
+        assets.player.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCA1MCAzMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iNDYiIGhlaWdodD0iMjYiIGZpbGw9IiMwMDgiIGJvcmRlcj0iMiIgYm9yZGVyLXJhZGl1cz0iMyIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTUiIHI9IjQiIGZpbGw9IiMwMDgiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjE1IiByPSI0IiBmaWxsPSIjMDA4Ii8+PHBhdGggZD0iTTIwIDEwIEE1IDUgMCAwIDEgMzAgMTAgQzI1IDEwIDIwIDEwIDIwIDEwWiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
+        assets.obstacle.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCgzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgZmlsbD0iIzAwMCIvPjxwYXRoIGQ9Ik0xNSA1IEE4IDggMCAwIDEgMTUgMjUgQzEwIDI1IDEwIDUgMTUgNVoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=',
+        assets.coin.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI5IiBmaWxsPSIjRmZGQjAwIi8+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iNCIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==',
+        assets.stormCore.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIyNCIgZmlsbD0iIzAwMCIvPjxjaXJjbGUgY3g9IjI1IiBjeT0iMjUiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHBhdGggZD0iTTI1IDIwIEwxNSAyNSBMNDAgMjUgTDMwIDI1IEwyNSAyMFoiIGZpbGw9IiNGRkYiLz48L3N2Zz4='
+        };
+
+        // Initialize game objects
+        function initGame() {
+            // Reset game state
+            score = 0;
+            lives = 3;
+            coins = 0;
+            updateUI();
+
+            // Create player
+            const playerBody = Matter.Bodies.rectangle(512, 360, 40, 20, { 
+                render: { sprite: { texture: assets.player.src } },
+                friction: 0.01,
+                restitution: 0.1
+            });
+            player = {
+                body: playerBody,
+                speed: 5,
+                rotation: 0
+            };
+            Matter.World.add(engine.world, player.body);
+
+            // Create initial obstacles
+            createObstacles();
+
+            // Create coins
+            createCoins();
+
+            // Create storm cores
+            createStormCores();
+        }
+
+        function createObstacles() {
+            const obstacleCount = 15;
+            for (let i = 0; i < obstacleCount; i++) {
+                const x = Math.random() * 900 + 62;
+                const y = Math.random() * 600 + 60;
+                const obstacleBody = Matter.Bodies.rectangle(x, y, 30, 30, { 
+                    render: { sprite: { texture: assets.obstacle.src } },
+                    isStatic: true,
+                    collisionFilter: { group: -1 }
+                });
+                obstacles.push({ body: obstacleBody });
+                Matter.World.add(engine.world, obstacleBody);
+            }
+        }
+
+        function createCoins() {
+            const coinCount = 20;
+            for (let i = 0; i < coinCount; i++) {
+                const x = Math.random() * 900 + 62;
+                const y = Math.random() * 600 + 60;
+                const coinBody = Matter.Bodies.circle(x, y, 10, { 
+                    render: { sprite: { texture: assets.coin.src } },
+                    isStatic: true,
+                    collisionFilter: { group: -1 }
+                });
+                coinsArray.push({ body: coinBody, collected: false });
+                Matter.World.add(engine.world, coinBody);
+            }
+        }
+
+        function createStormCores() {
+            const coreCount = 3;
+            for (let i = 0; i < coreCount; i++) {
+                const x = Math.random() * 800 + 112;
+                const y = Math.random() * 500 + 110;
+                const coreBody = Matter.Bodies.circle(x, y, 25, { 
+                    render: { sprite: { texture: assets.stormCore.src } },
+                    isStatic: true,
+                    collisionFilter: { group: -1 }
+                });
+                stormCores.push({ body: coreBody, reached: false });
+                Matter.World.add(engine.world, coreBody);
+            }
+        }
+
+        function updateUI() {
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+            coinsElement.textContent = coins;
+        }
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameRunning = true;
+            initGame();
+            gameLoop();
+        }
+
+        function restartGame() {
+            gameOverScreen.style.display = 'none';
+            gameRunning = true;
+            initGame();
+            gameLoop();
+        }
+
+        function endGame() {
+            gameRunning = false;
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Handle keyboard input
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Update player movement
+            let moveX = 0;
+            let moveY = 0;
+
+            if (keys['ArrowLeft'] || keys['a']) moveX = -1;
+            if (keys['ArrowRight'] || keys['d']) moveX = 1;
+            if (keys['ArrowUp'] || keys['w']) moveY = -1;
+            if (keys['ArrowDown'] || keys['s']) moveY = 1;
+
+            // Normalize diagonal movement
+            if (moveX !== 0 && moveY !== 0) {
+                moveX *= 0.7071;
+                moveY *= 0.7071;
+            }
+
+            Matter.Body.setVelocity(player.body, {
+                x: moveX * player.speed,
+                y: moveY * player.speed
+            });
+
+            // Update camera to follow player
+            cameraOffsetX = -player.body.position.x + 512;
+            cameraOffsetY = -player.body.position.y + 360;
+
+            // Update physics
+            Matter.Engine.update(engine);
+
+            // Check collisions
+            checkCollisions();
+
+            // Draw everything
+            draw();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollisions() {
+            // Player with obstacles
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                if (Matter.Query.collides(player.body, [obstacle.body]).length > 0) {
+                    lives--;
+                    updateUI();
+                    if (lives <= 0) endGame();
+                    break;
+                }
+            }
+
+            // Player with coins
+            for (let i = 0; i < coinsArray.length; i++) {
+                const coin = coinsArray[i];
+                if (!coin.collected && Matter.Query.collides(player.body, [coin.body]).length > 0) {
+                    coin.collected = true;
+                    coins++;
+                    score += 100;
+                    updateUI();
+                    Matter.World.remove(engine.world, coin.body);
+                }
+            }
+
+            // Player with storm cores
+            for (let i = 0; i < stormCores.length; i++) {
+                const core = stormCores[i];
+                if (!core.reached && Matter.Query.collides(player.body, [core.body]).length > 0) {
+                    core.reached = true;
+                    score += 500;
+                    updateUI();
+                }
+            }
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#001122';
+            ctx.fillRect(0, 0, 1024, 720);
+
+            // Draw background elements (simple storm effect)
+            ctx.fillStyle = 'rgba(50, 50, 100, 0.3)';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37) % 1024;
+                const y = (i * 23 + Date.now() / 100) % 720;
+                ctx.fillRect(x, y, 2, 2);
+            }
+
+            // Draw player
+            ctx.save();
+            ctx.translate(
+                player.body.position.x + cameraOffsetX,
+                player.body.position.y + cameraOffsetY
+            );
+            ctx.rotate(player.body.angle);
+            ctx.drawImage(assets.player, -20, -10, 40, 20);
+            ctx.restore();
+
+            // Draw obstacles
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                ctx.save();
+                ctx.translate(
+                    obstacle.body.position.x + cameraOffsetX,
+                    obstacle.body.position.y + cameraOffsetY
+                );
+                ctx.drawImage(assets.obstacle, -15, -15, 30, 30);
+                ctx.restore();
+            }
+
+            // Draw coins
+            for (let i = 0; i < coinsArray.length; i++) {
+                const coin = coinsArray[i];
+                if (!coin.collected) {
+                    ctx.save();
+                    ctx.translate(
+                        coin.body.position.x + cameraOffsetX,
+                        coin.body.position.y + cameraOffsetY
+                    );
+                    ctx.drawImage(assets.coin, -10, -10, 20, 20);
+                    ctx.restore();
+                }
+            }
+
+            // Draw storm cores
+            for (let i = 0; i < stormCores.length; i++) {
+                const core = stormCores[i];
+                if (!core.reached) {
+                    ctx.save();
+                    ctx.translate(
+                        core.body.position.x + cameraOffsetX,
+                        core.body.position.y + cameraOffsetY
+                    );
+                    ctx.drawImage(assets.stormCore, -25, -25, 50, 50);
+                    ctx.restore();
+                }
+            }
+        }
+
+        // Start the game when page loads
+        window.onload = function() {
+            // Set canvas size to match its display size
+            canvas.width = 1024;
+            canvas.height = 720;
+        };
+    </script>
+</body>
+</html>
