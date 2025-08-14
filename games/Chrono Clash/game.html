@@ -1,0 +1,438 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono Clash</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+            z-index: 10;
+        }
+        #instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 12px;
+            max-width: 300px;
+        }
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            z-index: 20;
+        }
+        button {
+            background-color: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        button:hover {
+            background-color: #00f;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    
+    <div id="ui">
+        <div>Player X: <span id="scoreX">0</span></div>
+        <div>Player O: <span id="scoreO">0</span></div>
+        <div>Turn: <span id="currentPlayer">X</span></div>
+    </div>
+    
+    <div id="instructions">
+        <p>Controls:</p>
+        <p>- Click on grid to place symbol</p>
+        <p>- Use time powers once per turn:</p>
+        <p>  F: Freeze Time</p>
+        <p>  R: Rewind Move</p>
+        <p>  S: Skip Turn</p>
+        <p>  B: Time Bomb (on win)</p>
+    </div>
+    
+    <div id="start-screen">
+        <h1>Chrono Clash</h1>
+        <p>Space-Time Tic Tac Toe</p>
+        <button id="startButton">Start Game</button>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const GRID_SIZE = 3;
+        const CELL_SIZE = 200;
+        const GRID_OFFSET_X = (CANVAS_WIDTH - (CELL_SIZE * GRID_SIZE)) / 2;
+        const GRID_OFFSET_Y = (CANVAS_HEIGHT - (CELL_SIZE * GRID_SIZE)) / 2;
+        
+        // Game state
+        let gameState = {
+            board: Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null)),
+            currentPlayer: 'X',
+            gameActive: false,
+            scores: { X: 0, O: 0 },
+            moveHistory: [],
+            timeAbilities: { X: true, O: true },
+            specialAction: null,
+            animation: null
+        };
+        
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const startButton = document.getElementById('startButton');
+        const scoreXElement = document.getElementById('scoreX');
+        const scoreOElement = document.getElementById('scoreO');
+        const currentPlayerElement = document.getElementById('currentPlayer');
+        
+        // Image cache
+        const images = {};
+        const imageNames = [
+            'images/512x512_chronoclash-1.png',
+            'images/512x512_chronoclash-3.png',
+            'images/512x512_chronoclash-5.png',
+            'images/512x512_chronoclash-15.png',
+            'images/512x512_chronoclash-18.png'
+        ];
+        
+        // Load images
+        function loadImages() {
+            const promises = imageNames.map(src => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        images[src] = img;
+                        resolve();
+                    };
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            });
+            
+            return Promise.all(promises);
+        }
+        
+        // Initialize game
+        function initGame() {
+            gameState.board = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
+            gameState.currentPlayer = 'X';
+            gameState.gameActive = true;
+            gameState.moveHistory = [];
+            gameState.timeAbilities = { X: true, O: true };
+            gameState.specialAction = null;
+            gameState.animation = null;
+            
+            updateUI();
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            scoreXElement.textContent = gameState.scores.X;
+            scoreOElement.textContent = gameState.scores.O;
+            currentPlayerElement.textContent = gameState.currentPlayer;
+        }
+        
+        // Draw grid
+        function drawGrid() {
+            // Draw background
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw space-time grid background
+            if (images['images/512x512_chronoclash-1.png']) {
+                const bg = images['images/512x512_chronoclash-1.png'];
+                ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            }
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = '#0ff';
+            ctx.shadowBlur = 10;
+            
+            for (let i = 0; i <= GRID_SIZE; i++) {
+                // Vertical lines
+                ctx.beginPath();
+                ctx.moveTo(GRID_OFFSET_X + i * CELL_SIZE, GRID_OFFSET_Y);
+                ctx.lineTo(GRID_OFFSET_X + i * CELL_SIZE, GRID_OFFSET_Y + GRID_SIZE * CELL_SIZE);
+                ctx.stroke();
+                
+                // Horizontal lines
+                ctx.beginPath();
+                ctx.moveTo(GRID_OFFSET_X, GRID_OFFSET_Y + i * CELL_SIZE);
+                ctx.lineTo(GRID_OFFSET_X + GRID_SIZE * CELL_SIZE, GRID_OFFSET_Y + i * CELL_SIZE);
+                ctx.stroke();
+            }
+            
+            // Draw symbols
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const symbol = gameState.board[row][col];
+                    if (symbol) {
+                        drawSymbol(row, col, symbol);
+                    }
+                }
+            }
+            
+            // Draw special actions
+            if (gameState.specialAction) {
+                drawSpecialAction();
+            }
+        }
+        
+        // Draw symbol (X or O)
+        function drawSymbol(row, col, symbol) {
+            const x = GRID_OFFSET_X + col * CELL_SIZE + CELL_SIZE / 2;
+            const y = GRID_OFFSET_Y + row * CELL_SIZE + CELL_SIZE / 2;
+            
+            ctx.strokeStyle = symbol === 'X' ? '#f00' : '#0f0';
+            ctx.lineWidth = 10;
+            ctx.shadowColor = symbol === 'X' ? '#f00' : '#0f0';
+            ctx.shadowBlur = 15;
+            
+            if (symbol === 'X') {
+                ctx.beginPath();
+                ctx.moveTo(x - 40, y - 40);
+                ctx.lineTo(x + 40, y + 40);
+                ctx.moveTo(x + 40, y - 40);
+                ctx.lineTo(x - 40, y + 40);
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.arc(x, y, 35, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        // Draw special action effect
+        function drawSpecialAction() {
+            if (!gameState.specialAction) return;
+            
+            const { type, x, y } = gameState.specialAction;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '48px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(type.toUpperCase(), x, y);
+        }
+        
+        // Handle mouse click
+        function handleClick(event) {
+            if (!gameState.gameActive || !gameState.timeAbilities[gameState.currentPlayer]) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            
+            // Check if click is on grid
+            if (mouseX >= GRID_OFFSET_X && mouseX <= GRID_OFFSET_X + GRID_SIZE * CELL_SIZE &&
+                mouseY >= GRID_OFFSET_Y && mouseY <= GRID_OFFSET_Y + GRID_SIZE * CELL_SIZE) {
+                
+                const col = Math.floor((mouseX - GRID_OFFSET_X) / CELL_SIZE);
+                const row = Math.floor((mouseY - GRID_OFFSET_Y) / CELL_SIZE);
+                
+                if (gameState.board[row][col] === null) {
+                    makeMove(row, col);
+                }
+            }
+        }
+        
+        // Make a move
+        function makeMove(row, col) {
+            gameState.board[row][col] = gameState.currentPlayer;
+            gameState.moveHistory.push({ row, col, player: gameState.currentPlayer });
+            
+            // Check for win
+            if (checkWin()) {
+                gameState.scores[gameState.currentPlayer]++;
+                gameState.gameActive = false;
+                
+                // Trigger time bomb effect
+                gameState.specialAction = { type: 'bomb', x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+                setTimeout(() => {
+                    gameState.specialAction = null;
+                    resetGame();
+                }, 2000);
+            } else if (gameState.moveHistory.length === GRID_SIZE * GRID_SIZE) {
+                // Draw
+                resetGame();
+            } else {
+                // Switch player
+                gameState.currentPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
+                updateUI();
+            }
+        }
+        
+        // Check for win condition
+        function checkWin() {
+            const board = gameState.board;
+            
+            // Check rows
+            for (let row = 0; row < GRID_SIZE; row++) {
+                if (board[row][0] && board[row][0] === board[row][1] && board[row][0] === board[row][2]) {
+                    return true;
+                }
+            }
+            
+            // Check columns
+            for (let col = 0; col < GRID_SIZE; col++) {
+                if (board[0][col] && board[0][col] === board[1][col] && board[0][col] === board[2][col]) {
+                    return true;
+                }
+            }
+            
+            // Check diagonals
+            if (board[0][0] && board[0][0] === board[1][1] && board[0][0] === board[2][2]) {
+                return true;
+            }
+            
+            if (board[0][2] && board[0][2] === board[1][1] && board[0][2] === board[2][0]) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Reset game
+        function resetGame() {
+            setTimeout(() => {
+                initGame();
+            }, 1000);
+        }
+        
+        // Handle keyboard input
+        function handleKeyPress(event) {
+            if (!gameState.gameActive) return;
+            
+            switch (event.key.toLowerCase()) {
+                case 'f':
+                    freezeTime();
+                    break;
+                case 'r':
+                    rewindMove();
+                    break;
+                case 's':
+                    skipTurn();
+                    break;
+                case 'b':
+                    triggerBomb();
+                    break;
+            }
+        }
+        
+        // Freeze time ability
+        function freezeTime() {
+            if (!gameState.timeAbilities[gameState.currentPlayer]) return;
+            
+            gameState.timeAbilities[gameState.currentPlayer] = false;
+            gameState.specialAction = { type: 'freeze', x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+            
+            setTimeout(() => {
+                gameState.specialAction = null;
+            }, 1000);
+        }
+        
+        // Rewind move ability
+        function rewindMove() {
+            if (!gameState.timeAbilities[gameState.currentPlayer]) return;
+            
+            gameState.timeAbilities[gameState.currentPlayer] = false;
+            if (gameState.moveHistory.length > 0) {
+                const lastMove = gameState.moveHistory.pop();
+                gameState.board[lastMove.row][lastMove.col] = null;
+                
+                gameState.specialAction = { type: 'rewind', x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+                
+                setTimeout(() => {
+                    gameState.specialAction = null;
+                }, 1000);
+            }
+        }
+        
+        // Skip turn ability
+        function skipTurn() {
+            if (!gameState.timeAbilities[gameState.currentPlayer]) return;
+            
+            gameState.timeAbilities[gameState.currentPlayer] = false;
+            gameState.currentPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
+            updateUI();
+            
+            gameState.specialAction = { type: 'skip', x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+            
+            setTimeout(() => {
+                gameState.specialAction = null;
+            }, 1000);
+        }
+        
+        // Trigger time bomb
+        function triggerBomb() {
+            if (!gameState.timeAbilities[gameState.currentPlayer]) return;
+            
+            gameState.timeAbilities[gameState.currentPlayer] = false;
+            gameState.specialAction = { type: 'bomb', x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+            
+            setTimeout(() => {
+                gameState.specialAction = null;
+                resetGame();
+            }, 2000);
+        }
+        
+        // Game loop
+        function gameLoop() {
+            drawGrid();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Start game
+        startButton.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            initGame();
+            gameLoop();
+        });
+        
+        // Event listeners
+        canvas.addEventListener('click', handleClick);
+        document.addEventListener('keydown', handleKeyPress);
+        
+        // Load images and start
+        loadImages().then(() => {
+            console.log("Images loaded successfully");
+        }).catch(error => {
+            console.error("Failed to load images:", error);
+        });
+    </script>
+</body>
+</html>
