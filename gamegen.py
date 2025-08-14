@@ -244,8 +244,8 @@ with open(prompt_path, "w", encoding="utf-8") as f:
 thumbnail_path = os.path.join(game_dir, "thumbnail.png")
 genimg.generate_image(
     outfile=thumbnail_path,
-    prompt=f"A thumbnail for the game {json_data["name"]}, {imgprompt}",
-    negativeprompt=imgnegativeprompt,
+    prompt=f"Vibrant, colorful abstract digital art with swirling gradients of orange, red, blue, purple, and teal, energetic brushstrokes and geometric accents, high contrast, modern style, featuring a clean, minimalist symbolic logo representing the game {json_data["name"]} at the center, surrounded by a segmented circular border, sharp focus, high detail, bold and striking composition, text-free, modern graphic design aesthetic",
+    negativeprompt="text, watermark, low resolution, blurry, photorealistic, muted colors, monochrome, 3D render, realistic shading, people, animals",
     model="OfficialStableDiffusion/dreamshaper_8LCM",
     seed=-1,
     steps=5,

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import json
 
 
@@ -48,9 +49,19 @@ def inject_gamelist_into_html(json_data, html_path, output_path=None):
 
     return output_path
 
-with open("index.html", "r+", encoding="utf-8") as f:
-    content = f.read().replace("{gamelist}", json.dumps(games_data, ensure_ascii=False))
-    f.seek(0)
-    f.write(content)
-    f.truncate()
+
+
+
+template_file = Path("index.template.html")
+index_file = Path("index.html")
+
+# Read the existing HTML
+html_content = template_file.read_text(encoding="utf-8")
+
+# Replace placeholder with JSON data
+json_str = json.dumps(games_data, ensure_ascii=False)
+updated_html = html_content.replace("{gamelist}", json_str)
+
+# Write back the updated HTML
+index_file.write_text(updated_html, encoding="utf-8")
 
