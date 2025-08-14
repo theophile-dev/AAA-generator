@@ -1,0 +1,109 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/454x388_background.png description: A simple ghost character in minimalist style, white with black outlines, no background.
+path: images/512x453_background2.png description: A single tombstone in a desolate, ghostly wasteland, minimalist design.
+path: images/512x479_background3.png description: A ghostly hand reaching out, minimalist and eerie.
+path: images/512x501_background4.png description: A floating soul, represented as a glowing circle or star, minimalist.
+path: images/418x389_background5.png description: A ghostly wasteland background with dark tones and faint ghostly outlines.
+path: images/476x432_background6.png description: A broken chain floating in the air, minimalist and eerie.
+path: images/456x458_background7.png description: A floating tombstone with a ghostly aura, minimalist.
+path: images/512x512_background8.png description: A floating broken chain with a faint glow, minimalist.
+path: images/336x397_chain.png description: A ghostly hand reaching out, minimalist and haunting.
+path: images/364x255_ghost.png description: A glowing soul with a speed boost effect, minimalist.
+path: images/236x305_hand.png description: A glowing soul with an invincibility shield, minimalist.
+path: images/442x424_obstacle1.png description: A glowing soul with a temporary jump boost, minimalist.
+path: images/512x7_obstacle2.png description: A darker, more eerie version of the wasteland background.
+path: images/205x327_obstacle3.png description: A ghostly wasteland with faint outlines of past structures.
+path: images/325x284_powerup1.png description: A ghostly wasteland with a faint glow from distant souls.
+path: images/356x404_powerup2.png description: A ghostly wasteland with a faint mist effect, minimalist.
+path: images/337x375_powerup3.png description: A ghostly wasteland with a faint ghostly trail effect.
+path: images/467x464_soul.png description: A ghostly wasteland with a faint glowing soul trail.
+path: images/432x458_tombstone.png description: A ghostly wasteland with a faint ghostly aura effect.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Concept: "Ghostly Ascent"**
+
+**Theme:** Ghostly Wasteland  
+**Genre:** Endless Climber  
+**Art Style:** Minimalist, single-element PNGs  
+**Code Complexity:** 500 lines of JavaScript  
+**Art Requirements:** 20 single-element .png images  
+
+---
+
+**Gameplay Overview:**  
+"Ghostly Ascent" is a simple, fun, and engaging endless runner-style game where the player controls a ghost character navigating through a desolate, eerie wasteland. The goal is to climb upward as far as possible, avoiding obstacles and collecting floating souls to power up and progress.
+
+---
+
+**Gameplay Mechanics:**  
+- The player controls a ghost that moves upward automatically, with the player able to move left and right to avoid obstacles.  
+- The screen scrolls upward, creating the illusion of climbing through a ghostly wasteland.  
+- The ghost can collect floating souls (represented by simple circle or star-shaped PNGs) which grant temporary power-ups like speed boosts or invincibility.  
+- Obstacles include floating tombstones, broken chains, and ghostly hands that reach out to grab the player.  
+- The game ends when the player is caught by a hand or falls off the screen.  
+
+---
+
+**Objectives:**  
+- Survive as long as possible by avoiding obstacles.  
+- Collect souls to gain power-ups that enhance movement and survival.  
+- Beat your own high score and challenge friends.  
+
+---
+
+**Unique Features:**  
+- **Minimalist Art Style:** The game uses only 20 single-element PNGs (ghost, tombstone, hand, soul, etc.), making it easy to create and scale.  
+- **Simple Controls:** Left/Right movement only, making it accessible for all ages.  
+- **Power-Up System:** Players can collect souls to gain temporary boosts that make the climb more exciting.  
+- **Ghostly Atmosphere:** The background and obstacles are designed to evoke a haunting, desolate environment, enhancing the eerie feel of the game.  
+- **Progressive Difficulty:** Obstacles and speed increase gradually as the player climbs, keeping the gameplay challenging and engaging.  
+
+---
+
+**Implementation Notes:**  
+- All assets are single .png files with no sprite sheets or animations.  
+- The code is structured to handle movement, collision detection, obstacle generation, and power-up logic in under 500 lines of JavaScript.  
+- The game uses basic DOM elements and CSS for rendering, making it easy to run in any modern browser without external libraries.  
+
+This concept is designed to be simple, fun, and visually engaging, with a unique ghostly theme that stands out while keeping the development process lightweight and approachable.

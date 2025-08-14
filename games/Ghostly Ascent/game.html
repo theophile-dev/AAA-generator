@@ -1,0 +1,648 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghostly Ascent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #e6e6e6;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: #0d0d1a;
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(13, 13, 26, 0.9);
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        #game-over {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #ff7eb3;
+            text-shadow: 0 0 10px rgba(255, 126, 179, 0.7);
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #4cc9f0;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 80%;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #ff7eb3, #4cc9f0);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            color: #0d0d1a;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        #score-display, #lives-display {
+            position: absolute;
+            top: 20px;
+            font-size: 1.5rem;
+            color: #4cc9f0;
+            text-shadow: 0 0 8px rgba(76, 201, 240, 0.7);
+        }
+        
+        #score-display {
+            left: 20px;
+        }
+        
+        #lives-display {
+            right: 20px;
+        }
+        
+        .powerup-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            color: #ff7eb3;
+            display: none;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-width: 80%;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="score-display">Score: 0</div>
+            <div id="lives-display">Lives: 3</div>
+            <div class="powerup-indicator" id="powerup-indicator">Speed Boost Active!</div>
+            
+            <div id="start-screen">
+                <h1>GHOSTLY ASCENT</h1>
+                <h2>Escape the Wasteland</h2>
+                <p>Navigate through the eerie wasteland, avoid obstacles, and collect souls to power up your ascent!</p>
+                
+                <div class="instructions">
+                    <p>Use <span class="key">←</span> and <span class="key">→</span> keys to move left and right</p>
+                    <p>Collect souls for temporary power-ups</p>
+                    <p>Avoid hands, tombstones, and chains</p>
+                </div>
+                
+                <button class="btn" id="start-btn">START GAME</button>
+            </div>
+            
+            <div id="game-over">
+                <h1>GAME OVER</h1>
+                <h2>Your Score: <span id="final-score">0</span></h2>
+                <p>You reached the heights of <span id="height-reached">0</span> meters</p>
+                <button class="btn" id="restart-btn">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreDisplay = document.getElementById('score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const finalScore = document.getElementById('final-score');
+        const heightReached = document.getElementById('height-reached');
+        const powerupIndicator = document.getElementById('powerup-indicator');
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let playerY = 600;
+        let playerX = canvas.width / 2;
+        let playerSpeed = 5;
+        let gravity = 0.2;
+        let velocityY = 0;
+        let scrollSpeed = 3;
+        let obstacles = [];
+        let powerups = [];
+        let souls = [];
+        let backgroundOffset = 0;
+        let keys = {};
+        let lastObstacleTime = 0;
+        let lastPowerupTime = 0;
+        let lastSoulsTime = 0;
+        let powerupActive = null;
+        let powerupTimer = 0;
+        let gameHeight = 0;
+
+        // Image assets
+        const images = {};
+        const imagePaths = [
+            'images/454x388_background.png',       // ghost character
+            'images/512x453_background2.png',      // tombstone
+            'images/512x479_background3.png',      // hand
+            'images/512x501_background4.png',      // soul
+            'images/418x389_background5.png',      // wasteland background
+            'images/476x432_background6.png',      // broken chain
+            'images/456x458_background7.png',      // floating tombstone
+            'images/512x512_background8.png',      // glowing chain
+            'images/336x397_chain.png',            // hand reaching out
+            'images/364x255_ghost.png',            // glowing soul with speed boost
+            'images/236x305_hand.png',            // invincibility shield
+            'images/442x424_obstacle1.png',       // jump boost
+            'images/512x7_obstacle2.png',         // dark wasteland
+            'images/205x327_obstacle3.png',       // past structures
+            'images/325x284_powerup1.png',        // glow from distant souls
+            'images/356x404_powerup2.png',        // mist effect
+            'images/337x375_powerup3.png',        // ghostly trail
+            'images/467x464_soul.png',            // glowing soul trail
+            'images/432x458_tombstone.png'        // ghostly aura effect
+        ];
+
+        // Preload images
+        function preloadImages() {
+            let loaded = 0;
+            const total = imagePaths.length;
+            
+            imagePaths.forEach((path, index) => {
+                images[index] = new Image();
+                images[index].src = path;
+                images[index].onload = () => {
+                    loaded++;
+                    if (loaded === total) {
+                        startScreen.style.display = 'flex';
+                    }
+                };
+            });
+        }
+
+        // Initialize game
+        function initGame() {
+            gameRunning = true;
+            score = 0;
+            lives = 3;
+            playerY = 600;
+            playerX = canvas.width / 2;
+            scrollSpeed = 3;
+            obstacles = [];
+            powerups = [];
+            souls = [];
+            backgroundOffset = 0;
+            powerupActive = null;
+            powerupTimer = 0;
+            gameHeight = 0;
+            
+            scoreDisplay.textContent = `Score: ${score}`;
+            livesDisplay.textContent = `Lives: ${lives}`;
+            gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'none';
+            
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle keyboard input
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Button event listeners
+        startBtn.addEventListener('click', initGame);
+        restartBtn.addEventListener('click', initGame);
+
+        // Player class
+        class Player {
+            constructor() {
+                this.width = 60;
+                this.height = 80;
+                this.x = playerX - this.width / 2;
+                this.y = playerY - this.height / 2;
+                this.speed = playerSpeed;
+                this.invincible = false;
+                this.invincibleTimer = 0;
+            }
+            
+            update() {
+                // Movement
+                if (keys['ArrowLeft'] && this.x > 0) {
+                    this.x -= this.speed;
+                }
+                if (keys['ArrowRight'] && this.x < canvas.width - this.width) {
+                    this.x += this.speed;
+                }
+                
+                // Apply gravity
+                velocityY += gravity;
+                this.y += velocityY;
+                
+                // Reset velocity when on ground
+                if (this.y > playerY - this.height / 2) {
+                    this.y = playerY - this.height / 2;
+                    velocityY = 0;
+                }
+                
+                // Update invincibility
+                if (this.invincible) {
+                    this.invincibleTimer--;
+                    if (this.invincibleTimer <= 0) {
+                        this.invincible = false;
+                    }
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.invincible ? 0.5 : 1;
+                ctx.drawImage(images[0], this.x, this.y, this.width, this.height);
+                ctx.restore();
+            }
+        }
+
+        // Obstacle class
+        class Obstacle {
+            constructor(type) {
+                this.type = type;
+                this.width = 80;
+                this.height = 80;
+                this.x = Math.random() * (canvas.width - this.width);
+                this.y = -this.height;
+                this.speed = scrollSpeed + Math.random() * 2;
+                this.active = true;
+            }
+            
+            update() {
+                this.y += this.speed;
+                
+                // Remove if off screen
+                if (this.y > canvas.height) {
+                    this.active = false;
+                }
+            }
+            
+            draw() {
+                ctx.drawImage(images[this.type], this.x, this.y, this.width, this.height);
+            }
+        }
+
+        // Powerup class
+        class Powerup {
+            constructor(type) {
+                this.type = type;
+                this.width = 50;
+                this.height = 50;
+                this.x = Math.random() * (canvas.width - this.width);
+                this.y = -this.height;
+                this.speed = scrollSpeed + Math.random() * 2;
+                this.active = true;
+            }
+            
+            update() {
+                this.y += this.speed;
+                
+                // Remove if off screen
+                if (this.y > canvas.height) {
+                    this.active = false;
+                }
+            }
+            
+            draw() {
+                ctx.drawImage(images[this.type + 9], this.x, this.y, this.width, this.height);
+            }
+        }
+
+        // Soul class
+        class Soul {
+            constructor() {
+                this.width = 30;
+                this.height = 30;
+                this.x = Math.random() * (canvas.width - this.width);
+                this.y = -this.height;
+                this.speed = scrollSpeed + Math.random() * 2;
+                this.active = true;
+                this.rotation = 0;
+            }
+            
+            update() {
+                this.y += this.speed;
+                this.rotation += 0.05;
+                
+                // Remove if off screen
+                if (this.y > canvas.height) {
+                    this.active = false;
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                ctx.rotate(this.rotation);
+                ctx.drawImage(images[3], -this.width/2, -this.height/2, this.width, this.height);
+                ctx.restore();
+            }
+        }
+
+        // Create obstacles
+        function createObstacle() {
+            const types = [1, 2, 5, 6, 7]; // Tombstone, hand, chain, floating tombstone, glowing chain
+            const type = types[Math.floor(Math.random() * types.length)];
+            obstacles.push(new Obstacle(type));
+        }
+
+        // Create powerups
+        function createPowerup() {
+            const types = [10, 11, 12]; // Speed boost, invincibility, jump boost
+            const type = types[Math.floor(Math.random() * types.length)];
+            powerups.push(new Powerup(type));
+        }
+
+        // Create souls
+        function createSoul() {
+            souls.push(new Soul());
+        }
+
+        // Check collisions
+        function checkCollisions(player) {
+            // Check obstacle collisions
+            for (let i = 0; i < obstacles.length; i++) {
+                const obs = obstacles[i];
+                if (!obs.active) continue;
+                
+                if (
+                    player.x < obs.x + obs.width &&
+                    player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height &&
+                    player.y + player.height > obs.y
+                ) {
+                    // Collision detected
+                    if (player.invincible) {
+                        // Destroy obstacle if invincible
+                        obs.active = false;
+                    } else {
+                        lives--;
+                        livesDisplay.textContent = `Lives: ${lives}`;
+                        
+                        if (lives <= 0) {
+                            gameOver();
+                        } else {
+                            player.invincible = true;
+                            player.invincibleTimer = 60; // 1 second at 60fps
+                        }
+                    }
+                }
+            }
+            
+            // Check powerup collisions
+            for (let i = 0; i < powerups.length; i++) {
+                const pow = powerups[i];
+                if (!pow.active) continue;
+                
+                if (
+                    player.x < pow.x + pow.width &&
+                    player.x + player.width > pow.x &&
+                    player.y < pow.y + pow.height &&
+                    player.y + player.height > pow.y
+                ) {
+                    // Collect powerup
+                    pow.active = false;
+                    
+                    switch (pow.type) {
+                        case 10: // Speed boost
+                            player.speed = playerSpeed * 2;
+                            powerupActive = 'speed';
+                            powerupTimer = 300; // 5 seconds at 60fps
+                            powerupIndicator.textContent = 'Speed Boost Active!';
+                            powerupIndicator.style.display = 'block';
+                            break;
+                        case 11: // Invincibility
+                            player.invincible = true;
+                            player.invincibleTimer = 600; // 10 seconds at 60fps
+                            powerupActive = 'invincible';
+                            powerupTimer = 600;
+                            powerupIndicator.textContent = 'Invincibility Active!';
+                            powerupIndicator.style.display = 'block';
+                            break;
+                        case 12: // Jump boost
+                            velocityY = -10; // Jump!
+                            break;
+                    }
+                }
+            }
+            
+            // Check soul collisions
+            for (let i = 0; i < souls.length; i++) {
+                const soul = souls[i];
+                if (!soul.active) continue;
+                
+                if (
+                    player.x < soul.x + soul.width &&
+                    player.x + player.width > soul.x &&
+                    player.y < soul.y + soul.height &&
+                    player.y + player.height > soul.y
+                ) {
+                    // Collect soul
+                    soul.active = false;
+                    score += 100;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                }
+            }
+        }
+
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            finalScore.textContent = score;
+            heightReached.textContent = Math.floor(gameHeight);
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Update powerup timer
+        function updatePowerupTimer() {
+            if (powerupActive && powerupTimer > 0) {
+                powerupTimer--;
+                
+                if (powerupTimer <= 0) {
+                    powerupActive = null;
+                    powerupIndicator.style.display = 'none';
+                    
+                    // Reset player speed
+                    if (player.speed > playerSpeed) {
+                        player.speed = playerSpeed;
+                    }
+                }
+            }
+        }
+
+        // Main game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            backgroundOffset += scrollSpeed * 0.2;
+            const bgImage = images[4]; // Wasteland background
+            ctx.drawImage(bgImage, 0, -backgroundOffset % bgImage.height, canvas.width, bgImage.height);
+            ctx.drawImage(bgImage, 0, -backgroundOffset % bgImage.height - bgImage.height, canvas.width, bgImage.height);
+            
+            // Update game height
+            gameHeight += scrollSpeed;
+            
+            // Create obstacles
+            const now = Date.now();
+            if (now - lastObstacleTime > 1500) {
+                createObstacle();
+                lastObstacleTime = now;
+            }
+            
+            // Create powerups
+            if (now - lastPowerupTime > 3000) {
+                createPowerup();
+                lastPowerupTime = now;
+            }
+            
+            // Create souls
+            if (now - lastSoulsTime > 800) {
+                createSoul();
+                lastSoulsTime = now;
+            }
+            
+            // Update and draw obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].update();
+                obstacles[i].draw();
+                
+                if (!obstacles[i].active) {
+                    obstacles.splice(i, 1);
+                }
+            }
+            
+            // Update and draw powerups
+            for (let i = powerups.length - 1; i >= 0; i--) {
+                powerups[i].update();
+                powerups[i].draw();
+                
+                if (!powerups[i].active) {
+                    powerups.splice(i, 1);
+                }
+            }
+            
+            // Update and draw souls
+            for (let i = souls.length - 1; i >= 0; i--) {
+                souls[i].update();
+                souls[i].draw();
+                
+                if (!souls[i].active) {
+                    souls.splice(i, 1);
+                }
+            }
+            
+            // Create player instance
+            const player = new Player();
+            player.update();
+            player.draw();
+            
+            // Check collisions
+            checkCollisions(player);
+            
+            // Update powerup timer
+            updatePowerupTimer();
+            
+            // Increase difficulty over time
+            if (score > 0 && score % 500 === 0) {
+                scrollSpeed += 0.01;
+            }
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        preloadImages();
+    </script>
+</body>
+</html>
