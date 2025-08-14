@@ -1,0 +1,88 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/175x299_base.png description: A simple base structure made of blocks, surrounded by terrain.
+path: images/218x230_build-mode.png description: A basic flying demon with wings and a menacing face.
+path: images/512x512_challenge-mode.png description: A single block wall used for defense.
+path: images/512x471_crystal.png description: A simple tower structure for observation and attack.
+path: images/401x269_demon-attack.png description: A basic trap mechanism to damage demons.
+path: images/407x375_demon-destroyed.png description: A flat platform used for positioning structures.
+path: images/458x409_demon-wave.png description: A glowing crystal used as a resource for building and upgrading.
+path: images/441x375_demon.png description: A grid-based world layout for placing structures.
+path: images/512x512_game-over.png description: A wave of flying demons approaching the base.
+path: images/512x512_grid.png description: A structure with a glowing upgrade icon.
+path: images/512x512_menu.png description: A clear blue sky with clouds in the background.
+path: images/464x360_platform.png description: A demon flying toward a wall or trap.
+path: images/512x428_resource-collection.png description: Multiple structures arranged in a strategic formation.
+path: images/506x486_sky.png description: A demon being destroyed by a trap or wall.
+path: images/450x512_structure-arrangement.png description: A player collecting Sky Crystals from defeated demons.
+path: images/379x472_tower.png description: A challenge mode interface with difficulty levels.
+path: images/433x439_trap.png description: A build mode interface showing available structures.
+path: images/139x326_upgrade.png description: A game over screen with a score and restart option.
+path: images/512x512_wall.png description: Main menu screen with start and settings options.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Sky Demon Tamer"**
+
+**Concept Overview:**
+"Sky Demon Tamer" is a minimalistic, sandbox-style building game where players construct simple structures to defend their base from an invading swarm of sky demons. The game is designed to be easy to learn, fun to play, and engaging for all ages, with a focus on creativity and strategic thinking.
+
+**Gameplay Mechanics:**
+- **Building System:** Players can place up to 20 unique single-element .png images (like walls, towers, platforms, and traps) in a grid-based world to create structures. Each image is a single, static element with no animations.
+- **Base Defense:** The player’s goal is to protect their base from waves of sky demons that spawn from the sky. Each demon has a simple AI that moves toward the nearest structure or player.
+- **Resource Management:** Players can collect "Sky Crystals" by defeating demons. These crystals are used to build new structures or upgrade existing ones.
+- **Placement Rules:** Structures can be placed adjacent to each other, but not overlapping. Some structures (like traps) can be activated to damage or repel demons.
+
+**Objectives:**
+- Survive as long as possible by defending the base.
+- Build creative and effective structures to fend off the demons.
+- Unlock new structures and upgrade existing ones using collected Sky Crystals.
+- Achieve high scores and unlock new challenges or difficulty levels.
+
+**Unique Features:**
+- **Minimalist Aesthetic:** The game uses only 20 single-element images, creating a clean and simple visual style. All graphics are static, with no complex animations or sprite sheets.
+- **No Complexity:** The game avoids complex mechanics such as physics or advanced AI. The focus is on strategic placement and creative building.
+- **Replayability:** Players can experiment with different building configurations, leading to varied gameplay experiences and strategies.
+- **Progressive Difficulty:** As the game progresses, demons become faster, more numerous, or have new abilities, increasing the challenge without requiring more complex graphics or code.
+
+**Design Philosophy:**
+The game is intended to be easily implemented with minimal resources. It leverages basic HTML5 canvas and JavaScript to render the world and handle interactions. The code is kept under 500 lines to ensure simplicity and maintainability. The focus is on creating a fun, accessible, and endlessly replayable experience that highlights the power of simplicity in game design.

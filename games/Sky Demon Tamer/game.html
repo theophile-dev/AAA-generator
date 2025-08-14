@@ -1,0 +1,326 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sky Demon Tamer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const GRID_SIZE = 64;
+        const DEMON_SPEED = 1.5;
+        const DEMON_SPAWN_RATE = 60; // frames between spawns
+        const BUILD_MODE = 0;
+        const CHALLENGE_MODE = 1;
+
+        // Game state
+        let gameState = 'menu'; // menu, playing, gameOver
+        let score = 0;
+        let lives = 3;
+        let crystals = 0;
+        let frameCount = 0;
+        let demons = [];
+        let structures = [];
+        let selectedStructure = null;
+        let mode = BUILD_MODE;
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Images
+        const images = {};
+        const imageNames = [
+            '175x299_base.png',
+            '218x230_build-mode.png',
+            '512x512_challenge-mode.png',
+            '512x471_crystal.png',
+            '401x269_demon-attack.png',
+            '407x375_demon-destroyed.png',
+            '458x409_demon-wave.png',
+            '441x375_demon.png',
+            '512x512_game-over.png',
+            '512x512_grid.png',
+            '512x512_menu.png',
+            '464x360_platform.png',
+            '512x428_resource-collection.png',
+            '506x486_sky.png',
+            '450x512_structure-arrangement.png',
+            '379x472_tower.png',
+            '433x439_trap.png',
+            '139x326_upgrade.png',
+            '512x512_wall.png'
+        ];
+
+        // Preload images
+        imageNames.forEach(name => {
+            const img = new Image();
+            img.src = `images/${name}`;
+            images[name] = img;
+        });
+
+        // Structure types
+        const STRUCTURE_TYPES = {
+            wall: { name: 'Wall', cost: 10, image: '512x512_wall.png' },
+            tower: { name: 'Tower', cost: 20, image: '379x472_tower.png' },
+            trap: { name: 'Trap', cost: 15, image: '433x439_trap.png' },
+            platform: { name: 'Platform', cost: 5, image: '464x360_platform.png' }
+        };
+
+        // Demon class
+        class Demon {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 441;
+                this.height = 375;
+                this.speed = DEMON_SPEED;
+                this.health = 100;
+                this.reward = 10; // crystals
+            }
+
+            update() {
+                this.y += this.speed;
+            }
+
+            draw() {
+                ctx.drawImage(images['441x375_demon.png'], this.x, this.y, this.width, this.height);
+            }
+        }
+
+        // Structure class
+        class Structure {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.width = 0;
+                this.height = 0;
+                this.image = images[STRUCTURE_TYPES[type].image];
+                if (this.image) {
+                    this.width = this.image.width;
+                    this.height = this.image.height;
+                }
+            }
+
+            draw() {
+                if (this.image) {
+                    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                }
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            demons = [];
+            structures = [];
+            score = 0;
+            lives = 3;
+            crystals = 0;
+            frameCount = 0;
+            selectedStructure = null;
+            mode = BUILD_MODE;
+        }
+
+        // Spawn demon
+        function spawnDemon() {
+            const x = Math.random() * (CANVAS_WIDTH - 441);
+            demons.push(new Demon(x, -375));
+        }
+
+        // Draw base
+        function drawBase() {
+            ctx.drawImage(images['175x299_base.png'], 0, CANVAS_HEIGHT - 299, 175, 299);
+        }
+
+        // Draw grid
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let x = 0; x < CANVAS_WIDTH; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, CANVAS_HEIGHT);
+                ctx.stroke();
+            }
+            for (let y = 0; y < CANVAS_HEIGHT; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(CANVAS_WIDTH, y);
+                ctx.stroke();
+            }
+        }
+
+        // Draw UI
+        function drawUI() {
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 20, 30);
+            ctx.fillText(`Lives: ${lives}`, 20, 60);
+            ctx.fillText(`Crystals: ${crystals}`, 20, 90);
+        }
+
+        // Draw menu
+        function drawMenu() {
+            ctx.drawImage(images['512x512_menu.png'], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.fillStyle = 'white';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SKY DEMON TAMER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
+            ctx.font = '24px Arial';
+            ctx.fillText('Click to Start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+        }
+
+        // Draw game over
+        function drawGameOver() {
+            ctx.drawImage(images['512x512_game-over.png'], 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.fillStyle = 'white';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
+            ctx.font = '24px Arial';
+            ctx.fillText(`Final Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            ctx.fillText('Click to Restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+        }
+
+        // Draw structures
+        function drawStructures() {
+            structures.forEach(structure => structure.draw());
+        }
+
+        // Draw demons
+        function drawDemons() {
+            demons.forEach(demon => demon.draw());
+        }
+
+        // Update game logic
+        function update() {
+            if (gameState !== 'playing') return;
+
+            frameCount++;
+
+            // Spawn demons
+            if (frameCount % DEMON_SPAWN_RATE === 0) {
+                spawnDemon();
+            }
+
+            // Update demons
+            demons.forEach(demon => {
+                demon.update();
+            });
+
+            // Remove off-screen demons
+            demons = demons.filter(demon => demon.y < CANVAS_HEIGHT);
+
+            // Check collisions
+            demons.forEach((demon, index) => {
+                structures.forEach(structure => {
+                    if (demon.x < structure.x + structure.width &&
+                        demon.x + demon.width > structure.x &&
+                        demon.y < structure.y + structure.height &&
+                        demon.y + demon.height > structure.y) {
+                        // Demon hit structure
+                        demons.splice(index, 1);
+                        crystals += demon.reward;
+                        score += demon.reward;
+                    }
+                });
+            });
+
+            // Check if demons reached base
+            demons.forEach(demon => {
+                if (demon.y > CANVAS_HEIGHT - 299) {
+                    lives--;
+                    demons = demons.filter(d => d !== demon);
+                    if (lives <= 0) {
+                        gameState = 'gameOver';
+                    }
+                }
+            });
+        }
+
+        // Draw everything
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            if (gameState === 'menu') {
+                drawMenu();
+            } else if (gameState === 'gameOver') {
+                drawGameOver();
+            } else {
+                drawBase();
+                drawGrid();
+                drawStructures();
+                drawDemons();
+                drawUI();
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle mouse clicks
+        canvas.addEventListener('click', (e) => {
+            if (gameState === 'menu') {
+                gameState = 'playing';
+                initGame();
+                return;
+            }
+
+            if (gameState === 'gameOver') {
+                gameState = 'playing';
+                initGame();
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Convert to grid coordinates
+            const gridX = Math.floor(x / GRID_SIZE) * GRID_SIZE;
+            const gridY = Math.floor(y / GRID_SIZE) * GRID_SIZE;
+
+            if (selectedStructure && crystals >= STRUCTURE_TYPES[selectedStructure].cost) {
+                structures.push(new Structure(gridX, gridY, selectedStructure));
+                crystals -= STRUCTURE_TYPES[selectedStructure].cost;
+                selectedStructure = null;
+            }
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (gameState !== 'playing') return;
+
+            if (e.key === '1') selectedStructure = 'wall';
+            if (e.key === '2') selectedStructure = 'tower';
+            if (e.key === '3') selectedStructure = 'trap';
+            if (e.key === '4') selectedStructure = 'platform';
+        });
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>
