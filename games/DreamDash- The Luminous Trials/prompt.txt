@@ -1,0 +1,101 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/411x410_boss1.png description: A small, glowing character with a soft, minimalist design, standing on a floating platform.
+path: images/481x476_boss2.png description: A smooth, glowing floating platform with a soft light glow.
+path: images/443x433_boss3.png description: A glowing, floating orb with a soft light and subtle animation.
+path: images/473x489_boss_rush.png description: A dreamlike boss with a spiral shape and glowing eyes, surrounded by floating particles.
+path: images/432x401_code_structure.png description: A floating, geometric boss with sharp angles and a pulsating light effect.
+path: images/379x485_concept_art.png description: A large, amorphous blob with glowing tendrils and a slow, pulsating motion.
+path: images/199x160_dream_atmosphere.png description: A surreal scene where gravity is flipped, with platforms floating upside-down.
+path: images/439x441_dream_world.png description: A dreamy scene with time slowed, showing a glowing character and floating orbs.
+path: images/464x495_escape.png description: A surreal view of floating islands connected by glowing bridges and pathways.
+path: images/438x436_final_boss.png description: A panoramic view of the ever-shifting dream world with glowing elements and surreal landscapes.
+path: images/512x512_floating_islands.png description: A minimalist art style with clean lines and glowing elements, showing a dreamlike platform.
+path: images/79x116_gravityflip.png description: A visual representation of ambient, dreamy sound effects with soft waves and light pulses.
+path: images/512x453_level_progression.png description: A visual of the dream world expanding with new paths and glowing elements as the player progresses.
+path: images/191x341_minimalist_art.png description: A sequence showing the player facing a series of bosses in a boss rush format.
+path: images/322x433_minimalist_sprite.png description: A surreal, final boss with a glowing, shifting form and dynamic attack patterns.
+path: images/512x512_orb.png description: A dreamy scene showing the player escaping the dream world with a glowing light trail.
+path: images/512x475_platform.png description: A minimalist sprite of the player character with soft glowing edges and simple design.
+path: images/218x275_player.png description: A soft, dreamy atmosphere with glowing elements and ambient light effects.
+path: images/320x388_sound_effects.png description: A visual representation of the game's code structure with simple logic and minimal code lines.
+path: images/512x512_time_slow.png description: A concept art piece showing the player in a surreal dream world with floating islands and glowing elements.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "DreamDash: The Luminous Trials"**
+
+**Theme:** A dreamlike, surreal platformer with a boss rush twist, set in a whimsical, ever-shifting world of floating islands, glowing pathways, and mysterious creatures.
+
+**Core Concept:**  
+In "DreamDash: The Luminous Trials," players navigate through a series of surreal, gravity-defying dreamscapes, each representing a different dream segment. The goal is to defeat a series of bosses that are manifestations of the player's subconscious fears or desires — all while navigating a platformer environment that shifts and changes with each level.
+
+**Gameplay Mechanics:**  
+- **Movement:** Simple 2D movement with jump, double jump, and wall jump. The player can collect glowing orbs that grant temporary invincibility or slow time for a short period.  
+- **Platforming:** Platforms and obstacles shift and change as the player progresses, requiring quick reflexes and adaptive thinking.  
+- **Boss Rush:** After each level, the player faces a boss. Each boss has a unique ability and weak point. Defeating the boss opens the next level and reveals more of the dream world.  
+- **Progression:** The dream world evolves as the player defeats bosses, with new paths, areas, and visual effects appearing.
+
+**Objectives:**  
+- Survive and progress through each dream level.  
+- Defeat the bosses in each level.  
+- Unlock new areas and power-ups as the dream world expands.  
+- Reach the final boss and escape the dream world.
+
+**Unique Features:**  
+- **Minimalist Art Style:** The game uses 20 unique .png images, each representing a single element (player, enemy, boss, platform, etc.). No sprite sheets or complex animations.  
+- **Dream Logic Mechanics:** The environment changes in unpredictable ways, like platforms appearing or disappearing, gravity flipping, or time slowing.  
+- **Surreal Boss Designs:** Each boss is a simple, stylized shape with a unique attack pattern, but their design is dreamlike and easy to interpret.  
+- **Sound and Atmosphere:** The game uses ambient, dreamy sounds and a soft, looping melody to enhance the surreal atmosphere without relying on complex audio systems.
+
+**Why It Works:**  
+- Simple mechanics make it accessible to all ages.  
+- The dream world theme provides endless creative potential for level design.  
+- The use of only 20 .png images and 500 lines of code ensures it is easy to implement with minimal resources.  
+- The boss rush structure keeps players engaged and motivated to progress through the dream world.
+
+**Target Audience:**  
+- Casual gamers looking for a fun, easy-to-learn game.  
+- Indie developers looking for a simple yet engaging concept.  
+- Anyone who enjoys surreal, dreamlike worlds and platformer challenges.
+
+"**DreamDash: The Luminous Trials**" is a charming, minimalist game that blends the excitement of boss rush with the creativity of a dream world, all built from simple assets and code.

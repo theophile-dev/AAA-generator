@@ -1,0 +1,725 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamDash: The Luminous Trials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1445, #1a237e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            background: #0a0f3c;
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #start-screen, #game-over, #level-complete {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 15, 60, 0.9);
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        #game-over, #level-complete {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 15px #00ccff, 0 0 25px #0066ff;
+            letter-spacing: 3px;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #00ccff;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #00a8ff, #0077b6);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            pointer-events: auto;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 168, 255, 0.5);
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 168, 255, 0.8);
+        }
+        
+        #score-display, #lives-display {
+            position: absolute;
+            top: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+        
+        #score-display {
+            left: 20px;
+        }
+        
+        #lives-display {
+            right: 20px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            max-width: 800px;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="score-display">Score: 0</div>
+            <div id="lives-display">Lives: 3</div>
+            
+            <div id="start-screen">
+                <h1>DREAMDASH: THE LUMINOUS TRIALS</h1>
+                <p>Navigate through surreal dream worlds, defeat mysterious bosses, and escape the dream realm!</p>
+                
+                <div class="instructions">
+                    <p><span class="key">← →</span> Move | <span class="key">SPACE</span> Jump | <span class="key">X</span> Double Jump</p>
+                    <p>Collect glowing orbs to gain temporary invincibility or time slow effects!</p>
+                </div>
+                
+                <button id="start-btn" class="btn pulse">START DREAMDASH</button>
+            </div>
+            
+            <div id="game-over">
+                <h2>GAME OVER</h2>
+                <p>You were consumed by the dream world...</p>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <button id="restart-btn" class="btn">TRY AGAIN</button>
+            </div>
+            
+            <div id="level-complete">
+                <h2>LEVEL COMPLETE!</h2>
+                <p>You've escaped this dream realm...</p>
+                <p>Score: <span id="level-score">0</span></p>
+                <button id="next-level-btn" class="btn">NEXT DREAM</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const GRAVITY = 0.5;
+        const PLAYER_JUMP = -12;
+        const PLAYER_SPEED = 5;
+        const BOSS_SIZE = 80;
+        const ORB_SIZE = 20;
+        const PLATFORM_HEIGHT = 20;
+        
+        // Game state
+        let gameState = {
+            canvas: null,
+            ctx: null,
+            player: null,
+            platforms: [],
+            enemies: [],
+            orbs: [],
+            bosses: [],
+            currentLevel: 0,
+            score: 0,
+            lives: 3,
+            keys: {},
+            gameRunning: false,
+            invincible: false,
+            timeSlow: false,
+            timeSlowTimer: 0,
+            levelComplete: false
+        };
+        
+        // Player class
+        class Player {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 60;
+                this.velocityX = 0;
+                this.velocityY = 0;
+                this.jumping = false;
+                this.doubleJumpAvailable = true;
+                this.onGround = false;
+                this.color = '#00ccff';
+            }
+            
+            update() {
+                // Apply gravity
+                this.velocityY += GRAVITY;
+                
+                // Handle movement
+                if (gameState.keys['ArrowLeft']) {
+                    this.velocityX = -PLAYER_SPEED;
+                } else if (gameState.keys['ArrowRight']) {
+                    this.velocityX = PLAYER_SPEED;
+                } else {
+                    this.velocityX *= 0.8; // Friction
+                }
+                
+                // Handle jumping
+                if (gameState.keys[' '] && this.onGround) {
+                    this.velocityY = PLAYER_JUMP;
+                    this.jumping = true;
+                    this.onGround = false;
+                }
+                
+                // Handle double jump
+                if (gameState.keys['x'] && !this.onGround && this.doubleJumpAvailable) {
+                    this.velocityY = PLAYER_JUMP * 0.8;
+                    this.doubleJumpAvailable = false;
+                }
+                
+                // Update position
+                this.x += this.velocityX;
+                this.y += this.velocityY;
+                
+                // Boundary checks
+                if (this.x < 0) this.x = 0;
+                if (this.x > CANVAS_WIDTH - this.width) this.x = CANVAS_WIDTH - this.width;
+                if (this.y > CANVAS_HEIGHT) {
+                    gameState.lives--;
+                    if (gameState.lives <= 0) {
+                        gameOver();
+                    } else {
+                        resetPlayer();
+                    }
+                }
+                
+                // Platform collision
+                this.onGround = false;
+                for (let platform of gameState.platforms) {
+                    if (this.x < platform.x + platform.width &&
+                        this.x + this.width > platform.x &&
+                        this.y + this.height > platform.y &&
+                        this.y + this.height < platform.y + platform.height &&
+                        this.velocityY > 0) {
+                        
+                        this.y = platform.y - this.height;
+                        this.velocityY = 0;
+                        this.jumping = false;
+                        this.onGround = true;
+                        this.doubleJumpAvailable = true;
+                    }
+                }
+            }
+            
+            draw() {
+                // Draw player with glow effect
+                gameState.ctx.save();
+                gameState.ctx.globalCompositeOperation = 'lighter';
+                
+                if (gameState.invincible) {
+                    gameState.ctx.fillStyle = '#ff00ff';
+                    gameState.ctx.beginPath();
+                    gameState.ctx.arc(this.x + this.width/2, this.y + this.height/2, 30, 0, Math.PI * 2);
+                    gameState.ctx.fill();
+                }
+                
+                // Draw player body
+                gameState.ctx.fillStyle = this.color;
+                gameState.ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // Draw player details
+                gameState.ctx.fillStyle = '#ffffff';
+                gameState.ctx.fillRect(this.x + 10, this.y + 15, 8, 8); // Eye
+                gameState.ctx.fillRect(this.x + 22, this.y + 15, 8, 8); // Eye
+                
+                gameState.ctx.restore();
+            }
+        }
+        
+        // Platform class
+        class Platform {
+            constructor(x, y, width) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = PLATFORM_HEIGHT;
+                this.color = '#4a90e2';
+            }
+            
+            draw() {
+                gameState.ctx.fillStyle = this.color;
+                gameState.ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // Add glow effect
+                gameState.ctx.shadowColor = '#4a90e2';
+                gameState.ctx.shadowBlur = 15;
+                gameState.ctx.fillRect(this.x, this.y, this.width, this.height);
+                gameState.ctx.shadowBlur = 0;
+            }
+        }
+        
+        // Orb class
+        class Orb {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.size = ORB_SIZE;
+                this.type = type; // 'invincibility' or 'timeSlow'
+                this.color = type === 'invincibility' ? '#ff00ff' : '#00ffff';
+                this.pulse = 0;
+            }
+            
+            update() {
+                this.pulse += 0.05;
+            }
+            
+            draw() {
+                const pulseSize = Math.sin(this.pulse) * 5 + this.size;
+                
+                gameState.ctx.save();
+                gameState.ctx.globalCompositeOperation = 'lighter';
+                
+                // Draw glow
+                gameState.ctx.shadowColor = this.color;
+                gameState.ctx.shadowBlur = 15;
+                gameState.ctx.beginPath();
+                gameState.ctx.arc(this.x, this.y, pulseSize, 0, Math.PI * 2);
+                gameState.ctx.fill();
+                
+                // Draw orb
+                gameState.ctx.globalCompositeOperation = 'source-over';
+                gameState.ctx.fillStyle = this.color;
+                gameState.ctx.beginPath();
+                gameState.ctx.arc(this.x, this.y, pulseSize/2, 0, Math.PI * 2);
+                gameState.ctx.fill();
+                
+                gameState.ctx.restore();
+            }
+        }
+        
+        // Boss class
+        class Boss {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.width = BOSS_SIZE;
+                this.height = BOSS_SIZE;
+                this.type = type;
+                this.health = 3;
+                this.color = '#ff0066';
+                this.attackTimer = 0;
+                this.attackPattern = 0;
+            }
+            
+            update() {
+                this.attackTimer++;
+                
+                // Simple AI for boss movement
+                if (this.attackTimer % 120 === 0) {
+                    this.attackPattern = Math.floor(Math.random() * 3);
+                }
+                
+                // Move towards player
+                const dx = gameState.player.x - this.x;
+                const dy = gameState.player.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 0) {
+                    this.x += (dx / distance) * 1.5;
+                    this.y += (dy / distance) * 1.5;
+                }
+            }
+            
+            draw() {
+                gameState.ctx.save();
+                gameState.ctx.globalCompositeOperation = 'lighter';
+                
+                // Draw glow
+                gameState.ctx.shadowColor = this.color;
+                gameState.ctx.shadowBlur = 20;
+                gameState.ctx.beginPath();
+                gameState.ctx.arc(this.x + this.width/2, this.y + this.height/2, this.width, 0, Math.PI * 2);
+                gameState.ctx.fill();
+                
+                // Draw boss
+                gameState.ctx.globalCompositeOperation = 'source-over';
+                gameState.ctx.fillStyle = this.color;
+                gameState.ctx.beginPath();
+                gameState.ctx.arc(this.x + this.width/2, this.y + this.height/2, this.width/2, 0, Math.PI * 2);
+                gameState.ctx.fill();
+                
+                // Draw boss details
+                gameState.ctx.fillStyle = '#ffffff';
+                gameState.ctx.beginPath();
+                gameState.ctx.arc(this.x + this.width/3, this.y + this.height/3, 8, 0, Math.PI * 2);
+                gameState.ctx.arc(this.x + 2*this.width/3, this.y + this.height/3, 8, 0, Math.PI * 2);
+                gameState.ctx.fill();
+                
+                // Draw attack pattern
+                if (this.attackTimer % 60 < 30) {
+                    gameState.ctx.strokeStyle = '#ffff00';
+                    gameState.ctx.lineWidth = 3;
+                    gameState.ctx.beginPath();
+                    gameState.ctx.arc(this.x + this.width/2, this.y + this.height/2, 40, 0, Math.PI * 2);
+                    gameState.ctx.stroke();
+                }
+                
+                gameState.ctx.restore();
+            }
+        }
+        
+        // Initialize game
+        function initGame() {
+            gameState.canvas = document.getElementById('gameCanvas');
+            gameState.ctx = gameState.canvas.getContext('2d');
+            
+            // Set up event listeners
+            window.addEventListener('keydown', (e) => {
+                gameState.keys[e.key] = true;
+            });
+            
+            window.addEventListener('keyup', (e) => {
+                gameState.keys[e.key] = false;
+            });
+            
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', restartGame);
+            document.getElementById('next-level-btn').addEventListener('click', nextLevel);
+            
+            // Start with the first level
+            loadLevel(0);
+        }
+        
+        // Load a specific level
+        function loadLevel(level) {
+            gameState.currentLevel = level;
+            gameState.platforms = [];
+            gameState.enemies = [];
+            gameState.orbs = [];
+            gameState.bosses = [];
+            
+            // Create platforms
+            if (level === 0) {
+                // Level 1 - Basic platforming
+                gameState.platforms.push(new Platform(0, CANVAS_HEIGHT - 100, CANVAS_WIDTH));
+                gameState.platforms.push(new Platform(200, CANVAS_HEIGHT - 250, 300));
+                gameState.platforms.push(new Platform(600, CANVAS_HEIGHT - 400, 200));
+                gameState.platforms.push(new Platform(100, CANVAS_HEIGHT - 550, 250));
+                gameState.platforms.push(new Platform(500, CANVAS_HEIGHT - 700, 300));
+            } else if (level === 1) {
+                // Level 2 - Gravity flip
+                gameState.platforms.push(new Platform(0, CANVAS_HEIGHT - 100, CANVAS_WIDTH));
+                gameState.platforms.push(new Platform(100, CANVAS_HEIGHT - 300, 200));
+                gameState.platforms.push(new Platform(400, CANVAS_HEIGHT - 500, 200));
+                gameState.platforms.push(new Platform(700, CANVAS_HEIGHT - 700, 200));
+            } else if (level === 2) {
+                // Level 3 - Time slow
+                gameState.platforms.push(new Platform(0, CANVAS_HEIGHT - 100, CANVAS_WIDTH));
+                gameState.platforms.push(new Platform(300, CANVAS_HEIGHT - 300, 400));
+                gameState.platforms.push(new Platform(100, CANVAS_HEIGHT - 500, 200));
+                gameState.platforms.push(new Platform(700, CANVAS_HEIGHT - 700, 200));
+            } else {
+                // Final level
+                gameState.platforms.push(new Platform(0, CANVAS_HEIGHT - 100, CANVAS_WIDTH));
+                gameState.platforms.push(new Platform(200, CANVAS_HEIGHT - 300, 600));
+                gameState.platforms.push(new Platform(400, CANVAS_HEIGHT - 500, 200));
+            }
+            
+            // Create orbs
+            if (level === 0) {
+                gameState.orbs.push(new Orb(300, CANVAS_HEIGHT - 300, 'invincibility'));
+                gameState.orbs.push(new Orb(700, CANVAS_HEIGHT - 450, 'timeSlow'));
+            } else if (level === 1) {
+                gameState.orbs.push(new Orb(200, CANVAS_HEIGHT - 350, 'timeSlow'));
+                gameState.orbs.push(new Orb(600, CANVAS_HEIGHT - 750, 'invincibility'));
+            } else if (level === 2) {
+                gameState.orbs.push(new Orb(400, CANVAS_HEIGHT - 350, 'invincibility'));
+                gameState.orbs.push(new Orb(800, CANVAS_HEIGHT - 750, 'timeSlow'));
+            } else {
+                // Final level orbs
+                gameState.orbs.push(new Orb(300, CANVAS_HEIGHT - 300, 'invincibility'));
+                gameState.orbs.push(new Orb(700, CANVAS_HEIGHT - 600, 'timeSlow'));
+            }
+            
+            // Create boss
+            if (level === 0) {
+                gameState.bosses.push(new Boss(CANVAS_WIDTH/2 - BOSS_SIZE/2, 100, 'boss1'));
+            } else if (level === 1) {
+                gameState.bosses.push(new Boss(CANVAS_WIDTH/2 - BOSS_SIZE/2, 150, 'boss2'));
+            } else if (level === 2) {
+                gameState.bosses.push(new Boss(CANVAS_WIDTH/2 - BOSS_SIZE/2, 200, 'boss3'));
+            } else {
+                // Final boss
+                gameState.bosses.push(new Boss(CANVAS_WIDTH/2 - BOSS_SIZE/2, 100, 'final'));
+            }
+            
+            // Reset player position
+            resetPlayer();
+            
+            // Hide UI screens
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('level-complete').style.display = 'none';
+            
+            gameState.gameRunning = true;
+            gameState.levelComplete = false;
+        }
+        
+        // Reset player position
+        function resetPlayer() {
+            gameState.player = new Player(100, CANVAS_HEIGHT - 200);
+        }
+        
+        // Start the game
+        function startGame() {
+            loadLevel(0);
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState.gameRunning = false;
+            document.getElementById('final-score').textContent = gameState.score;
+            document.getElementById('game-over').style.display = 'flex';
+        }
+        
+        // Next level
+        function nextLevel() {
+            if (gameState.currentLevel < 3) {
+                loadLevel(gameState.currentLevel + 1);
+            } else {
+                // Game completed
+                gameState.gameRunning = false;
+                document.getElementById('final-score').textContent = gameState.score;
+                document.getElementById('game-over').style.display = 'flex';
+                document.querySelector('#game-over h2').textContent = 'YOU ESCAPED!';
+                document.querySelector('#game-over p').textContent = 'Congratulations! You escaped the dream world!';
+            }
+        }
+        
+        // Restart game
+        function restartGame() {
+            gameState.score = 0;
+            gameState.lives = 3;
+            loadLevel(0);
+        }
+        
+        // Update game state
+        function update() {
+            if (!gameState.gameRunning) return;
+            
+            // Update player
+            gameState.player.update();
+            
+            // Update orbs
+            for (let i = gameState.orbs.length - 1; i >= 0; i--) {
+                gameState.orbs[i].update();
+                
+                // Check collision with player
+                const dx = gameState.player.x + gameState.player.width/2 - (gameState.orbs[i].x);
+                const dy = gameState.player.y + gameState.player.height/2 - (gameState.orbs[i].y);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < gameState.player.width/2 + gameState.orbs[i].size) {
+                    // Apply orb effect
+                    if (gameState.orbs[i].type === 'invincibility') {
+                        gameState.invincible = true;
+                        setTimeout(() => { gameState.invincible = false; }, 5000);
+                    } else if (gameState.orbs[i].type === 'timeSlow') {
+                        gameState.timeSlow = true;
+                        gameState.timeSlowTimer = 300;
+                    }
+                    
+                    // Remove orb
+                    gameState.orbs.splice(i, 1);
+                    gameState.score += 100;
+                    updateScore();
+                }
+            }
+            
+            // Update bosses
+            for (let boss of gameState.bosses) {
+                boss.update();
+                
+                // Check collision with player
+                const dx = gameState.player.x + gameState.player.width/2 - (boss.x + boss.width/2);
+                const dy = gameState.player.y + gameState.player.height/2 - (boss.y + boss.height/2);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < gameState.player.width/2 + boss.width/2) {
+                    if (!gameState.invincible) {
+                        gameState.lives--;
+                        updateLives();
+                        
+                        if (gameState.lives <= 0) {
+                            gameOver();
+                        } else {
+                            resetPlayer();
+                        }
+                    }
+                }
+            }
+            
+            // Update time slow effect
+            if (gameState.timeSlow) {
+                gameState.timeSlowTimer--;
+                if (gameState.timeSlowTimer <= 0) {
+                    gameState.timeSlow = false;
+                }
+            }
+            
+            // Check level completion
+            if (gameState.bosses.length === 0 && !gameState.levelComplete) {
+                gameState.levelComplete = true;
+                document.getElementById('level-score').textContent = gameState.score;
+                document.getElementById('level-complete').style.display = 'flex';
+            }
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            gameState.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw background with stars
+            gameState.ctx.fillStyle = '#0a0f3c';
+            gameState.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw stars
+            gameState.ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 13) % CANVAS_WIDTH;
+                const y = (i * 7) % CANVAS_HEIGHT;
+                const size = Math.sin(i) * 1.5 + 2;
+                gameState.ctx.beginPath();
+                gameState.ctx.arc(x, y, size, 0, Math.PI * 2);
+                gameState.ctx.fill();
+            }
+            
+            // Draw platforms
+            for (let platform of gameState.platforms) {
+                platform.draw();
+            }
+            
+            // Draw orbs
+            for (let orb of gameState.orbs) {
+                orb.draw();
+            }
+            
+            // Draw bosses
+            for (let boss of gameState.bosses) {
+                boss.draw();
+            }
+            
+            // Draw player
+            gameState.player.draw();
+            
+            // Draw time slow effect
+            if (gameState.timeSlow) {
+                gameState.ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+                gameState.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            }
+        }
+        
+        // Update score display
+        function updateScore() {
+            document.getElementById('score-display').textContent = `Score: ${gameState.score}`;
+        }
+        
+        // Update lives display
+        function updateLives() {
+            document.getElementById('lives-display').textContent = `Lives: ${gameState.lives}`;
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (gameState.gameRunning) {
+                update();
+                draw();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize and start the game
+        window.onload = () => {
+            initGame();
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
