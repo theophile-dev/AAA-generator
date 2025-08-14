@@ -1,0 +1,410 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shadow Drift</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    <div id="ui">
+        <div>Score: <span id="score">0</span></div>
+        <div>Lives: <span id="lives">3</span></div>
+    </div>
+    <div id="start-screen">
+        <h1>Shadow Drift</h1>
+        <p>Dodge the shadow beasts!</p>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="game-over" style="display: none;">
+        <h2>Game Over</h2>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const PLAYER_SIZE = 32;
+        const GRAVITY = 0.5;
+        const JUMP_FORCE = -12;
+        const MOVE_SPEED = 5;
+        const BEAST_SPAWN_RATE = 1000; // ms
+        const STAR_COUNT = 100;
+
+        // Game state
+        let gameState = {
+            player: null,
+            beasts: [],
+            stars: [],
+            score: 0,
+            lives: 3,
+            gameRunning: false,
+            lastSpawnTime: 0,
+            keys: {}
+        };
+
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const finalScoreElement = document.getElementById('final-score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+
+        // Preload images
+        const imageCache = {};
+        const imagePaths = [
+            "images/457x457_claw.png",
+            "images/310x252_eye.png",
+            "images/341x406_player.png",
+            "images/408x417_shadow_beast_1.png",
+            "images/423x453_shadow_beast_10.png",
+            "images/460x454_shadow_beast_11.png",
+            "images/448x442_shadow_beast_12.png",
+            "images/442x416_shadow_beast_13.png",
+            "images/425x449_shadow_beast_14.png",
+            "images/392x405_shadow_beast_15.png",
+            "images/403x408_shadow_beast_2.png",
+            "images/418x409_shadow_beast_3.png",
+            "images/392x425_shadow_beast_4.png",
+            "images/388x440_shadow_beast_5.png",
+            "images/441x443_shadow_beast_6.png",
+            "images/351x421_shadow_beast_7.png",
+            "images/452x446_shadow_beast_8.png",
+            "images/420x458_shadow_beast_9.png",
+            "images/389x411_spike.png",
+            "images/432x455_tentacle.png"
+        ];
+
+        function loadImage(src) {
+            const img = new Image();
+            img.src = src;
+            return img;
+        }
+
+        // Load all images
+        imagePaths.forEach(path => {
+            imageCache[path] = loadImage(path);
+        });
+
+        // Player class
+        class Player {
+            constructor() {
+                this.x = CANVAS_WIDTH / 2;
+                this.y = CANVAS_HEIGHT - 100;
+                this.width = PLAYER_SIZE;
+                this.height = PLAYER_SIZE;
+                this.velocityY = 0;
+                this.isJumping = false;
+                this.trail = [];
+                this.maxTrailLength = 10;
+            }
+
+            update() {
+                // Apply gravity
+                this.velocityY += GRAVITY;
+                this.y += this.velocityY;
+
+                // Ground collision
+                if (this.y > CANVAS_HEIGHT - this.height) {
+                    this.y = CANVAS_HEIGHT - this.height;
+                    this.velocityY = 0;
+                    this.isJumping = false;
+                }
+
+                // Movement controls
+                if (gameState.keys['ArrowLeft'] || gameState.keys['a']) {
+                    this.x -= MOVE_SPEED;
+                }
+                if (gameState.keys['ArrowRight'] || gameState.keys['d']) {
+                    this.x += MOVE_SPEED;
+                }
+                if ((gameState.keys['ArrowUp'] || gameState.keys['w'] || gameState.keys[' ']) && !this.isJumping) {
+                    this.velocityY = JUMP_FORCE;
+                    this.isJumping = true;
+                }
+
+                // Keep player in bounds
+                if (this.x < 0) this.x = 0;
+                if (this.x > CANVAS_WIDTH - this.width) this.x = CANVAS_WIDTH - this.width;
+
+                // Update trail
+                this.trail.push({x: this.x + this.width/2, y: this.y + this.height/2});
+                if (this.trail.length > this.maxTrailLength) {
+                    this.trail.shift();
+                }
+            }
+
+            draw() {
+                // Draw trail
+                ctx.globalAlpha = 0.5;
+                for (let i = 0; i < this.trail.length; i++) {
+                    const point = this.trail[i];
+                    const size = (i / this.trail.length) * 8;
+                    ctx.fillStyle = '#00ffff';
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1.0;
+
+                // Draw player
+                const img = imageCache["images/341x406_player.png"];
+                if (img.complete) {
+                    ctx.drawImage(img, this.x, this.y, this.width, this.height);
+                } else {
+                    ctx.fillStyle = '#00ffff';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            }
+        }
+
+        // Beast class
+        class Beast {
+            constructor() {
+                this.type = Math.floor(Math.random() * imagePaths.length);
+                this.x = Math.random() * (CANVAS_WIDTH - 50);
+                this.y = -50;
+                this.width = 50;
+                this.height = 50;
+                this.speed = Math.random() * 2 + 1;
+                this.active = true;
+            }
+
+            update() {
+                this.y += this.speed;
+
+                // Remove if off screen
+                if (this.y > CANVAS_HEIGHT) {
+                    this.active = false;
+                }
+            }
+
+            draw() {
+                const img = imageCache[imagePaths[this.type]];
+                if (img.complete) {
+                    ctx.drawImage(img, this.x, this.y, this.width, this.height);
+                } else {
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            }
+        }
+
+        // Create stars
+        function createStars() {
+            for (let i = 0; i < STAR_COUNT; i++) {
+                gameState.stars.push({
+                    x: Math.random() * CANVAS_WIDTH,
+                    y: Math.random() * CANVAS_HEIGHT,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+
+        // Draw background
+        function drawBackground() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Draw stars
+            gameState.stars.forEach(star => {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Update stars
+        function updateStars() {
+            gameState.stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > CANVAS_HEIGHT) {
+                    star.y = 0;
+                    star.x = Math.random() * CANVAS_WIDTH;
+                }
+            });
+        }
+
+        // Spawn beasts
+        function spawnBeast() {
+            gameState.beasts.push(new Beast());
+        }
+
+        // Check collisions
+        function checkCollisions() {
+            const player = gameState.player;
+            for (let i = 0; i < gameState.beasts.length; i++) {
+                const beast = gameState.beasts[i];
+                if (!beast.active) continue;
+
+                // Simple AABB collision
+                if (
+                    player.x < beast.x + beast.width &&
+                    player.x + player.width > beast.x &&
+                    player.y < beast.y + beast.height &&
+                    player.y + player.height > beast.y
+                ) {
+                    gameState.lives--;
+                    livesElement.textContent = gameState.lives;
+                    beast.active = false;
+                    if (gameState.lives <= 0) {
+                        endGame();
+                    }
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!gameState.gameRunning) return;
+
+            // Clear canvas
+            drawBackground();
+            updateStars();
+
+            // Spawn beasts
+            if (timestamp - gameState.lastSpawnTime > BEAST_SPAWN_RATE) {
+                spawnBeast();
+                gameState.lastSpawnTime = timestamp;
+            }
+
+            // Update and draw player
+            gameState.player.update();
+            gameState.player.draw();
+
+            // Update and draw beasts
+            for (let i = 0; i < gameState.beasts.length; i++) {
+                const beast = gameState.beasts[i];
+                if (beast.active) {
+                    beast.update();
+                    beast.draw();
+                } else {
+                    gameState.beasts.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Check collisions
+            checkCollisions();
+
+            // Update score
+            gameState.score += 0.1;
+            scoreElement.textContent = Math.floor(gameState.score);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        function startGame() {
+            gameState.gameRunning = true;
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+
+            // Reset game state
+            gameState.player = new Player();
+            gameState.beasts = [];
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.lastSpawnTime = 0;
+
+            scoreElement.textContent = '0';
+            livesElement.textContent = '3';
+
+            createStars();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // End game
+        function endGame() {
+            gameState.gameRunning = false;
+            finalScoreElement.textContent = Math.floor(gameState.score);
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Restart game
+        function restartGame() {
+            startGame();
+        }
+
+        // Input handling
+        window.addEventListener('keydown', (e) => {
+            gameState.keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            gameState.keys[e.key] = false;
+        });
+
+        // Touch controls for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+
+            if (touchX < CANVAS_WIDTH / 2) {
+                gameState.keys['ArrowLeft'] = true;
+            } else {
+                gameState.keys['ArrowRight'] = true;
+            }
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            gameState.keys['ArrowLeft'] = false;
+            gameState.keys['ArrowRight'] = false;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/457x457_claw.png description: A small glowing figure with a light trail, representing the player.
+path: images/310x252_eye.png description: A long, writhing tentacle extending from the darkness.
+path: images/341x406_player.png description: A glowing, pupil-less eye floating in the void.
+path: images/408x417_shadow_beast_1.png description: A jagged, dark spike emerging from the ground.
+path: images/423x453_shadow_beast_10.png description: A sharp, claw-like appendage reaching toward the player.
+path: images/460x454_shadow_beast_11.png description: A large, amorphous shadow beast with slow, creeping movement.
+path: images/448x442_shadow_beast_12.png description: A fast, flickering shadow beast that appears and disappears.
+path: images/442x416_shadow_beast_13.png description: A shadow beast with multiple limbs moving in chaotic patterns.
+path: images/425x449_shadow_beast_14.png description: A shadow beast with a glowing core, emitting a pulsing light.
+path: images/392x405_shadow_beast_15.png description: A shadow beast with a tail that lashes out in random directions.
+path: images/403x408_shadow_beast_2.png description: A shadow beast with a massive, spreading shadow that covers the screen.
+path: images/418x409_shadow_beast_3.png description: A shadow beast with a rotating, dark vortex at its center.
+path: images/392x425_shadow_beast_4.png description: A shadow beast that emits a wave of darkness across the screen.
+path: images/388x440_shadow_beast_5.png description: A shadow beast with multiple eyes scanning the player.
+path: images/441x443_shadow_beast_6.png description: A shadow beast with a body that splits into smaller forms.
+path: images/351x421_shadow_beast_7.png description: A shadow beast that shoots dark projectiles toward the player.
+path: images/452x446_shadow_beast_8.png description: A shadow beast with a glowing, pulsating core that emits a shockwave.
+path: images/420x458_shadow_beast_9.png description: A shadow beast that creates falling debris from the sky.
+path: images/389x411_spike.png description: A shadow beast that creates a gravity well pulling the player down.
+path: images/432x455_tentacle.png description: A shadow beast that creates a maze of darkness to trap the player.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: Shadow Drift**
+
+**Theme:** Shadow Planet  
+**Genre:** Random Event Game  
+**Art Style:** Simple 2D Pixel Art  
+**Total Assets:** 20 .png images (single elements only)  
+**Code Size:** ~500 lines of JavaScript  
+**Target Audience:** All ages, casual players
+
+---
+
+### **Concept Overview:**
+
+In *Shadow Drift*, you're a lone traveler on a mysterious planet known as *Ecliptica*, where the sun never rises, and the sky is a deep, shifting void. The planet is ruled by *Shadow Beasts* — creatures that manifest from the darkness and appear randomly in different forms. Your goal is to survive as long as possible by dodging, avoiding, and defeating these creatures using a simple set of tools and random events.
+
+---
+
+### **Gameplay Mechanics:**
+
+- **Movement:** The player controls a small, glowing figure that moves across a procedurally generated, vertical screen. Movement is limited to left, right, and jumping (to avoid falling into the void).
+- **Random Events:** Every few seconds, a new *Shadow Beast* appears in a random location on the screen. Each beast has a unique behavior and ability.
+- **Beast Types:** The 20 .png images represent different shadow creatures (e.g., tentacle, eye, spike, claw, etc.). Each has its own interaction:
+  - Some chase the player
+  - Some shoot projectiles
+  - Some create hazards (e.g., falling debris)
+- **Survival Timer:** The game runs for a set time (e.g., 10 minutes), and the player must avoid all threats for as long as possible.
+- **Power-Ups (Optional):** Occasionally, a power-up appears (e.g., shield, speed boost, invisibility) that can be collected to help survive longer.
+
+---
+
+### **Objectives:**
+
+- Survive as long as possible by dodging and managing random shadow events.
+- Collect power-ups to increase survival chances.
+- Beat your personal best time or score.
+
+---
+
+### **Unique Features:**
+
+- **Simple Controls:** No complex inputs, making it accessible for all ages.
+- **Random Events:** Each playthrough is different, keeping the game engaging and replayable.
+- **Minimal Art Requirements:** Uses only 20 unique images, each as a single element, allowing for easy creation and implementation.
+- **No Spritesheets:** All assets are single .png files, making it easy to manage and load.
+- **Mystery and Tension:** The ever-changing nature of the shadow beasts and events keeps the player on edge.
+
+---
+
+### **Design Philosophy:**
+
+*Shadow Drift* is designed to be a short, easy-to-learn, and fun game that emphasizes randomness and survival. It's perfect for a browser-based game with no external libraries, using only HTML5 Canvas and JavaScript. The minimalistic approach ensures it runs smoothly on any device with a web browser.
+
+---
+
+### **Visual Style:**
+
+- The background is a deep black void with faint glowing stars.
+- The player is a small, glowing figure with a light trail.
+- Shadow Beasts are dark, featureless shapes with varying movements and effects.
+- Power-ups are small glowing icons that appear randomly.
+
+---
+
+### **Conclusion:**
+
+*Shadow Drift* is a simple, engaging, and fun 2D game that leverages randomness and minimal resources to create a unique and replayable experience. It's designed to be easy to implement and enjoy by a wide audience, making it an excellent choice for a quick, browser-based game.
