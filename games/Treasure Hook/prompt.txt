@@ -1,0 +1,125 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x459_background.png description: A simple pixel art player character holding a fishing rod, facing right.
+path: images/512x512_boat.png description: A basic fishing rod with a line and hook, in pixel art style.
+path: images/512x436_fish.png description: A pixelated water surface with ripples, light blue color.
+path: images/366x286_fish10.png description: A small, colorful fish swimming in pixel art style.
+path: images/401x343_fish11.png description: A glowing treasure chest with a star, in pixel art style.
+path: images/453x447_fish2.png description: A small wooden boat on the water, pixel art style.
+path: images/400x303_fish3.png description: A minimalist tropical island background with palm trees and sky.
+path: images/512x512_fish4.png description: A small treasure chest on the bottom of the screen.
+path: images/419x381_fish5.png description: A simple fishing hook in pixel art style.
+path: images/465x447_fish6.png description: A different type of fish, pixel art style.
+path: images/328x294_fish7.png description: A fast-moving fish with a unique shape, pixel art style.
+path: images/410x255_fish8.png description: A large, slow-moving fish, pixel art style.
+path: images/512x512_fish9.png description: A goldfish with a sparkle, pixel art style.
+path: images/509x495_fishing_rod.png description: A transparent fish with a glowing effect, pixel art style.
+path: images/410x401_hook.png description: A fish with a tail and fins, pixel art style.
+path: images/457x414_player.png description: A fish with a unique pattern, pixel art style.
+path: images/512x512_treasure.png description: A fish with a red color and white stripes, pixel art style.
+path: images/512x470_treasure_chest.png description: A fish with a blue color and green eyes, pixel art style.
+path: images/407x431_water.png description: A fish with a yellow color and black spots, pixel art style.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: "Treasure Hook"**
+
+**Theme:** Treasure Hunting Island  
+**Genre:** Simple Fishing Game  
+**Visual Style:** Pixel Art, 2D, Minimalist  
+
+---
+
+**Concept Overview:**
+
+"Treasure Hook" is a light-hearted, easy-to-play fishing game set on a serene, tropical island. The player takes on the role of a fisherman trying to catch rare underwater treasures hidden in the island’s waters. The game features simple mechanics, a charming pixel art style, and a focus on fun and discovery.
+
+---
+
+**Gameplay Mechanics:**
+
+- The player controls a fishing rod that casts a line into the water. The line moves up and down based on keyboard input (e.g., arrow keys or WASD).
+- Fish and treasures swim through the water, each with unique shapes and speeds.
+- When the player casts the line, they must time the hook to catch a fish or treasure. If the hook lands on a fish or treasure, it is pulled up to the surface.
+- Once a treasure is caught, it is added to the player’s collection and can be displayed in a small "treasure chest" on the screen.
+- The game includes a simple scoring system based on the number and rarity of treasures caught.
+
+---
+
+**Objectives:**
+
+- Catch as many treasures as possible within a set time limit.
+- Complete challenges such as catching specific types of treasures or achieving a high score.
+- Unlock new fishing spots or bonus items by completing certain goals.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Art Style:** The game uses only 20 hand-drawn PNG images (each a single element) for everything — the player, the fishing rod, the water, fish, treasures, the boat, and background elements. No sprite sheets or complex animations needed.
+- **Simple Controls:** The game is designed for casual players with straightforward, intuitive controls that can be mastered in seconds.
+- **Progressive Difficulty:** As the player progresses, the speed of the fish and treasures increases, and new types of treasures are introduced.
+- **Treasure Chest Display:** A small interactive treasure chest on the bottom of the screen shows collected treasures and can be clicked for a fun mini animation or sound effect.
+- **Bonus Fishing Spots:** After collecting a certain number of treasures, the player can unlock new areas of the island with different fish and hidden treasures.
+
+---
+
+**Implementation Notes:**
+
+- The game is built using only HTML5 Canvas and JavaScript, with no external libraries required.
+- All game elements are created using simple shapes, colors, and basic collision detection.
+- The 20 PNG images are used as individual sprites, each loaded and drawn on the canvas.
+- The game loop is kept minimal, with only 500 lines of code to manage movement, collision, and rendering.
+
+---
+
+**Target Audience:**
+
+- Casual gamers looking for a quick, fun, and relaxing game.
+- Players interested in simple, pixel art-style games with no steep learning curve.
+- Families or groups who enjoy cooperative or competitive play through a shared screen or local multiplayer (optional).
+
+---
+
+**Final Touch:**
+
+To add to the charm, the game includes background music and sound effects for catching fish and treasures, all with minimal audio files. The island setting is visually soothing, making it an ideal game for players who want a break from more intense gameplay.

@@ -1,0 +1,431 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Treasure Hook</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #1a1a2e;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #4cc9f0;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 0 0 5px black;
+        }
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+            background: #4cc9f0;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #4895ef;
+            transform: scale(1.05);
+        }
+        h1 {
+            color: #f72585;
+            text-shadow: 0 0 10px rgba(247, 37, 133, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    
+    <div id="ui">
+        <div>Score: <span id="score">0</span></div>
+        <div>Lives: <span id="lives">3</span></div>
+    </div>
+
+    <div id="start-screen">
+        <h1>Treasure Hook</h1>
+        <p>Cast your line and catch rare treasures!</p>
+        <p>Use UP/DOWN arrow keys or W/S to control the fishing rod</p>
+        <button id="start-button">Start Game</button>
+    </div>
+
+    <div id="game-over" style="display: none;">
+        <h1>Game Over</h1>
+        <p>Your Score: <span id="final-score">0</span></p>
+        <button id="restart-button">Play Again</button>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let gameTime = 0;
+
+        // Player object
+        const player = {
+            x: 512,
+            y: 600,
+            width: 512,
+            height: 512,
+            speed: 4,
+            direction: 'right'
+        };
+
+        // Fishing rod
+        const fishingRod = {
+            x: 512,
+            y: 600,
+            length: 300,
+            angle: 0,
+            speed: 0.05,
+            hook: {
+                x: 0,
+                y: 0,
+                width: 40,
+                height: 40,
+                active: false
+            }
+        };
+
+        // Fish and treasure arrays
+        let fishArray = [];
+        let treasures = [];
+
+        // Images
+        const images = {};
+        const imageNames = [
+            '512x459_background.png',
+            '512x512_boat.png',
+            '512x436_fish.png',
+            '366x286_fish10.png',
+            '401x343_fish11.png',
+            '453x447_fish2.png',
+            '400x303_fish3.png',
+            '512x512_fish4.png',
+            '419x381_fish5.png',
+            '465x447_fish6.png',
+            '328x294_fish7.png',
+            '410x255_fish8.png',
+            '512x512_fish9.png',
+            '509x495_fishing_rod.png',
+            '410x401_hook.png',
+            '457x414_player.png',
+            '512x512_treasure.png',
+            '512x470_treasure_chest.png',
+            '407x431_water.png'
+        ];
+
+        // Load images
+        imageNames.forEach(name => {
+            const img = new Image();
+            img.src = `images/${name}`;
+            images[name] = img;
+        });
+
+        // Initialize game
+        function initGame() {
+            score = 0;
+            lives = 3;
+            gameTime = 0;
+            fishArray = [];
+            treasures = [];
+            fishingRod.angle = 0;
+            fishingRod.hook.active = false;
+            updateUI();
+        }
+
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+        }
+
+        // Create a new fish
+        function createFish() {
+            const fishTypes = [
+                { type: 'fish10', width: 366, height: 286, speed: 1 },
+                { type: 'fish11', width: 401, height: 343, speed: 1.5 },
+                { type: 'fish6', width: 465, height: 447, speed: 2 },
+                { type: 'fish7', width: 328, height: 294, speed: 3 },
+                { type: 'fish8', width: 410, height: 255, speed: 0.5 }
+            ];
+            const fishType = fishTypes[Math.floor(Math.random() * fishTypes.length)];
+            fishArray.push({
+                x: Math.random() * (canvas.width - fishType.width),
+                y: canvas.height + fishType.height,
+                width: fishType.width,
+                height: fishType.height,
+                speed: fishType.speed,
+                type: fishType.type
+            });
+        }
+
+        // Create a new treasure
+        function createTreasure() {
+            const treasureTypes = [
+                { type: 'treasure', width: 512, height: 512, value: 10 },
+                { type: 'treasure_chest', width: 512, height: 470, value: 20 }
+            ];
+            const treasureType = treasureTypes[Math.floor(Math.random() * treasureTypes.length)];
+            treasures.push({
+                x: Math.random() * (canvas.width - treasureType.width),
+                y: canvas.height + treasureType.height,
+                width: treasureType.width,
+                height: treasureType.height,
+                speed: 1.5,
+                type: treasureType.type,
+                value: treasureType.value
+            });
+        }
+
+        // Draw background
+        function drawBackground() {
+            ctx.drawImage(images['512x459_background.png'], 0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw player
+        function drawPlayer() {
+            ctx.drawImage(images['457x414_player.png'], player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
+        }
+
+        // Draw fishing rod and hook
+        function drawFishingRod() {
+            const rodLength = 300;
+            const rodWidth = 10;
+
+            // Draw rod
+            ctx.save();
+            ctx.translate(fishingRod.x, fishingRod.y);
+            ctx.rotate(fishingRod.angle);
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(-rodWidth / 2, -rodLength, rodWidth, rodLength);
+
+            // Draw hook
+            if (fishingRod.hook.active) {
+                ctx.drawImage(images['410x401_hook.png'], fishingRod.hook.x - 20, fishingRod.hook.y - 20, 40, 40);
+            }
+            ctx.restore();
+        }
+
+        // Draw fish
+        function drawFish() {
+            fishArray.forEach(fish => {
+                if (fish.type === 'fish10') {
+                    ctx.drawImage(images['366x286_fish10.png'], fish.x, fish.y, fish.width, fish.height);
+                } else if (fish.type === 'fish11') {
+                    ctx.drawImage(images['401x343_fish11.png'], fish.x, fish.y, fish.width, fish.height);
+                } else if (fish.type === 'fish6') {
+                    ctx.drawImage(images['465x447_fish6.png'], fish.x, fish.y, fish.width, fish.height);
+                } else if (fish.type === 'fish7') {
+                    ctx.drawImage(images['328x294_fish7.png'], fish.x, fish.y, fish.width, fish.height);
+                } else if (fish.type === 'fish8') {
+                    ctx.drawImage(images['410x255_fish8.png'], fish.x, fish.y, fish.width, fish.height);
+                }
+            });
+        }
+
+        // Draw treasures
+        function drawTreasures() {
+            treasures.forEach(treasure => {
+                if (treasure.type === 'treasure') {
+                    ctx.drawImage(images['512x512_treasure.png'], treasure.x, treasure.y, treasure.width, treasure.height);
+                } else if (treasure.type === 'treasure_chest') {
+                    ctx.drawImage(images['512x470_treasure_chest.png'], treasure.x, treasure.y, treasure.width, treasure.height);
+                }
+            });
+        }
+
+        // Update fish positions
+        function updateFish() {
+            for (let i = fishArray.length - 1; i >= 0; i--) {
+                const fish = fishArray[i];
+                fish.y -= fish.speed;
+                
+                if (fish.y + fish.height < 0) {
+                    fishArray.splice(i, 1);
+                }
+            }
+        }
+
+        // Update treasure positions
+        function updateTreasures() {
+            for (let i = treasures.length - 1; i >= 0; i--) {
+                const treasure = treasures[i];
+                treasure.y -= treasure.speed;
+                
+                if (treasure.y + treasure.height < 0) {
+                    treasures.splice(i, 1);
+                }
+            }
+        }
+
+        // Check collisions
+        function checkCollisions() {
+            for (let i = fishArray.length - 1; i >= 0; i--) {
+                const fish = fishArray[i];
+                if (
+                    fishingRod.hook.active &&
+                    fishingRod.hook.x > fish.x &&
+                    fishingRod.hook.x < fish.x + fish.width &&
+                    fishingRod.hook.y > fish.y &&
+                    fishingRod.hook.y < fish.y + fish.height
+                ) {
+                    // Catch fish
+                    score += 5;
+                    fishArray.splice(i, 1);
+                    updateUI();
+                }
+            }
+
+            for (let i = treasures.length - 1; i >= 0; i--) {
+                const treasure = treasures[i];
+                if (
+                    fishingRod.hook.active &&
+                    fishingRod.hook.x > treasure.x &&
+                    fishingRod.hook.x < treasure.x + treasure.width &&
+                    fishingRod.hook.y > treasure.y &&
+                    fishingRod.hook.y < treasure.y + treasure.height
+                ) {
+                    // Catch treasure
+                    score += treasure.value;
+                    treasures.splice(i, 1);
+                    updateUI();
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            drawBackground();
+
+            // Update fish and treasures
+            updateFish();
+            updateTreasures();
+
+            // Draw everything
+            drawPlayer();
+            drawFishingRod();
+            drawFish();
+            drawTreasures();
+
+            // Check collisions
+            checkCollisions();
+
+            // Spawn new fish or treasure
+            if (Math.random() < 0.02) createFish();
+            if (Math.random() < 0.01) createTreasure();
+
+            // Update game time
+            gameTime += 1/60;
+
+            // Update hook position
+            if (fishingRod.hook.active) {
+                const rodEndX = fishingRod.x + Math.sin(fishingRod.angle) * fishingRod.length;
+                const rodEndY = fishingRod.y - Math.cos(fishingRod.angle) * fishingRod.length;
+                fishingRod.hook.x = rodEndX;
+                fishingRod.hook.y = rodEndY;
+            }
+
+            // Continue loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle keyboard input
+        function handleKeyDown(e) {
+            if (!gameRunning) return;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    fishingRod.angle -= fishingRod.speed;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    fishingRod.angle += fishingRod.speed;
+                    break;
+                case ' ':
+                    if (!fishingRod.hook.active) {
+                        fishingRod.hook.active = true;
+                        setTimeout(() => {
+                            fishingRod.hook.active = false;
+                        }, 1000);
+                    }
+                    break;
+            }
+
+            // Clamp angle
+            if (fishingRod.angle > 0.5) fishingRod.angle = 0.5;
+            if (fishingRod.angle < -0.5) fishingRod.angle = -0.5;
+        }
+
+        // Start game
+        startButton.addEventListener('click', () => {
+            initGame();
+            gameRunning = true;
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameLoop();
+        });
+
+        // Restart game
+        restartButton.addEventListener('click', () => {
+            initGame();
+            gameRunning = true;
+            gameOverScreen.style.display = 'none';
+            gameLoop();
+        });
+
+        // Event listeners
+        document.addEventListener('keydown', handleKeyDown);
+    </script>
+</body>
+</html>
