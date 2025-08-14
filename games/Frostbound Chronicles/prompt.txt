@@ -1,0 +1,81 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    No frameworks pure JS  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_frostbound-chronicles-1.png description: A lone warrior standing in a frozen wasteland, surrounded by snow and ice, with a glowing sword in hand.
+path: images/512x510_frostbound-chronicles-10.png description: A close-up of a hero's face, showing determination and a frosty beard, with a magical fire spell glowing in their hand.
+path: images/512x512_frostbound-chronicles-11.png description: A turn-based battle scene with three heroes attacking an ice beast, surrounded by ice shards and fire magic.
+path: images/512x512_frostbound-chronicles-12.png description: A map of the frozen wasteland with marked quest locations, showing a snow-covered mountain range and a glowing ice beast icon.
+path: images/512x472_frostbound-chronicles-13.png description: A hero using a fire-based weapon to melt an ice platform, revealing a hidden path in the snow.
+path: images/512x512_frostbound-chronicles-14.png description: A mini-game screenshot of an ice slide challenge, with a hero sliding down a frozen slope while avoiding obstacles.
+path: images/512x512_frostbound-chronicles-15.png description: A character inventory screen showing various weapons, armor, and consumables in a simple, minimal UI.
+path: images/512x512_frostbound-chronicles-16.png description: A hero leveling up, with a skill tree menu showing fire-based abilities and upgrades.
+path: images/512x512_frostbound-chronicles-17.png description: A frosty environment with a glowing ice beast in the distance, surrounded by snowflakes and a cold, atmospheric sky.
+path: images/332x433_frostbound-chronicles-18.png description: A character interacting with a friendly NPC in a snowy village, holding a warm mug and smiling.
+path: images/512x512_frostbound-chronicles-19.png description: A hero standing on an ice platform, preparing to jump across to a distant ledge, with a frozen lake below.
+path: images/512x512_frostbound-chronicles-2.png description: A screenshot of the game's main menu, with a frosty background, character selection, and a glowing title.
+path: images/512x512_frostbound-chronicles-20.png description: A hero using a fire spell to melt an enemy, with sparks and ice shattering in the background.
+path: images/512x512_frostbound-chronicles-3.png description: A character in the middle of a battle, surrounded by enemies, with a glowing fire aura and a determined expression.
+path: images/512x463_frostbound-chronicles-4.png description: A character holding a glowing fire sword, with a frozen enemy in the background, showing the elemental ice mechanics.
+path: images/512x512_frostbound-chronicles-5.png description: A character standing in a snowy forest, with a glowing map and quest marker indicating the next challenge.
+path: images/512x439_frostbound-chronicles-6.png description: A hero in the middle of a frozen puzzle, solving a platform challenge with ice blocks and a snowflake background.
+path: images/470x482_frostbound-chronicles-7.png description: A character leveling up with a new skill, showing a progress bar and a glowing fire ability icon.
+path: images/512x489_frostbound-chronicles-8.png description: A character in a cozy campfire scene, surrounded by snow and a warm light, with a map and gear nearby.
+path: images/512x512_frostbound-chronicles-9.png description: A dramatic final battle scene with the ice beast, surrounded by fire magic and ice shards, with the hero in the center, ready to strike.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Frostbound Chronicles*
+
+**Genre:** Simple RPG Battle
+
+**Overview:**  
+*Frostbound Chronicles* is a charming, turn-based RPG where players take on the role of a lone warrior venturing into a frozen wasteland to confront a powerful ice beast. The game is designed to be easy to pick up, quick to play, and packed with fun, satisfying combat and a sense of adventure.
+
+**Gameplay Mechanics:**  
+Players control a small group of heroes (up to 3), each with unique classes and abilities. The game features a simple turn-based battle system where players take turns attacking, using abilities, and managing resources like stamina and magic. Each hero has a set of skills that can be upgraded through leveling up, and the game includes a basic inventory system for managing gear and consumables.
+
+**Objectives:**  
+The main goal is to defeat the ice beast that has taken over the land, but the journey is broken into small, bite-sized quests and battles. Players must gather resources, upgrade their gear, and master different combat strategies to overcome increasingly challenging foes.
+
+**Unique Features:**  
+- **Elemental Ice Mechanics:** Ice beasts are weak to fire, and players can craft or find fire-based weapons and spells. The environment also reacts to the player's actions—freezing enemies, creating ice platforms, and more.
+- **Simplified UI:** All menus and systems are kept minimal and easy to navigate, making the game accessible to newcomers.
+- **Randomized Battle Encounters:** Each area has a set of potential enemies and challenges, ensuring replayability and variety.
+- **Mini-Games:** Quick mini-games like "Ice Slide" or "Frozen Puzzle" offer fun diversions and rewards.
+- **Story-Driven Progression:** Each defeated ice beast reveals a part of the story, building toward a climactic final battle.
+
+**Overall Tone:**  
+*Frostbound Chronicles* is a cozy, nostalgic RPG experience with a frosty, atmospheric world, friendly characters, and a satisfying sense of progression. It’s perfect for players who enjoy strategic combat without the complexity of deep systems.

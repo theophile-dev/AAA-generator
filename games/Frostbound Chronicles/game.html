@@ -1,0 +1,401 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frostbound Chronicles</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #0a1929;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        canvas {
+            border: 2px solid #4a90e2;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+        }
+        
+        #gameContainer {
+            position: relative;
+        }
+        
+        #uiOverlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 0 0 3px black;
+        }
+        
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(10, 25, 41, 0.9);
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        #gameOverScreen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #4a90e2;
+            text-shadow: 0 0 10px rgba(74, 144, 226, 0.7);
+        }
+        
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button:hover {
+            background-color: #5aa6ff;
+            transform: scale(1.05);
+        }
+        
+        p {
+            max-width: 80%;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="startScreen">
+            <h1>FROSTBOUND CHRONICLES</h1>
+            <p>Embark on a journey through frozen wastelands to defeat the ice beast!</p>
+            <p>Control your heroes with arrow keys, attack with spacebar.</p>
+            <button id="startButton">START ADVENTURE</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1>GAME OVER</h1>
+            <p>Your journey has ended...</p>
+            <p>You defeated the ice beast!</p>
+            <button id="restartButton">PLAY AGAIN</button>
+        </div>
+        
+        <div id="uiOverlay">
+            <div>SCORE: <span id="score">0</span></div>
+            <div>LIVES: <span id="lives">3</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Game initialization
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+
+        // Game state
+        let gameState = 'menu'; // menu, playing, gameOver
+        let score = 0;
+        let lives = 3;
+        let player = {
+            x: 512,
+            y: 600,
+            width: 40,
+            height: 60,
+            speed: 5,
+            color: '#4a90e2',
+            health: 100
+        };
+        
+        let enemies = [];
+        let projectiles = [];
+        let keys = {};
+        let gameLoop;
+        let lastTime = 0;
+
+        // Initialize game objects
+        function initGame() {
+            score = 0;
+            lives = 3;
+            player.x = 512;
+            player.y = 600;
+            player.health = 100;
+            enemies = [];
+            projectiles = [];
+            
+            // Create initial enemies
+            for (let i = 0; i < 5; i++) {
+                enemies.push({
+                    x: Math.random() * 900 + 64,
+                    y: Math.random() * 300 + 50,
+                    width: 40,
+                    height: 40,
+                    speed: 1 + Math.random() * 2,
+                    health: 30,
+                    color: '#e74c3c'
+                });
+            }
+            
+            updateUI();
+        }
+
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+        }
+
+        // Draw player
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Draw sword
+            ctx.fillStyle = '#f39c12';
+            ctx.fillRect(player.x + 15, player.y - 10, 10, 20);
+        }
+
+        // Draw enemies
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.fillStyle = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                
+                // Draw eye
+                ctx.fillStyle = 'white';
+                ctx.fillRect(enemy.x + 10, enemy.y + 10, 5, 5);
+                ctx.fillRect(enemy.x + 25, enemy.y + 10, 5, 5);
+            });
+        }
+
+        // Draw projectiles
+        function drawProjectiles() {
+            projectiles.forEach(projectile => {
+                ctx.fillStyle = '#f39c12';
+                ctx.beginPath();
+                ctx.arc(projectile.x, projectile.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Draw background
+        function drawBackground() {
+            // Draw sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 720);
+            gradient.addColorStop(0, '#1a3a5f');
+            gradient.addColorStop(1, '#0a1929');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1024, 720);
+            
+            // Draw snow
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * 1024;
+                const y = Math.random() * 720;
+                const size = Math.random() * 3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw ground
+            ctx.fillStyle = '#1e3a5f';
+            ctx.fillRect(0, 600, 1024, 120);
+        }
+
+        // Update game state
+        function update() {
+            if (gameState !== 'playing') return;
+            
+            // Move player
+            if (keys['ArrowLeft'] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+            if (keys['ArrowUp'] && player.y > 0) {
+                player.y -= player.speed;
+            }
+            if (keys['ArrowDown'] && player.y < canvas.height - player.height) {
+                player.y += player.speed;
+            }
+            
+            // Shoot projectiles
+            if (keys[' '] && projectiles.length < 5) {
+                projectiles.push({
+                    x: player.x + player.width/2,
+                    y: player.y,
+                    speed: 7
+                });
+                keys[' '] = false; // Prevent continuous shooting
+            }
+            
+            // Update projectiles
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                projectiles[i].y -= projectiles[i].speed;
+                
+                if (projectiles[i].y < 0) {
+                    projectiles.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collisions with enemies
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const dx = projectiles[i].x - (enemies[j].x + enemies[j].width/2);
+                    const dy = projectiles[i].y - (enemies[j].y + enemies[j].height/2);
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 25) {
+                        enemies[j].health -= 10;
+                        projectiles.splice(i, 1);
+                        
+                        if (enemies[j].health <= 0) {
+                            enemies.splice(j, 1);
+                            score += 100;
+                        }
+                        
+                        break;
+                    }
+                }
+            }
+            
+            // Update enemies
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                enemies[i].x += Math.sin(Date.now() * 0.001 + i) * 0.5;
+                
+                // Move towards player
+                const dx = player.x - enemies[i].x;
+                const dy = player.y - enemies[i].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 0) {
+                    enemies[i].x += (dx / distance) * enemies[i].speed;
+                    enemies[i].y += (dy / distance) * enemies[i].speed;
+                }
+                
+                // Check collision with player
+                const playerDx = player.x - (enemies[i].x + enemies[i].width/2);
+                const playerDy = player.y - (enemies[i].y + enemies[i].height/2);
+                const playerDistance = Math.sqrt(playerDx * playerDx + playerDy * playerDy);
+                
+                if (playerDistance < 30) {
+                    player.health -= 1;
+                    enemies.splice(i, 1);
+                    lives--;
+                    updateUI();
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+            
+            // Spawn new enemies
+            if (Math.random() < 0.02 && enemies.length < 10) {
+                enemies.push({
+                    x: Math.random() * 900 + 64,
+                    y: -40,
+                    width: 40,
+                    height: 40,
+                    speed: 1 + Math.random() * 2,
+                    health: 30,
+                    color: '#e74c3c'
+                });
+            }
+        }
+
+        // Draw everything
+        function draw() {
+            drawBackground();
+            drawPlayer();
+            drawEnemies();
+            drawProjectiles();
+            
+            // Draw health bar
+            ctx.fillStyle = 'red';
+            ctx.fillRect(player.x, player.y - 15, player.width, 10);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(player.x, player.y - 15, player.width * (player.health / 100), 10);
+        }
+
+        // Game loop
+        function gameUpdate(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            update();
+            draw();
+            
+            if (gameState === 'playing') {
+                requestAnimationFrame(gameUpdate);
+            }
+        }
+
+        // Start game
+        function startGame() {
+            initGame();
+            gameState = 'playing';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            lastTime = performance.now();
+            requestAnimationFrame(gameUpdate);
+        }
+
+        // Game over
+        function gameOver() {
+            gameState = 'gameOver';
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Initial draw
+        drawBackground();
+        ctx.fillStyle = 'white';
+        ctx.font = '24px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('FROSTBOUND CHRONICLES', 512, 360);
+        ctx.font = '16px "Courier New", monospace';
+        ctx.fillText('Press START ADVENTURE to begin', 512, 400);
+    </script>
+</body>
+</html>
