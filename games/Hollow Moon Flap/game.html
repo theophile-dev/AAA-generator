@@ -1,0 +1,277 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hollow Moon Flap</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #000;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+    canvas {
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="1024" height="720"></canvas>
+  <script>
+    // Game setup
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Asset loading
+    const assets = {};
+    const assetNames = [
+      '404x407_achievement.png', '382x445_background.png', '512x512_collision.png',
+      '236x213_empty.png', '512x512_flap.png', '501x494_gameover.png',
+      '299x350_gravity.png', '384x339_gravitybar.png', '462x452_moon.png',
+      '512x512_platform.png', '268x332_player.png', '511x496_progress.png',
+      '508x505_restart.png', '405x445_rock.png', '512x512_score.png',
+      '512x512_scoreboard.png', '400x414_size.png', '302x315_sound.png',
+      '512x512_speed.png', '512x490_start.png'
+    ];
+
+    assetNames.forEach(name => {
+      assets[name] = new Image();
+      assets[name].src = `images/${name}`;
+    });
+
+    // Game state
+    let gameState = 'start'; // start, playing, gameOver
+    let score = 0;
+    let highScore = localStorage.getItem('hollowMoonHighScore') || 0;
+    let player = {
+      x: 100,
+      y: canvas.height / 2,
+      radius: 20,
+      velocity: 0,
+      gravity: 0.5,
+      lift: -10
+    };
+
+    let obstacles = [];
+    let backgroundOffset = 0;
+    let moonProgress = 0;
+    let keys = {};
+    let lastTime = 0;
+
+    // Input handling
+    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keyup', e => keys[e.key] = false);
+    canvas.addEventListener('click', () => {
+      if (gameState === 'start') {
+        gameState = 'playing';
+      } else if (gameState === 'playing') {
+        player.velocity = player.lift;
+      } else if (gameState === 'gameOver') {
+        resetGame();
+      }
+    });
+
+    // Obstacle class
+    class Obstacle {
+      constructor() {
+        this.width = 50 + Math.random() * 100;
+        this.height = 50 + Math.random() * 100;
+        this.x = canvas.width;
+        this.y = Math.random() * (canvas.height - this.height);
+        this.speed = 2 + Math.random() * 3;
+        this.type = Math.floor(Math.random() * 3); // 0: rock, 1: platform, 2: empty
+      }
+
+      update() {
+        this.x -= this.speed;
+      }
+
+      draw() {
+        const img = assets[
+          this.type === 0 ? '405x445_rock.png' :
+          this.type === 1 ? '236x213_empty.png' : '512x512_platform.png'
+        ];
+        ctx.drawImage(img, this.x, this.y, this.width, this.height);
+      }
+
+      isOffScreen() {
+        return this.x + this.width < 0;
+      }
+    }
+
+    // Draw background
+    function drawBackground() {
+      const bg = assets['382x445_background.png'];
+      ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+      
+      // Parallax moon effect
+      const moon = assets['462x452_moon.png'];
+      ctx.drawImage(moon, canvas.width / 2 - 100, 50, 200, 200);
+    }
+
+    // Draw player
+    function drawPlayer() {
+      const img = assets['268x332_player.png'];
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.velocity * 0.05); // Rotation based on velocity
+      ctx.drawImage(img, -player.radius, -player.radius, player.radius * 2, player.radius * 2);
+      ctx.restore();
+    }
+
+    // Draw HUD
+    function drawHUD() {
+      ctx.fillStyle = 'white';
+      ctx.font = '30px Courier New';
+      ctx.fillText(`Score: ${score}`, 20, 40);
+      ctx.fillText(`High Score: ${highScore}`, 20, 80);
+      
+      // Moon progress indicator
+      const progressBar = assets['511x496_progress.png'];
+      ctx.drawImage(progressBar, canvas.width - 150, 20, 120, 30);
+      ctx.fillStyle = '#00ff00';
+      ctx.fillRect(canvas.width - 150 + 5, 25, (moonProgress / 100) * 110, 20);
+    }
+
+    // Draw start screen
+    function drawStartScreen() {
+      const startImg = assets['512x490_start.png'];
+      ctx.drawImage(startImg, canvas.width / 2 - 256, canvas.height / 2 - 245, 512, 490);
+      
+      ctx.fillStyle = 'white';
+      ctx.font = '30px Courier New';
+      ctx.fillText('Click to Start', canvas.width / 2 - 70, canvas.height / 2 + 100);
+    }
+
+    // Draw game over screen
+    function drawGameOver() {
+      const gameOverImg = assets['501x494_gameover.png'];
+      ctx.drawImage(gameOverImg, canvas.width / 2 - 250, canvas.height / 2 - 247, 501, 494);
+      
+      ctx.fillStyle = 'white';
+      ctx.font = '30px Courier New';
+      ctx.fillText(`Score: ${score}`, canvas.width / 2 - 60, canvas.height / 2 + 100);
+      ctx.fillText(`High Score: ${highScore}`, canvas.width / 2 - 90, canvas.height / 2 + 140);
+      
+      const restartBtn = assets['508x505_restart.png'];
+      ctx.drawImage(restartBtn, canvas.width / 2 - 254, canvas.height / 2 + 200, 508, 505);
+    }
+
+    // Reset game
+    function resetGame() {
+      player = {
+        x: 100,
+        y: canvas.height / 2,
+        radius: 20,
+        velocity: 0,
+        gravity: 0.5,
+        lift: -10
+      };
+      obstacles = [];
+      score = 0;
+      moonProgress = 0;
+      gameState = 'playing';
+    }
+
+    // Update game state
+    function update(deltaTime) {
+      if (gameState !== 'playing') return;
+
+      player.velocity += player.gravity;
+      player.y += player.velocity;
+
+      // Ground collision
+      if (player.y > canvas.height - player.radius) {
+        player.y = canvas.height - player.radius;
+        gameState = 'gameOver';
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem('hollowMoonHighScore', highScore);
+        }
+      }
+
+      // Ceiling collision
+      if (player.y < player.radius) {
+        player.y = player.radius;
+        player.velocity = 0;
+      }
+
+      // Obstacle generation
+      if (Math.random() < 0.02) {
+        obstacles.push(new Obstacle());
+      }
+
+      // Update obstacles
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        obstacles[i].update();
+
+        // Collision detection
+        const ob = obstacles[i];
+        if (
+          player.x + player.radius > ob.x &&
+          player.x - player.radius < ob.x + ob.width &&
+          player.y + player.radius > ob.y &&
+          player.y - player.radius < ob.y + ob.height
+        ) {
+          gameState = 'gameOver';
+          if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('hollowMoonHighScore', highScore);
+          }
+        }
+
+        // Score when passing obstacle
+        if (ob.x + ob.width < player.x && !ob.passed) {
+          ob.passed = true;
+          score += 10;
+          moonProgress = Math.min(100, moonProgress + 5); // Progress towards moon
+        }
+
+        // Remove off-screen obstacles
+        if (ob.isOffScreen()) {
+          obstacles.splice(i, 1);
+        }
+      }
+    }
+
+    // Render game
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawBackground();
+
+      if (gameState === 'start') {
+        drawStartScreen();
+        return;
+      }
+
+      if (gameState === 'gameOver') {
+        drawGameOver();
+        return;
+      }
+
+      obstacles.forEach(ob => ob.draw());
+      drawPlayer();
+      drawHUD();
+    }
+
+    // Game loop
+    function gameLoop(timestamp) {
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+
+      update(deltaTime);
+      render();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Start the game loop
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
