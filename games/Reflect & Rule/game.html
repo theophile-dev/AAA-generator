@@ -1,0 +1,239 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reflect & Rule</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+
+    <script>
+        // Game constants
+        const GRID_SIZE = 5;
+        const TILE_SIZE = 100;
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+
+        // Game state
+        let gameState = {
+            board: [],
+            playerPiece: { x: 0, y: 0 },
+            opponentPiece: { x: 4, y: 4 },
+            isFlippedHorizontally: false,
+            isFlippedVertically: false,
+            currentPlayer: 'player',
+            gamePhase: 'start', // start, playing, gameOver
+            winner: null
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Image cache
+        const images = {};
+        const imageNames = [
+            "images/505x504_board_flip_both.png",
+            "images/272x364_board_flip_horizontal.png",
+            "images/512x512_board_flip_vertical.png",
+            "images/353x326_capture_position.png",
+            "images/512x512_capture_sequence.png",
+            "images/504x472_game_over_screen.png",
+            "images/280x268_grid_square.png",
+            "images/512x512_instruction_screen.png",
+            "images/364x367_minimalist_board.png",
+            "images/393x390_mirror_effect.png",
+            "images/512x512_mirror_piece.png",
+            "images/474x472_opponent_piece.png",
+            "images/389x443_opponent_turn.png",
+            "images/512x512_player_turn.png",
+            "images/512x512_reflection_example.png",
+            "images/436x414_reflection_logic.png",
+            "images/423x374_reflection_square.png",
+            "images/469x450_start_screen.png",
+            "images/468x449_strategy_board.png",
+            "images/461x501_win_condition.png"
+        ];
+
+        // Load images
+        imageNames.forEach((name, index) => {
+            const img = new Image();
+            img.src = name;
+            images[name] = img;
+        });
+
+        // Initialize board
+        function initBoard() {
+            gameState.board = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
+            gameState.playerPiece = { x: 0, y: 0 };
+            gameState.opponentPiece = { x: 4, y: 4 };
+            gameState.isFlippedHorizontally = false;
+            gameState.isFlippedVertically = false;
+        }
+
+        // Draw game
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            if (gameState.gamePhase === 'start') {
+                drawStartScreen();
+            } else if (gameState.gamePhase === 'playing') {
+                drawGameBoard();
+                drawPieces();
+            } else if (gameState.gamePhase === 'gameOver') {
+                drawGameOver();
+            }
+        }
+
+        // Draw start screen
+        function drawStartScreen() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('REFLECT & RULE', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3);
+
+            ctx.font = '24px Arial';
+            ctx.fillText('Click to start', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        }
+
+        // Draw game board
+        function drawGameBoard() {
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const screenX = (CANVAS_WIDTH - GRID_SIZE * TILE_SIZE) / 2 + x * TILE_SIZE;
+                    const screenY = (CANVAS_HEIGHT - GRID_SIZE * TILE_SIZE) / 2 + y * TILE_SIZE;
+
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                    // Draw grid lines
+                    ctx.strokeStyle = '#666';
+                    ctx.strokeRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+                }
+            }
+
+            // Draw flip indicators
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.fillText('H: Flip Horizontal', 20, 30);
+            ctx.fillText('V: Flip Vertical', 20, 50);
+        }
+
+        // Draw pieces
+        function drawPieces() {
+            const screenX = (CANVAS_WIDTH - GRID_SIZE * TILE_SIZE) / 2 + gameState.playerPiece.x * TILE_SIZE;
+            const screenY = (CANVAS_HEIGHT - GRID_SIZE * TILE_SIZE) / 2 + gameState.playerPiece.y * TILE_SIZE;
+
+            // Draw player piece
+            ctx.drawImage(images["images/512x512_mirror_piece.png"], screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+            // Draw opponent piece
+            const oppScreenX = (CANVAS_WIDTH - GRID_SIZE * TILE_SIZE) / 2 + gameState.opponentPiece.x * TILE_SIZE;
+            const oppScreenY = (CANVAS_HEIGHT - GRID_SIZE * TILE_SIZE) / 2 + gameState.opponentPiece.y * TILE_SIZE;
+            ctx.drawImage(images["images/474x472_opponent_piece.png"], oppScreenX, oppScreenY, TILE_SIZE, TILE_SIZE);
+        }
+
+        // Draw game over screen
+        function drawGameOver() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(gameState.winner === 'player' ? 'YOU WIN!' : 'YOU LOSE!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3);
+
+            ctx.font = '24px Arial';
+            ctx.fillText('Click to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        }
+
+        // Handle mouse click
+        function handleClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            if (gameState.gamePhase === 'start') {
+                gameState.gamePhase = 'playing';
+                initBoard();
+                return;
+            }
+
+            if (gameState.gamePhase === 'gameOver') {
+                gameState.gamePhase = 'playing';
+                initBoard();
+                return;
+            }
+
+            if (gameState.currentPlayer === 'player' && gameState.gamePhase === 'playing') {
+                // Move player piece
+                const boardX = Math.floor((x - (CANVAS_WIDTH - GRID_SIZE * TILE_SIZE) / 2) / TILE_SIZE);
+                const boardY = Math.floor((y - (CANVAS_HEIGHT - GRID_SIZE * TILE_SIZE) / 2) / TILE_SIZE);
+
+                if (boardX >= 0 && boardX < GRID_SIZE && boardY >= 0 && boardY < GRID_SIZE) {
+                    // Simple move validation
+                    const dx = Math.abs(boardX - gameState.playerPiece.x);
+                    const dy = Math.abs(boardY - gameState.playerPiece.y);
+
+                    if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+                        gameState.playerPiece.x = boardX;
+                        gameState.playerPiece.y = boardY;
+
+                        // Check for capture
+                        if (gameState.playerPiece.x === gameState.opponentPiece.x && 
+                            gameState.playerPiece.y === gameState.opponentPiece.y) {
+                            gameState.winner = 'player';
+                            gameState.gamePhase = 'gameOver';
+                            return;
+                        }
+
+                        gameState.currentPlayer = 'opponent';
+                    }
+                }
+            }
+        }
+
+        // Handle key press
+        function handleKeyPress(event) {
+            if (gameState.gamePhase !== 'playing') return;
+
+            if (event.key === 'h' || event.key === 'H') {
+                gameState.isFlippedHorizontally = !gameState.isFlippedHorizontally;
+            } else if (event.key === 'v' || event.key === 'V') {
+                gameState.isFlippedVertically = !gameState.isFlippedVertically;
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners
+        canvas.addEventListener('click', handleClick);
+        window.addEventListener('keydown', handleKeyPress);
+
+        // Start game loop
+        gameLoop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/505x504_board_flip_both.png description: A simple circle representing the mirror piece in a magical mirror world
+path: images/272x364_board_flip_horizontal.png description: A reflective star representing the opponent's piece in a magical mirror world
+path: images/512x512_board_flip_vertical.png description: A single square on a 5x5 grid with a simple background
+path: images/353x326_capture_position.png description: A 5x5 grid flipped horizontally to demonstrate reflection logic
+path: images/512x512_capture_sequence.png description: A 5x5 grid flipped vertically to demonstrate reflection logic
+path: images/504x472_game_over_screen.png description: A mirror piece moving into the same square as an opponent's piece to capture it
+path: images/280x268_grid_square.png description: A square that reflects the position of a piece in a mirrored orientation
+path: images/512x512_instruction_screen.png description: A player's turn with the mirror piece on the board
+path: images/364x367_minimalist_board.png description: An opponent's turn with the reflective star on the board
+path: images/393x390_mirror_effect.png description: A winning screen showing the mirror piece capturing the opponent's piece
+path: images/512x512_mirror_piece.png description: A minimalist 5x5 grid with simple shapes and colors
+path: images/474x472_opponent_piece.png description: A visual representation of how reflection logic changes movement paths
+path: images/389x443_opponent_turn.png description: A sequence of steps showing how a piece is captured through reflection
+path: images/512x512_player_turn.png description: A strategic board showing possible moves and reflections
+path: images/512x512_reflection_example.png description: A game over screen with a message and a restart button
+path: images/436x414_reflection_logic.png description: A start screen with the game title and a play button
+path: images/423x374_reflection_square.png description: An instruction screen explaining the basic rules of the game
+path: images/469x450_start_screen.png description: An example of how a piece is mirrored and treated differently on the board
+path: images/468x449_strategy_board.png description: A 5x5 grid flipped both horizontally and vertically to show dual reflection logic
+path: images/461x501_win_condition.png description: A visual effect showing how the mirror piece reflects the board's orientation
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title: Reflect & Rule**
+
+**Theme:** *Magic Mirror World*  
+**Genre:** *Minimal Chess Puzzle*  
+**Core Mechanic:** *Turn-based strategy using mirrored reflections to control movement and capture pieces.*
+
+---
+
+**Concept Description:**
+
+In *Reflect & Rule*, players take control of a magical mirror piece that can move across a grid by reflecting its path. The board is a 5x5 grid where each square contains a single, simple 2D image (like a circle, star, or square) representing a piece. The goal is to use reflections—by flipping the board's orientation—to move your piece across the grid and capture the opponent's pieces.
+
+Each piece can only move in a straight line, but by flipping the board horizontally or vertically, the player can redirect the direction of movement. The mirror piece can also "reflect" other pieces, meaning that if a piece is placed in a mirrored position, it will be treated as if it's in a different orientation, changing how it can be captured or moved.
+
+---
+
+**Gameplay Mechanics:**
+
+- **Board Setup:** A 5x5 grid where each cell contains a single, static image (like a circle, triangle, or square).
+- **Player Pieces:** The player controls one piece (a mirror circle) and the opponent controls another (a reflective star).
+- **Movement:** The mirror piece can move one square in any direction, but by flipping the board (horizontal or vertical), the movement path can be redirected.
+- **Capture:** A piece is captured when it is moved into the same square as an opposing piece, or when it is reflected into a mirrored square.
+- **Turns:** Players alternate turns. On your turn, you can choose to flip the board (horizontal or vertical) or move your piece one square in any direction.
+- **Win Condition:** Capture the opponent's piece or force them into a position where they can't move.
+
+---
+
+**Unique Features:**
+
+- **Minimalist Aesthetic:** Uses only 20 simple PNG images (5x5 grid + 5 player pieces + 5 opponent pieces), all single elements with no complex animations or sprites.
+- **Mirror Logic:** The reflection mechanic adds a clever twist to the traditional chess puzzle—players must think about how flipping the board affects movement and capture.
+- **Strategic Depth:** Simple rules but deep strategy—players must plan ahead, considering how reflections will impact their options.
+- **Accessible Difficulty:** Easy to learn, but challenging to master—ideal for casual play and puzzle lovers alike.
+
+---
+
+**Implementation Notes:**
+
+- All assets are single, static PNGs.
+- The game logic can be implemented with simple JavaScript and HTML5 Canvas.
+- The board state is managed with an array or object structure to track piece positions and reflections.
+- The 500-line code limit can be easily met using minimal logic for movement, flipping, and checking for capture.
+
+---
+
+**Target Audience:**
+
+- Casual gamers and puzzle enthusiasts
+- Players who enjoy strategic thinking with minimal complexity
+- Educators and parents looking for a simple, fun, and educational game
+
+---
+
+**Final Thought:**
+
+*Reflect & Rule* is a clever twist on the classic chess puzzle, wrapped in a minimalist, magical world. It’s a game that encourages thinking outside the box—literally—through the power of reflection.
