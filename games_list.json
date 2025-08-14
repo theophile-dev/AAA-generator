@@ -1,0 +1,67 @@
+[
+    {
+        "name": "Alchemy Balloon Pop",
+        "game_html": "games/Alchemy Balloon Pop/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Cosmic Sprint",
+        "game_html": "games/Cosmic Sprint/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Floating Library Blocks",
+        "game_html": "games/Floating Library Blocks/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Ghost Drift",
+        "game_html": "games/Ghost Drift/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Ghost Ship Puzzle",
+        "game_html": "games/Ghost Ship Puzzle/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Insect Breaker",
+        "game_html": "games/Insect Breaker/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Lumina- The Arena of Light",
+        "game_html": "games/Lumina- The Arena of Light/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Maze Match",
+        "game_html": "games/Maze Match/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Skybound Sprint",
+        "game_html": "games/Skybound Sprint/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Star Bridge- Silent Steps",
+        "game_html": "games/Star Bridge- Silent Steps/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Steam Whistle Hockey",
+        "game_html": "games/Steam Whistle Hockey/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Storm Sprint",
+        "game_html": "games/Storm Sprint/game.html",
+        "thumbnail": null
+    },
+    {
+        "name": "Vampire Hunt- Chess of Shadows",
+        "game_html": "games/Vampire Hunt- Chess of Shadows/game.html",
+        "thumbnail": null
+    }
+]
