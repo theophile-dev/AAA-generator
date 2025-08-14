@@ -1,0 +1,774 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Star Empire: Avoid the Circle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1445, #1a237e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            background: #000;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 15, 50, 0.9);
+            text-align: center;
+            padding: 20px;
+            pointer-events: auto;
+        }
+        
+        #game-over-screen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+            text-shadow: 0 0 15px rgba(79, 195, 247, 0.7);
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #81d4fa;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #29b6f6, #0288d1);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px 0;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(to right, #4fc3f7, #0277bd);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        #score-display, #high-score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #stars-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .star {
+            color: #ffd54f;
+            margin: 0 5px;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #81d4fa;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .power-up-indicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        
+        .shield {
+            color: #4fc3f7;
+        }
+        
+        .speed {
+            color: #ff9800;
+        }
+        
+        .teleport {
+            color: #9c27b0;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="score-display">Score: <span id="score">0</span></div>
+            <div id="stars-display">Stars: <span id="stars">0</span> <span class="star">★</span></div>
+            
+            <div id="start-screen">
+                <h1>CRYSTAL STAR EMPIRE</h1>
+                <h2>Avoid the Circle</h2>
+                <p>Navigate through the cosmic galaxy and avoid the expanding circle that threatens to engulf your crystal star. Collect power-ups to help you survive longer!</p>
+                <p>Use arrow keys or WASD to move, SPACE to teleport, and collect stars for points.</p>
+                <button id="start-btn" class="btn pulse">START MISSION</button>
+                <div id="instructions">
+                    <p>Arrow Keys / WASD: Move | SPACE: Teleport | Collect Stars & Power-ups</p>
+                </div>
+            </div>
+            
+            <div id="game-over-screen">
+                <h1>MISSION FAILED</h1>
+                <h2>Your Crystal Star Has Been Destroyed</h2>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <p>Stars Collected: <span id="final-stars">0</span></p>
+                <p>High Score: <span id="high-score">0</span></p>
+                <button id="restart-btn" class="btn">TRY AGAIN</button>
+            </div>
+            
+            <div id="power-up-indicator" class="power-up-indicator"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreDisplay = document.getElementById('score');
+        const starsDisplay = document.getElementById('stars');
+        const finalScore = document.getElementById('final-score');
+        const finalStars = document.getElementById('final-stars');
+        const highScoreDisplay = document.getElementById('high-score');
+        const powerUpIndicator = document.getElementById('power-up-indicator');
+        
+        // Game state
+        let gameState = 'start'; // start, playing, gameOver
+        let score = 0;
+        let stars = 0;
+        let highScore = localStorage.getItem('crystalStarHighScore') || 0;
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 25,
+            speed: 5,
+            color: '#4fc3f7',
+            shieldActive: false,
+            teleportCooldown: 0,
+            powerUp: null
+        };
+        
+        let circle = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 50,
+            growthRate: 0.1,
+            maxRadius: 400
+        };
+        
+        let starsArray = [];
+        let powerUps = [];
+        let particles = [];
+        let keys = {};
+        let gameSpeed = 1;
+        let frameCount = 0;
+        
+        // Initialize game
+        function init() {
+            gameState = 'playing';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            
+            score = 0;
+            stars = 0;
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            player.shieldActive = false;
+            player.teleportCooldown = 0;
+            player.powerUp = null;
+            
+            circle.radius = 50;
+            circle.growthRate = 0.1;
+            circle.maxRadius = 400;
+            
+            starsArray = [];
+            powerUps = [];
+            particles = [];
+            gameSpeed = 1;
+            
+            updateScore();
+            generateStars(20);
+            generatePowerUps(5);
+        }
+        
+        // Generate stars
+        function generateStars(count) {
+            for (let i = 0; i < count; i++) {
+                starsArray.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 5 + 2,
+                    speed: Math.random() * 2 + 1,
+                    color: `hsl(${Math.random() * 60 + 40}, 100%, 70%)`,
+                    collected: false
+                });
+            }
+        }
+        
+        // Generate power-ups
+        function generatePowerUps(count) {
+            for (let i = 0; i < count; i++) {
+                powerUps.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 20,
+                    type: ['shield', 'speed', 'teleport'][Math.floor(Math.random() * 3)],
+                    collected: false
+                });
+            }
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = Math.floor(score);
+            starsDisplay.textContent = stars;
+            highScoreDisplay.textContent = highScore;
+        }
+        
+        // Draw player
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            
+            // Add glow effect
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius + 5, 0, Math.PI * 2);
+            const gradient = ctx.createRadialGradient(
+                player.x, player.y, player.radius,
+                player.x, player.y, player.radius + 5
+            );
+            gradient.addColorStop(0, 'rgba(79, 195, 247, 0.8)');
+            gradient.addColorStop(1, 'rgba(79, 195, 247, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Draw shield if active
+            if (player.shieldActive) {
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius + 15, 0, Math.PI * 2);
+                const shieldGradient = ctx.createRadialGradient(
+                    player.x, player.y, player.radius + 15,
+                    player.x, player.y, player.radius + 20
+                );
+                shieldGradient.addColorStop(0, 'rgba(79, 195, 247, 0.6)');
+                shieldGradient.addColorStop(1, 'rgba(79, 195, 247, 0)');
+                ctx.fillStyle = shieldGradient;
+                ctx.fill();
+            }
+            
+            // Draw teleport effect if teleporting
+            if (player.teleportCooldown > 0) {
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius + 10, 0, Math.PI * 2);
+                ctx.strokeStyle = '#9c27b0';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+        
+        // Draw circle
+        function drawCircle() {
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+            
+            const gradient = ctx.createRadialGradient(
+                circle.x, circle.y, circle.radius,
+                circle.x, circle.y, circle.radius + 30
+            );
+            gradient.addColorStop(0, 'rgba(255, 100, 100, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 100, 100, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Draw pulsing effect
+            if (frameCount % 10 < 5) {
+                ctx.beginPath();
+                ctx.arc(circle.x, circle.y, circle.radius + 20, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 100, 100, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+        
+        // Draw stars
+        function drawStars() {
+            for (let i = 0; i < starsArray.length; i++) {
+                const star = starsArray[i];
+                if (!star.collected) {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = star.color;
+                    ctx.fill();
+                    
+                    // Add glow
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius + 5, 0, Math.PI * 2);
+                    const gradient = ctx.createRadialGradient(
+                        star.x, star.y, star.radius,
+                        star.x, star.y, star.radius + 5
+                    );
+                    gradient.addColorStop(0, star.color);
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Draw power-ups
+        function drawPowerUps() {
+            for (let i = 0; i < powerUps.length; i++) {
+                const powerUp = powerUps[i];
+                if (!powerUp.collected) {
+                    ctx.beginPath();
+                    ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
+                    
+                    // Different colors for different power-ups
+                    let color;
+                    switch (powerUp.type) {
+                        case 'shield':
+                            color = '#4fc3f7';
+                            break;
+                        case 'speed':
+                            color = '#ff9800';
+                            break;
+                        case 'teleport':
+                            color = '#9c27b0';
+                            break;
+                    }
+                    
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    
+                    // Add glow effect
+                    ctx.beginPath();
+                    ctx.arc(powerUp.x, powerUp.y, powerUp.radius + 5, 0, Math.PI * 2);
+                    const gradient = ctx.createRadialGradient(
+                        powerUp.x, powerUp.y, powerUp.radius,
+                        powerUp.x, powerUp.y, powerUp.radius + 5
+                    );
+                    gradient.addColorStop(0, color);
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    // Draw symbol inside
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    
+                    switch (powerUp.type) {
+                        case 'shield':
+                            ctx.fillText('S', powerUp.x, powerUp.y);
+                            break;
+                        case 'speed':
+                            ctx.fillText('V', powerUp.x, powerUp.y);
+                            break;
+                        case 'teleport':
+                            ctx.fillText('T', powerUp.x, powerUp.y);
+                            break;
+                    }
+                }
+            }
+        }
+        
+        // Draw particles
+        function drawParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                
+                // Fade out
+                p.alpha -= 0.02;
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0c1445');
+            gradient.addColorStop(1, '#1a237e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw stars
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 1.5;
+                const opacity = Math.random() * 0.8 + 0.2;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fill();
+            }
+            
+            // Draw floating islands
+            for (let i = 0; i < 8; i++) {
+                const x = Math.sin(frameCount * 0.01 + i) * 200 + canvas.width / 2;
+                const y = Math.cos(frameCount * 0.015 + i) * 150 + canvas.height / 2;
+                const size = 30 + Math.sin(frameCount * 0.02 + i) * 10;
+                
+                ctx.beginPath();
+                ctx.ellipse(x, y, size, size/3, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 150, 255, ${0.2 + Math.sin(frameCount * 0.01 + i) * 0.1})`;
+                ctx.fill();
+            }
+        }
+        
+        // Update game state
+        function update() {
+            if (gameState !== 'playing') return;
+            
+            frameCount++;
+            
+            // Move player based on keys
+            if (keys['ArrowUp'] || keys['w'] || keys['W']) {
+                player.y -= player.speed;
+            }
+            if (keys['ArrowDown'] || keys['s'] || keys['S']) {
+                player.y += player.speed;
+            }
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                player.x += player.speed;
+            }
+            
+            // Teleport with spacebar
+            if (keys[' '] && player.teleportCooldown <= 0) {
+                player.x = Math.random() * canvas.width;
+                player.y = Math.random() * canvas.height;
+                player.teleportCooldown = 60; // Cooldown for 1 second at 60fps
+                
+                // Create teleport particles
+                for (let i = 0; i < 30; i++) {
+                    particles.push({
+                        x: player.x,
+                        y: player.y,
+                        radius: Math.random() * 5 + 2,
+                        color: '#9c27b0',
+                        alpha: 1,
+                        speedX: (Math.random() - 0.5) * 10,
+                        speedY: (Math.random() - 0.5) * 10
+                    });
+                }
+            }
+            
+            // Update teleport cooldown
+            if (player.teleportCooldown > 0) {
+                player.teleportCooldown--;
+            }
+            
+            // Keep player in bounds
+            player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+            
+            // Update circle
+            circle.radius += circle.growthRate;
+            
+            // Increase difficulty over time
+            if (frameCount % 300 === 0) {
+                circle.growthRate += 0.02;
+                gameSpeed += 0.1;
+            }
+            
+            // Check for collisions with circle
+            const dx = player.x - circle.x;
+            const dy = player.y - circle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < circle.radius + player.radius) {
+                if (!player.shieldActive) {
+                    gameOver();
+                    return;
+                } else {
+                    // Shield protects for 1 second
+                    player.shieldActive = false;
+                }
+            }
+            
+            // Check for star collection
+            for (let i = 0; i < starsArray.length; i++) {
+                const star = starsArray[i];
+                if (!star.collected) {
+                    const dx = player.x - star.x;
+                    const dy = player.y - star.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < player.radius + star.radius) {
+                        star.collected = true;
+                        stars++;
+                        score += 100;
+                        
+                        // Create particles
+                        for (let j = 0; j < 15; j++) {
+                            particles.push({
+                                x: star.x,
+                                y: star.y,
+                                radius: Math.random() * 3 + 1,
+                                color: star.color,
+                                alpha: 1,
+                                speedX: (Math.random() - 0.5) * 8,
+                                speedY: (Math.random() - 0.5) * 8
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Check for power-up collection
+            for (let i = 0; i < powerUps.length; i++) {
+                const powerUp = powerUps[i];
+                if (!powerUp.collected) {
+                    const dx = player.x - powerUp.x;
+                    const dy = player.y - powerUp.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < player.radius + powerUp.radius) {
+                        powerUp.collected = true;
+                        player.powerUp = powerUp.type;
+                        
+                        // Apply power-up effect
+                        switch (powerUp.type) {
+                            case 'shield':
+                                player.shieldActive = true;
+                                showPowerUpIndicator('Shield Activated!', 'shield');
+                                break;
+                            case 'speed':
+                                player.speed = 8;
+                                showPowerUpIndicator('Speed Boost!', 'speed');
+                                setTimeout(() => {
+                                    player.speed = 5;
+                                }, 5000);
+                                break;
+                            case 'teleport':
+                                showPowerUpIndicator('Teleport Unlocked!', 'teleport');
+                                break;
+                        }
+                        
+                        // Create particles
+                        for (let j = 0; j < 20; j++) {
+                            particles.push({
+                                x: powerUp.x,
+                                y: powerUp.y,
+                                radius: Math.random() * 4 + 1,
+                                color: '#ffd54f',
+                                alpha: 1,
+                                speedX: (Math.random() - 0.5) * 10,
+                                speedY: (Math.random() - 0.5) * 10
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Move stars and power-ups
+            for (let i = 0; i < starsArray.length; i++) {
+                const star = starsArray[i];
+                if (!star.collected) {
+                    star.x -= star.speed;
+                    if (star.x < -star.radius) {
+                        star.x = canvas.width + star.radius;
+                        star.y = Math.random() * canvas.height;
+                    }
+                }
+            }
+            
+            for (let i = 0; i < powerUps.length; i++) {
+                const powerUp = powerUps[i];
+                if (!powerUp.collected) {
+                    // Move with slight animation
+                    powerUp.x += Math.sin(frameCount * 0.02 + i) * 0.5;
+                    powerUp.y += Math.cos(frameCount * 0.02 + i) * 0.5;
+                    
+                    if (powerUp.x < -powerUp.radius || powerUp.x > canvas.width + powerUp.radius) {
+                        powerUp.x = Math.random() * canvas.width;
+                    }
+                    if (powerUp.y < -powerUp.radius || powerUp.y > canvas.height + powerUp.radius) {
+                        powerUp.y = Math.random() * canvas.height;
+                    }
+                }
+            }
+            
+            // Update score
+            score += 0.5;
+            updateScore();
+        }
+        
+        // Show power-up indicator
+        function showPowerUpIndicator(message, type) {
+            powerUpIndicator.textContent = message;
+            powerUpIndicator.className = `power-up-indicator ${type}`;
+            powerUpIndicator.style.display = 'block';
+            
+            setTimeout(() => {
+                powerUpIndicator.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState = 'gameOver';
+            finalScore.textContent = Math.floor(score);
+            finalStars.textContent = stars;
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crystalStarHighScore', highScore);
+                highScoreDisplay.textContent = highScore;
+            }
+            
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw game elements
+            drawStars();
+            drawPowerUps();
+            drawCircle();
+            drawPlayer();
+            drawParticles();
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', init);
+        restartBtn.addEventListener('click', init);
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>

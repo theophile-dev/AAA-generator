@@ -1,0 +1,100 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    Babylon.js  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_crystal_star_empire_1.png description: A glowing crystal star floating in a vibrant galaxy with floating islands and shimmering crystal formations.
+path: images/512x512_crystal_star_empire_10.png description: A close-up of the central expanding circle pulsating with energy as the player dodges it.
+path: images/462x449_crystal_star_empire_11.png description: The player's crystal star collecting a power-up that creates a temporary shield around it.
+path: images/512x512_crystal_star_empire_12.png description: A rhythmic beat visual effect syncing with the player's movements to avoid the expanding circle.
+path: images/451x448_crystal_star_empire_13.png description: A side-scrolling view of the player navigating through a dynamic, ever-changing galaxy.
+path: images/512x512_crystal_star_empire_14.png description: A high-score screen showing the player's progress and stars collected.
+path: images/512x512_crystal_star_empire_15.png description: A cosmic background with glowing stars, floating islands, and energy pulses.
+path: images/512x512_crystal_star_empire_16.png description: The player's crystal star performing a teleportation move to avoid the circle.
+path: images/512x512_crystal_star_empire_17.png description: A player's crystal star dodging the expanding circle with precise timing.
+path: images/512x512_crystal_star_empire_18.png description: A glowing crystal star with a rainbow aura, surrounded by floating energy particles.
+path: images/512x512_crystal_star_empire_19.png description: A dynamic view of the expanding circle growing larger as the player moves through the galaxy.
+path: images/512x512_crystal_star_empire_2.png description: A screenshot of the game's UI showing the player's score, stars, and power-up icons.
+path: images/512x512_crystal_star_empire_20.png description: A close-up of the player's crystal star with a shield active, avoiding the expanding circle.
+path: images/307x445_crystal_star_empire_3.png description: A rhythmic beat visual effect with glowing stars and energy pulses in sync with movement.
+path: images/428x428_crystal_star_empire_4.png description: A player's crystal star moving through a vibrant galaxy with floating islands and crystal formations.
+path: images/512x512_crystal_star_empire_5.png description: A screenshot showing the player's crystal star in mid-air, avoiding the expanding circle.
+path: images/512x485_crystal_star_empire_6.png description: A glowing crystal star surrounded by energy particles and floating islands in a vibrant galaxy.
+path: images/512x512_crystal_star_empire_7.png description: A dynamic view of the player's crystal star dodging the expanding circle with a power-up active.
+path: images/422x411_crystal_star_empire_8.png description: A player's crystal star with a rainbow aura, surrounded by floating energy particles and a pulsating circle.
+path: images/512x445_crystal_star_empire_9.png description: A screenshot of the game's main menu with the title and a glowing crystal star in the background.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Crystal Star Empire: Avoid the Circle*
+
+**Genre:** Avoid the Circle (a genre inspired by endless runners and rhythm-based movement, where the player must avoid a central, expanding circle that grows with time)
+
+---
+
+**Concept Overview:**
+
+In *Crystal Star Empire: Avoid the Circle*, players take on the role of a cosmic explorer navigating a celestial realm where the stars are not just points of light, but powerful crystalline entities. The goal is to survive as long as possible by avoiding a central, pulsating circle that grows with each passing second, threatening to engulf the player.
+
+The game is a fast-paced, rhythm-driven endless runner where precision and timing are key. As the circle expands, the player must move through a vibrant, ever-changing galaxy filled with floating islands, crystal formations, and energy pulses that can be used to boost movement or create temporary shields.
+
+---
+
+**Gameplay Mechanics:**
+
+- **Movement:** The player controls a glowing crystal star that floats through a 2D space. The player can move in four directions (up, down, left, right) and jump to avoid obstacles.
+- **Avoiding the Circle:** A central, expanding circle grows over time. If the player touches it, the game ends. The circle starts small and grows at an increasing rate, making the challenge more intense as the game progresses.
+- **Power-Ups:** Scattered throughout the galaxy are energy crystals that provide temporary boosts, like increased speed, shield protection, or the ability to teleport short distances.
+- **Rhythm Elements:** The game features a subtle beat-driven rhythm. Certain actions, like collecting power-ups or avoiding the circle at precise moments, can trigger visual and sound effects that enhance the player's sense of flow and control.
+
+---
+
+**Objective:**
+
+The main objective is to survive as long as possible by avoiding the expanding circle. Players can track their high scores and try to beat their own records or others on leaderboards. The longer the player survives, the more stars they collect, which can be used to unlock new skins, power-ups, or levels.
+
+---
+
+**Unique Features:**
+
+- **Celestial Aesthetic:** The game is visually stunning with a colorful, dreamlike galaxy filled with glowing stars, floating islands, and shimmering crystal formations.
+- **Rhythm & Timing:** The game blends rhythm and timing, encouraging players to move in sync with the beat to avoid the circle and collect power-ups.
+- **Minimalist Controls:** Simple, intuitive controls make the game accessible to all ages and skill levels, while still offering a challenge.
+- **Progressive Difficulty:** The expanding circle grows faster over time, requiring faster reflexes and more precise movement, keeping the gameplay engaging and addictive.
+
+---
+
+**Conclusion:**
+
+*Crystal Star Empire: Avoid the Circle* is a fun, fast-paced, and visually appealing endless runner that combines rhythm, movement, and survival. Its simple yet engaging mechanics, combined with a beautiful cosmic setting, make it a perfect choice for casual gamers and fans of endless runner games.
