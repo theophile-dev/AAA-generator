@@ -1,0 +1,668 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Tournament: Snake Quest</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        .game-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            background: linear-gradient(to bottom, #0c1445, #1a237e);
+            display: block;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 15, 40, 0.9);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+        
+        .title {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+            letter-spacing: 3px;
+            animation: pulse 2s infinite;
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #4fc3f7;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px 0;
+            pointer-events: auto;
+            box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 75, 43, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.8rem;
+            color: #4fc3f7;
+            text-shadow: 0 0 5px rgba(79, 195, 247, 0.7);
+        }
+        
+        .instructions {
+            max-width: 800px;
+            margin: 20px auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+        
+        .instructions h2 {
+            color: #ffeb3b;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .power-up {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px currentColor;
+            animation: spin 3s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .game-over {
+            background: rgba(255, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .snake-segment {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #4caf50, #2e7d32);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+        }
+        
+        .dream-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffeb3b, #ff9800);
+            box-shadow: 0 0 15px #ffeb3b;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div class="ui-overlay">
+            <div id="startScreen" class="screen">
+                <h1 class="title">DREAM TOURNAMENT</h1>
+                <h2 class="subtitle">SNAKE QUEST</h2>
+                <p>Enter a surreal world where dreams come to life!</p>
+                <button id="startBtn" class="btn">START GAME</button>
+                <div class="instructions">
+                    <h2>How to Play</h2>
+                    <ul>
+                        <li>Control your snake using <strong>Arrow Keys</strong> or <strong>WASD</strong></li>
+                        <li>Eat glowing <span style="color:#ffeb3b">dream orbs</span> to grow longer</li>
+                        <li>Avoid colliding with walls, yourself, or other snakes</li>
+                        <li>Collect <span style="color:#2196f3">power-ups</span> for special abilities</li>
+                        <li>Be the last snake standing in the dream tournament!</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="gameOverScreen" class="screen hidden">
+                <h1 class="title game-over">GAME OVER</h1>
+                <h2 class="subtitle">Your Score: <span id="finalScore">0</span></h2>
+                <button id="restartBtn" class="btn">PLAY AGAIN</button>
+            </div>
+            
+            <div class="score-display">
+                <div>SCORE: <span id="score">0</span></div>
+                <div>LENGTH: <span id="length">3</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const scoreElement = document.getElementById('score');
+        const lengthElement = document.getElementById('length');
+        const finalScoreElement = document.getElementById('finalScore');
+        
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let snake = [];
+        let food = {x: 0, y: 0};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let powerUps = [];
+        let obstacles = [];
+        let gameSpeed = 150;
+        let lastRenderTime = 0;
+        let gridSize = 20;
+        let snakeLength = 3;
+        
+        // Matter.js engine
+        const engine = Matter.Engine.create();
+        engine.world.gravity.y = 0; // No gravity in our dream world
+        
+        // Matter.js runner
+        const runner = Matter.Runner.create();
+        Matter.Runner.run(runner, engine);
+        
+        // Game elements
+        let snakeBodies = [];
+        let foodBody;
+        let powerUpBodies = [];
+        let obstacleBodies = [];
+        
+        // Initialize game
+        function initGame() {
+            // Reset game state
+            score = 0;
+            snakeLength = 3;
+            direction = 'right';
+            nextDirection = 'right';
+            snake = [];
+            powerUps = [];
+            obstacles = [];
+            gameSpeed = 150;
+            
+            // Update UI
+            scoreElement.textContent = score;
+            lengthElement.textContent = snakeLength;
+            
+            // Create initial snake segments
+            for (let i = 0; i < snakeLength; i++) {
+                snake.push({
+                    x: Math.floor(canvas.width / 2) - i * gridSize,
+                    y: Math.floor(canvas.height / 2)
+                });
+            }
+            
+            // Create food
+            generateFood();
+            
+            // Create obstacles
+            createObstacles();
+            
+            // Create power-ups
+            createPowerUps();
+            
+            // Start game loop
+            gameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Generate food at random position
+        function generateFood() {
+            let newFood;
+            let onSnake;
+            let onObstacle;
+            
+            do {
+                onSnake = false;
+                onObstacle = false;
+                
+                newFood = {
+                    x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
+                    y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize
+                };
+                
+                // Check if food is on snake
+                for (let segment of snake) {
+                    if (segment.x === newFood.x && segment.y === newFood.y) {
+                        onSnake = true;
+                        break;
+                    }
+                }
+                
+                // Check if food is on obstacle
+                for (let obstacle of obstacles) {
+                    if (obstacle.x === newFood.x && obstacle.y === newFood.y) {
+                        onObstacle = true;
+                        break;
+                    }
+                }
+            } while (onSnake || onObstacle);
+            
+            food = newFood;
+        }
+        
+        // Create obstacles
+        function createObstacles() {
+            obstacles = [];
+            const obstacleCount = 10;
+            
+            for (let i = 0; i < obstacleCount; i++) {
+                let x, y;
+                let onSnake;
+                let onFood;
+                
+                do {
+                    onSnake = false;
+                    onFood = false;
+                    
+                    x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+                    y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+                    
+                    // Check if obstacle is on snake
+                    for (let segment of snake) {
+                        if (segment.x === x && segment.y === y) {
+                            onSnake = true;
+                            break;
+                        }
+                    }
+                    
+                    // Check if obstacle is on food
+                    if (food.x === x && food.y === y) {
+                        onFood = true;
+                    }
+                } while (onSnake || onFood);
+                
+                obstacles.push({x, y});
+            }
+        }
+        
+        // Create power-ups
+        function createPowerUps() {
+            powerUps = [];
+            const powerUpCount = 3;
+            
+            for (let i = 0; i < powerUpCount; i++) {
+                let x, y;
+                let onSnake;
+                let onFood;
+                let onObstacle;
+                
+                do {
+                    onSnake = false;
+                    onFood = false;
+                    onObstacle = false;
+                    
+                    x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+                    y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+                    
+                    // Check if power-up is on snake
+                    for (let segment of snake) {
+                        if (segment.x === x && segment.y === y) {
+                            onSnake = true;
+                            break;
+                        }
+                    }
+                    
+                    // Check if power-up is on food
+                    if (food.x === x && food.y === y) {
+                        onFood = true;
+                    }
+                    
+                    // Check if power-up is on obstacle
+                    for (let obstacle of obstacles) {
+                        if (obstacle.x === x && obstacle.y === y) {
+                            onObstacle = true;
+                            break;
+                        }
+                    }
+                } while (onSnake || onFood || onObstacle);
+                
+                powerUps.push({x, y, type: Math.random() > 0.5 ? 'speed' : 'slow'});
+            }
+        }
+        
+        // Draw game elements
+        function drawGame() {
+            // Clear canvas with a dreamy gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#0c1445');
+            gradient.addColorStop(1, '#1a237e');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw stars in background
+            drawStars();
+            
+            // Draw obstacles
+            ctx.fillStyle = '#ff5252';
+            for (let obstacle of obstacles) {
+                ctx.beginPath();
+                ctx.arc(obstacle.x + gridSize/2, obstacle.y + gridSize/2, gridSize/2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw food
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw power-ups
+            for (let powerUp of powerUps) {
+                ctx.fillStyle = powerUp.type === 'speed' ? '#4caf50' : '#2196f3';
+                ctx.beginPath();
+                ctx.arc(powerUp.x + gridSize/2, powerUp.y + gridSize/2, gridSize/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add glow effect
+                ctx.fillStyle = powerUp.type === 'speed' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(33, 150, 243, 0.3)';
+                ctx.beginPath();
+                ctx.arc(powerUp.x + gridSize/2, powerUp.y + gridSize/2, gridSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw snake
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                
+                // Head is a different color
+                if (i === 0) {
+                    ctx.fillStyle = '#4caf50';
+                } else {
+                    // Gradient body segments
+                    const colorValue = Math.max(100, 255 - i * 5);
+                    ctx.fillStyle = `rgb(76, ${colorValue}, 80)`;
+                }
+                
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+                
+                // Add rounded corners to segments
+                ctx.strokeStyle = '#388e3c';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(segment.x, segment.y, gridSize, gridSize);
+            }
+            
+            // Draw snake eyes on head
+            const head = snake[0];
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(head.x + gridSize/3, head.y + gridSize/3, gridSize/6, 0, Math.PI * 2);
+            ctx.arc(head.x + 2*gridSize/3, head.y + gridSize/3, gridSize/6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(head.x + gridSize/3, head.y + gridSize/3, gridSize/12, 0, Math.PI * 2);
+            ctx.arc(head.x + 2*gridSize/3, head.y + gridSize/3, gridSize/12, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Draw stars in background
+        function drawStars() {
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 1.5;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Update game state
+        function updateGame() {
+            if (!gameRunning) return;
+            
+            // Update direction
+            direction = nextDirection;
+            
+            // Calculate new head position
+            const head = {x: snake[0].x, y: snake[0].y};
+            
+            switch (direction) {
+                case 'up':
+                    head.y -= gridSize;
+                    break;
+                case 'down':
+                    head.y += gridSize;
+                    break;
+                case 'left':
+                    head.x -= gridSize;
+                    break;
+                case 'right':
+                    head.x += gridSize;
+                    break;
+            }
+            
+            // Check for collisions with walls
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                gameOver();
+                return;
+            }
+            
+            // Check for collisions with self
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    gameOver();
+                    return;
+                }
+            }
+            
+            // Add new head to snake
+            snake.unshift(head);
+            
+            // Check for food collision
+            if (head.x === food.x && head.y === food.y) {
+                // Increase score and length
+                score += 10;
+                snakeLength++;
+                scoreElement.textContent = score;
+                lengthElement.textContent = snakeLength;
+                
+                // Generate new food
+                generateFood();
+                
+                // Occasionally generate a power-up
+                if (Math.random() > 0.7) {
+                    createPowerUps();
+                }
+            } else {
+                // Remove tail if no food eaten
+                snake.pop();
+            }
+            
+            // Check for power-up collision
+            for (let i = 0; i < powerUps.length; i++) {
+                const powerUp = powerUps[i];
+                if (head.x === powerUp.x && head.y === powerUp.y) {
+                    // Apply power-up effect
+                    if (powerUp.type === 'speed') {
+                        gameSpeed = Math.max(50, gameSpeed - 20);
+                    } else {
+                        gameSpeed = Math.min(300, gameSpeed + 30);
+                    }
+                    
+                    // Remove collected power-up
+                    powerUps.splice(i, 1);
+                    break;
+                }
+            }
+            
+            // Check for obstacle collision
+            for (let obstacle of obstacles) {
+                if (head.x === obstacle.x && head.y === obstacle.y) {
+                    gameOver();
+                    return;
+                }
+            }
+        }
+        
+        // Game over function
+        function gameOver() {
+            gameRunning = false;
+            finalScoreElement.textContent = score;
+            gameOverScreen.classList.remove('hidden');
+        }
+        
+        // Main game loop
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            
+            const deltaTime = timestamp - lastRenderTime;
+            
+            if (deltaTime > gameSpeed) {
+                updateGame();
+                drawGame();
+                lastRenderTime = timestamp;
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Handle keyboard input
+        function handleKeyDown(e) {
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (direction !== 'down') nextDirection = 'up';
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (direction !== 'up') nextDirection = 'down';
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (direction !== 'right') nextDirection = 'left';
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (direction !== 'left') nextDirection = 'right';
+                    break;
+            }
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            initGame();
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            initGame();
+        });
+        
+        document.addEventListener('keydown', handleKeyDown);
+        
+        // Initialize with a welcome screen
+        window.onload = function() {
+            drawGame();
+        };
+    </script>
+</body>
+</html>
