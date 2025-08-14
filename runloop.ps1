@@ -13,6 +13,7 @@ while ($true) {
     try {
         # Wait up to $timeoutSeconds; throws if timeout hit
         Wait-Process -Id $proc.Id -Timeout $timeoutSeconds -ErrorAction Stop
+        python .\updateindex.py
         $stamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
         git add -A
         git commit -m $stamp

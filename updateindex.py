@@ -54,4 +54,3 @@ with open("index.html", "r+", encoding="utf-8") as f:
     f.write(content)
     f.truncate()
 
-print(f"✅ games_list.json created with {len(games_data)} games.")
