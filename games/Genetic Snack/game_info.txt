@@ -1,0 +1,136 @@
+Game Idea:
+**Game Title:** *Genetic Snack*
+
+**Theme:** Genetic Experiments  
+**Genre:** Snake Game  
+**Style:** Simple, 2D, retro pixel art aesthetic
+
+---
+
+**Gameplay Overview:**
+
+In *Genetic Snack*, players control a genetically modified snake that evolves by consuming different types of food scattered across the screen. Each food item represents a different genetic trait—like speed, size, or color—and when consumed, it permanently alters the snake's characteristics, changing how it moves and interacts with the environment.
+
+The game is played on a grid-based screen where the player must navigate the snake to collect food items while avoiding walls and other players (or obstacles). The snake can grow longer over time, but each new segment can be customized with genetic traits that influence movement patterns and behavior.
+
+---
+
+**Core Gameplay Mechanics:**
+
+- **Movement:** The snake moves in the traditional snake-style, but with an added twist—each segment can have its own movement behavior based on the genetic traits it was given.
+- **Genetic Traits:** Food items are categorized into types like:
+  - **Speed Food** – increases movement speed
+  - **Color Food** – changes the snake’s color for visual customization
+  - **Growth Food** – adds more segments
+  - **Mutation Food** – randomly alters one segment’s behavior
+  - **Toxin Food** – temporarily slows the snake or causes a random mutation
+- **Evolution System:** As the snake consumes different foods, it becomes more complex and dynamic, leading to unique gameplay styles and strategies.
+- **Collision Rules:** The snake can collide with walls, itself, or other snakes, causing damage or death, depending on the genetic traits in play.
+
+---
+
+**Objective:**
+
+The main goal is to survive as long as possible by evolving a unique and powerful snake. Players can also aim to achieve high scores by collecting the most diverse genetic traits or surviving for the longest time without crashing.
+
+---
+
+**Unique Features:**
+
+- **Customizable Snake Behavior:** Each segment can be tuned for different behaviors, making every gameplay experience unique.
+- **Minimalist Art Style:** Uses only 20 hand-drawn pixel art images (one for each segment of the snake and one for each food type) for a clean, retro look.
+- **No Sprite Sheets or Complex Animations:** Everything is built using simple 2D elements and basic JavaScript logic.
+- **Simple Controls:** Arrow keys or WASD to move the snake.
+- **Multiplayer Option (Optional):** A basic two-player mode where each player controls their own evolving snake, competing for food and survival.
+
+---
+
+**Design Philosophy:**
+
+*Genetic Snack* is designed to be accessible and fun for all ages, with easy-to-learn mechanics and a sense of progression through genetic experimentation. The game emphasizes creativity and strategy in how players evolve their snake, making each playthrough different and engaging.
+
+The entire game can be built using just a few JavaScript functions, a canvas element, and 20 simple .png images, making it ideal for quick implementation with minimal resources.
+
+JSON Data:
+{
+  "name": "Genetic Snack",
+  "description": "A retro pixel art snake game where players evolve their snake by consuming genetic food items to gain unique traits and abilities. Survive as long as possible, customize your snake's behavior, and outsmart the environment.",
+  "images": [
+    {
+      "file": "snake_head.png",
+      "shortgenerationprompt": "Retro pixel art snake head, simple design, 16x16 pixels"
+    },
+    {
+      "file": "snake_body.png",
+      "shortgenerationprompt": "Retro pixel art snake body segment, simple design, 16x16 pixels"
+    },
+    {
+      "file": "snake_tail.png",
+      "shortgenerationprompt": "Retro pixel art snake tail segment, simple design, 16x16 pixels"
+    },
+    {
+      "file": "speed_food.png",
+      "shortgenerationprompt": "Retro pixel art speed food item, yellow circle with speed symbol"
+    },
+    {
+      "file": "color_food.png",
+      "shortgenerationprompt": "Retro pixel art color food item, rainbow-colored square"
+    },
+    {
+      "file": "growth_food.png",
+      "shortgenerationprompt": "Retro pixel art growth food item, green circle with plus sign"
+    },
+    {
+      "file": "mutation_food.png",
+      "shortgenerationprompt": "Retro pixel art mutation food item, purple circle with question mark"
+    },
+    {
+      "file": "toxin_food.png",
+      "shortgenerationprompt": "Retro pixel art toxin food item, red circle with poison symbol"
+    },
+    {
+      "file": "wall.png",
+      "shortgenerationprompt": "Retro pixel art wall block, solid gray square"
+    },
+    {
+      "file": "background.png",
+      "shortgenerationprompt": "Simple retro pixel art background, light gray grid"
+    },
+    {
+      "file": "score_board.png",
+      "shortgenerationprompt": "Retro pixel art score board, simple text display"
+    },
+    {
+      "file": "game_over.png",
+      "shortgenerationprompt": "Retro pixel art game over screen, simple text and restart button"
+    },
+    {
+      "file": "start_screen.png",
+      "shortgenerationprompt": "Retro pixel art start screen, title and play button"
+    },
+    {
+      "file": "pause_screen.png",
+      "shortgenerationprompt": "Retro pixel art pause screen, simple text and resume button"
+    },
+    {
+      "file": "player_1.png",
+      "shortgenerationprompt": "Retro pixel art player 1 indicator, simple text"
+    },
+    {
+      "file": "player_2.png",
+      "shortgenerationprompt": "Retro pixel art player 2 indicator, simple text"
+    },
+    {
+      "file": "settings_icon.png",
+      "shortgenerationprompt": "Retro pixel art settings icon, simple gear symbol"
+    },
+    {
+      "file": "sound_icon.png",
+      "shortgenerationprompt": "Retro pixel art sound icon, simple speaker symbol"
+    },
+    {
+      "file": "high_score.png",
+      "shortgenerationprompt": "Retro pixel art high score display, simple text"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    No external libraries or files beyond those listed in the assets section below.
+
+    Max size: ~500 lines of code (including HTML/CSS/JS). Keep comments concise.
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Assets
+    List of available images :
+    path: images/512x512_background.png description: Retro pixel art snake head, simple design, 16x16 pixels
+path: images/432x512_color_food.png description: Retro pixel art snake body segment, simple design, 16x16 pixels
+path: images/404x393_game_over.png description: Retro pixel art snake tail segment, simple design, 16x16 pixels
+path: images/512x512_growth_food.png description: Retro pixel art speed food item, yellow circle with speed symbol
+path: images/286x304_high_score.png description: Retro pixel art color food item, rainbow-colored square
+path: images/422x405_mutation_food.png description: Retro pixel art growth food item, green circle with plus sign
+path: images/512x512_pause_screen.png description: Retro pixel art mutation food item, purple circle with question mark
+path: images/52x137_player_1.png description: Retro pixel art toxin food item, red circle with poison symbol
+path: images/262x278_player_2.png description: Retro pixel art wall block, solid gray square
+path: images/512x508_score_board.png description: Simple retro pixel art background, light gray grid
+path: images/198x114_settings_icon.png description: Retro pixel art score board, simple text display
+path: images/438x459_snake_body.png description: Retro pixel art game over screen, simple text and restart button
+path: images/337x369_snake_head.png description: Retro pixel art start screen, title and play button
+path: images/451x439_snake_tail.png description: Retro pixel art pause screen, simple text and resume button
+path: images/334x437_sound_icon.png description: Retro pixel art player 1 indicator, simple text
+path: images/261x372_speed_food.png description: Retro pixel art player 2 indicator, simple text
+path: images/425x437_start_screen.png description: Retro pixel art settings icon, simple gear symbol
+path: images/469x463_toxin_food.png description: Retro pixel art sound icon, simple speaker symbol
+path: images/278x393_wall.png description: Retro pixel art high score display, simple text
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Simple audio is optional; if used, it must be embedded (e.g., base64) and counted within the 500 lines.
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Quality Bar
+
+    Stable 60 FPS on a typical desktop.
+
+    Clean structure (modules via IIFEs or simple classes/objects), no frameworks.
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Genetic Snack*
+
+**Theme:** Genetic Experiments  
+**Genre:** Snake Game  
+**Style:** Simple, 2D, retro pixel art aesthetic
+
+---
+
+**Gameplay Overview:**
+
+In *Genetic Snack*, players control a genetically modified snake that evolves by consuming different types of food scattered across the screen. Each food item represents a different genetic trait—like speed, size, or color—and when consumed, it permanently alters the snake's characteristics, changing how it moves and interacts with the environment.
+
+The game is played on a grid-based screen where the player must navigate the snake to collect food items while avoiding walls and other players (or obstacles). The snake can grow longer over time, but each new segment can be customized with genetic traits that influence movement patterns and behavior.
+
+---
+
+**Core Gameplay Mechanics:**
+
+- **Movement:** The snake moves in the traditional snake-style, but with an added twist—each segment can have its own movement behavior based on the genetic traits it was given.
+- **Genetic Traits:** Food items are categorized into types like:
+  - **Speed Food** – increases movement speed
+  - **Color Food** – changes the snake’s color for visual customization
+  - **Growth Food** – adds more segments
+  - **Mutation Food** – randomly alters one segment’s behavior
+  - **Toxin Food** – temporarily slows the snake or causes a random mutation
+- **Evolution System:** As the snake consumes different foods, it becomes more complex and dynamic, leading to unique gameplay styles and strategies.
+- **Collision Rules:** The snake can collide with walls, itself, or other snakes, causing damage or death, depending on the genetic traits in play.
+
+---
+
+**Objective:**
+
+The main goal is to survive as long as possible by evolving a unique and powerful snake. Players can also aim to achieve high scores by collecting the most diverse genetic traits or surviving for the longest time without crashing.
+
+---
+
+**Unique Features:**
+
+- **Customizable Snake Behavior:** Each segment can be tuned for different behaviors, making every gameplay experience unique.
+- **Minimalist Art Style:** Uses only 20 hand-drawn pixel art images (one for each segment of the snake and one for each food type) for a clean, retro look.
+- **No Sprite Sheets or Complex Animations:** Everything is built using simple 2D elements and basic JavaScript logic.
+- **Simple Controls:** Arrow keys or WASD to move the snake.
+- **Multiplayer Option (Optional):** A basic two-player mode where each player controls their own evolving snake, competing for food and survival.
+
+---
+
+**Design Philosophy:**
+
+*Genetic Snack* is designed to be accessible and fun for all ages, with easy-to-learn mechanics and a sense of progression through genetic experimentation. The game emphasizes creativity and strategy in how players evolve their snake, making each playthrough different and engaging.
+
+The entire game can be built using just a few JavaScript functions, a canvas element, and 20 simple .png images, making it ideal for quick implementation with minimal resources.

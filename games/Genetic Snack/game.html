@@ -1,0 +1,702 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genetic Snack</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 1024px;
+            height: 720px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            border: 4px solid #00eeff;
+            background: #0f3460;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 52, 96, 0.9);
+            text-align: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+        
+        .screen.hidden {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #00eeff;
+            text-shadow: 0 0 10px rgba(0, 238, 255, 0.7);
+            letter-spacing: 3px;
+        }
+        
+        h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+        
+        p {
+            font-size: 20px;
+            margin: 10px 0;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #ff6b6b, #ff0000);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 24px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 50px;
+            pointer-events: auto;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+            transition: all 0.3s;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #00eeff;
+            text-shadow: 0 0 5px rgba(0, 238, 255, 0.7);
+        }
+        
+        #high-score-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #ff6b6b;
+            text-shadow: 0 0 5px rgba(255, 107, 107, 0.7);
+        }
+        
+        .trait-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 0 5px;
+            vertical-align: middle;
+        }
+        
+        .speed-food { background-color: #ffcc00; border-radius: 50%; }
+        .color-food { background-color: #ff6bff; }
+        .growth-food { background-color: #00ff99; }
+        .mutation-food { background-color: #9900ff; }
+        .toxin-food { background-color: #ff0000; }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            max-width: 800px;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            padding-left: 30px;
+            margin: 15px 0;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+        }
+        
+        #pause-screen {
+            background: rgba(15, 52, 96, 0.85);
+        }
+        
+        .trait-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            gap: 10px;
+        }
+        
+        .trait-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+        
+        .trait-speed { background: #ffcc00; }
+        .trait-color { background: #ff6bff; }
+        .trait-growth { background: #00ff99; }
+        .trait-mutation { background: #9900ff; }
+        .trait-toxin { background: #ff0000; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="start-screen" class="screen">
+                <h1>GENETIC SNACK</h1>
+                <p>A retro snake game with genetic evolution mechanics</p>
+                
+                <div class="trait-display">
+                    <div class="trait-item trait-speed">S</div>
+                    <div class="trait-item trait-color">C</div>
+                    <div class="trait-item trait-growth">G</div>
+                    <div class="trait-item trait-mutation">M</div>
+                    <div class="trait-item trait-toxin">T</div>
+                </div>
+                
+                <p>Collect food to evolve your snake with unique genetic traits!</p>
+                
+                <div class="instructions">
+                    <h2>HOW TO PLAY</h2>
+                    <ul>
+                        <li>Use <strong>Arrow Keys or WASD</strong> to control the snake</li>
+                        <li>Collect different colored food items to gain genetic traits</li>
+                        <li>Avoid walls and yourself!</li>
+                        <li>Survive as long as possible to achieve a high score</li>
+                    </ul>
+                </div>
+                
+                <button id="start-btn" class="btn">START GAME</button>
+            </div>
+            
+            <div id="game-over-screen" class="screen hidden">
+                <h1>GAME OVER</h1>
+                <p>Your snake has evolved to its limits...</p>
+                <p id="final-score">Score: 0</p>
+                <p id="high-score">High Score: 0</p>
+                <button id="restart-btn" class="btn">PLAY AGAIN</button>
+            </div>
+            
+            <div id="pause-screen" class="screen hidden">
+                <h1>GAME PAUSED</h1>
+                <p>Take a break from genetic evolution</p>
+                <button id="resume-btn" class="btn">RESUME</button>
+            </div>
+            
+            <div id="score-display">Score: 0</div>
+            <div id="high-score-display">High Score: 0</div>
+        </div>
+    </div>
+
+    <script>
+        // Game constants
+        const CANVAS_WIDTH = 1024;
+        const CANVAS_HEIGHT = 720;
+        const GRID_SIZE = 20;
+        const INITIAL_SNAKE_LENGTH = 3;
+        const INITIAL_SPEED = 5;
+        const MAX_SPEED = 15;
+        
+        // Game state
+        let gameState = {
+            snake: [],
+            food: [],
+            direction: { x: 1, y: 0 },
+            nextDirection: { x: 1, y: 0 },
+            score: 0,
+            highScore: 0,
+            speed: INITIAL_SPEED,
+            gameRunning: false,
+            paused: false,
+            traits: {
+                speed: 0,
+                color: 0,
+                growth: 0,
+                mutation: 0,
+                toxin: 0
+            },
+            segments: []
+        };
+        
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const pauseScreen = document.getElementById('pause-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+        const scoreDisplay = document.getElementById('score-display');
+        const highScoreDisplay = document.getElementById('high-score-display');
+        const finalScore = document.getElementById('final-score');
+        const highScoreElement = document.getElementById('high-score');
+        
+        // Initialize game
+        function initGame() {
+            gameState.snake = [];
+            gameState.food = [];
+            gameState.direction = { x: 1, y: 0 };
+            gameState.nextDirection = { x: 1, y: 0 };
+            gameState.score = 0;
+            gameState.speed = INITIAL_SPEED;
+            gameState.traits = { speed: 0, color: 0, growth: 0, mutation: 0, toxin: 0 };
+            gameState.segments = [];
+            
+            // Create initial snake
+            const startX = Math.floor(CANVAS_WIDTH / 2 / GRID_SIZE) * GRID_SIZE;
+            const startY = Math.floor(CANVAS_HEIGHT / 2 / GRID_SIZE) * GRID_SIZE;
+            
+            for (let i = 0; i < INITIAL_SNAKE_LENGTH; i++) {
+                gameState.snake.push({
+                    x: startX - i * GRID_SIZE,
+                    y: startY
+                });
+            }
+            
+            // Generate initial food
+            generateFood(10);
+            
+            // Update displays
+            updateScore();
+            highScoreDisplay.textContent = `High Score: ${gameState.highScore}`;
+        }
+        
+        // Generate food items
+        function generateFood(count) {
+            for (let i = 0; i < count; i++) {
+                let validPosition = false;
+                let newFood;
+                
+                while (!validPosition) {
+                    validPosition = true;
+                    newFood = {
+                        x: Math.floor(Math.random() * (CANVAS_WIDTH / GRID_SIZE)) * GRID_SIZE,
+                        y: Math.floor(Math.random() * (CANVAS_HEIGHT / GRID_SIZE)) * GRID_SIZE,
+                        type: getRandomFoodType()
+                    };
+                    
+                    // Check if position is not on snake
+                    for (const segment of gameState.snake) {
+                        if (segment.x === newFood.x && segment.y === newFood.y) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    
+                    // Check if position is not on existing food
+                    for (const food of gameState.food) {
+                        if (food.x === newFood.x && food.y === newFood.y) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                }
+                
+                gameState.food.push(newFood);
+            }
+        }
+        
+        // Get random food type
+        function getRandomFoodType() {
+            const types = ['speed', 'color', 'growth', 'mutation', 'toxin'];
+            return types[Math.floor(Math.random() * types.length)];
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = `Score: ${gameState.score}`;
+        }
+        
+        // Draw game elements
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw grid background
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.lineWidth = 0.5;
+            
+            for (let x = 0; x < CANVAS_WIDTH; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, CANVAS_HEIGHT);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < CANVAS_HEIGHT; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(CANVAS_WIDTH, y);
+                ctx.stroke();
+            }
+            
+            // Draw snake
+            gameState.snake.forEach((segment, index) => {
+                if (index === 0) {
+                    // Draw head with trait color
+                    const headColor = getTraitColor('color');
+                    ctx.fillStyle = headColor;
+                    ctx.fillRect(segment.x, segment.y, GRID_SIZE, GRID_SIZE);
+                    
+                    // Draw eyes
+                    ctx.fillStyle = '#000';
+                    if (gameState.direction.x === 1) {
+                        ctx.fillRect(segment.x + GRID_SIZE - 5, segment.y + 5, 3, 3);
+                        ctx.fillRect(segment.x + GRID_SIZE - 5, segment.y + GRID_SIZE - 8, 3, 3);
+                    } else if (gameState.direction.x === -1) {
+                        ctx.fillRect(segment.x + 2, segment.y + 5, 3, 3);
+                        ctx.fillRect(segment.x + 2, segment.y + GRID_SIZE - 8, 3, 3);
+                    } else if (gameState.direction.y === 1) {
+                        ctx.fillRect(segment.x + 5, segment.y + GRID_SIZE - 5, 3, 3);
+                        ctx.fillRect(segment.x + GRID_SIZE - 8, segment.y + GRID_SIZE - 5, 3, 3);
+                    } else if (gameState.direction.y === -1) {
+                        ctx.fillRect(segment.x + 5, segment.y + 2, 3, 3);
+                        ctx.fillRect(segment.x + GRID_SIZE - 8, segment.y + 2, 3, 3);
+                    }
+                } else {
+                    // Draw body with trait color
+                    const bodyColor = getTraitColor('color');
+                    ctx.fillStyle = bodyColor;
+                    ctx.fillRect(segment.x, segment.y, GRID_SIZE, GRID_SIZE);
+                    
+                    // Draw body pattern
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.fillRect(segment.x + 4, segment.y + 4, GRID_SIZE - 8, GRID_SIZE - 8);
+                }
+            });
+            
+            // Draw food
+            gameState.food.forEach(food => {
+                drawFoodItem(food);
+            });
+            
+            // Draw game border
+            ctx.strokeStyle = '#00eeff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        }
+        
+        // Draw a food item
+        function drawFoodItem(food) {
+            const size = GRID_SIZE * 0.8;
+            const x = food.x + (GRID_SIZE - size) / 2;
+            const y = food.y + (GRID_SIZE - size) / 2;
+            
+            switch (food.type) {
+                case 'speed':
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.beginPath();
+                    ctx.arc(food.x + GRID_SIZE/2, food.y + GRID_SIZE/2, size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw speed symbol
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 3, food.y + GRID_SIZE/2 - 1, 6, 2);
+                    break;
+                    
+                case 'color':
+                    ctx.fillStyle = '#ff6bff';
+                    ctx.beginPath();
+                    ctx.arc(food.x + GRID_SIZE/2, food.y + GRID_SIZE/2, size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw rainbow pattern
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 8, food.y + GRID_SIZE/2 - 3, 3, 6);
+                    ctx.fillStyle = '#ffff00';
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 4, food.y + GRID_SIZE/2 - 3, 3, 6);
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(food.x + GRID_SIZE/2, food.y + GRID_SIZE/2 - 3, 3, 6);
+                    ctx.fillStyle = '#0000ff';
+                    ctx.fillRect(food.x + GRID_SIZE/2 + 4, food.y + GRID_SIZE/2 - 3, 3, 6);
+                    break;
+                    
+                case 'growth':
+                    ctx.fillStyle = '#00ff99';
+                    ctx.beginPath();
+                    ctx.arc(food.x + GRID_SIZE/2, food.y + GRID_SIZE/2, size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw plus sign
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 4, food.y + GRID_SIZE/2 - 1, 8, 2);
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 1, food.y + GRID_SIZE/2 - 4, 2, 8);
+                    break;
+                    
+                case 'mutation':
+                    ctx.fillStyle = '#9900ff';
+                    ctx.beginPath();
+                    ctx.arc(food.x + GRID_SIZE/2, food.y + GRID_SIZE/2, size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw question mark
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 4, food.y + GRID_SIZE/2 - 6, 8, 2);
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 4, food.y + GRID_SIZE/2 - 3, 8, 2);
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 4, food.y + GRID_SIZE/2 + 1, 3, 5);
+                    break;
+                    
+                case 'toxin':
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(food.x + GRID_SIZE/2, food.y + GRID_SIZE/2, size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw poison symbol
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 6, food.y + GRID_SIZE/2 - 4, 12, 2);
+                    ctx.fillRect(food.x + GRID_SIZE/2 - 6, food.y + GRID_SIZE/2 + 2, 12, 2);
+                    break;
+            }
+        }
+        
+        // Get trait color
+        function getTraitColor(trait) {
+            switch (trait) {
+                case 'color':
+                    if (gameState.traits.color > 0) return '#ff6bff';
+                    return '#00eeff';
+                default:
+                    return '#00eeff';
+            }
+        }
+        
+        // Update game state
+        function update() {
+            if (!gameState.gameRunning || gameState.paused) return;
+            
+            // Update direction
+            gameState.direction = { ...gameState.nextDirection };
+            
+            // Move snake
+            const head = { ...gameState.snake[0] };
+            
+            head.x += gameState.direction.x * GRID_SIZE;
+            head.y += gameState.direction.y * GRID_SIZE;
+            
+            // Check wall collision
+            if (head.x < 0 || head.x >= CANVAS_WIDTH || head.y < 0 || head.y >= CANVAS_HEIGHT) {
+                gameOver();
+                return;
+            }
+            
+            // Check self collision
+            for (let i = 0; i < gameState.snake.length; i++) {
+                const segment = gameState.snake[i];
+                if (head.x === segment.x && head.y === segment.y) {
+                    gameOver();
+                    return;
+                }
+            }
+            
+            // Add new head
+            gameState.snake.unshift(head);
+            
+            // Check food collision
+            let foodEaten = false;
+            for (let i = 0; i < gameState.food.length; i++) {
+                const food = gameState.food[i];
+                if (head.x === food.x && head.y === food.y) {
+                    foodEaten = true;
+                    
+                    // Apply trait effect
+                    applyTraitEffect(food.type);
+                    
+                    // Remove eaten food
+                    gameState.food.splice(i, 1);
+                    i--;
+                    
+                    // Add score
+                    gameState.score += 10;
+                    updateScore();
+                    
+                    // Generate new food
+                    generateFood(1);
+                }
+            }
+            
+            // Remove tail if no food was eaten
+            if (!foodEaten) {
+                gameState.snake.pop();
+            }
+        }
+        
+        // Apply trait effect
+        function applyTraitEffect(type) {
+            switch (type) {
+                case 'speed':
+                    gameState.traits.speed++;
+                    gameState.speed = Math.min(INITIAL_SPEED + gameState.traits.speed, MAX_SPEED);
+                    break;
+                case 'color':
+                    gameState.traits.color++;
+                    break;
+                case 'growth':
+                    gameState.traits.growth++;
+                    // Add new segment to snake
+                    const tail = gameState.snake[gameState.snake.length - 1];
+                    gameState.snake.push({ x: tail.x, y: tail.y });
+                    break;
+                case 'mutation':
+                    gameState.traits.mutation++;
+                    // Randomly change a trait
+                    const traits = ['speed', 'color', 'growth', 'mutation', 'toxin'];
+                    const randomTrait = traits[Math.floor(Math.random() * traits.length)];
+                    if (randomTrait === 'speed') {
+                        gameState.speed = Math.min(INITIAL_SPEED + gameState.traits.speed, MAX_SPEED);
+                    }
+                    break;
+                case 'toxin':
+                    gameState.traits.toxin++;
+                    // Slow down snake
+                    gameState.speed = Math.max(INITIAL_SPEED - 2, 1);
+                    setTimeout(() => {
+                        gameState.speed = INITIAL_SPEED + gameState.traits.speed;
+                    }, 5000); // Reset after 5 seconds
+                    break;
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState.gameRunning = false;
+            
+            if (gameState.score > gameState.highScore) {
+                gameState.highScore = gameState.score;
+            }
+            
+            finalScore.textContent = `Score: ${gameState.score}`;
+            highScoreElement.textContent = `High Score: ${gameState.highScore}`;
+            
+            gameOverScreen.classList.remove('hidden');
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            
+            if (gameState.gameRunning) {
+                setTimeout(gameLoop, 1000 / gameState.speed);
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            initGame();
+            gameState.gameRunning = true;
+            gameState.paused = false;
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            pauseScreen.classList.add('hidden');
+            gameLoop();
+        }
+        
+        // Pause game
+        function togglePause() {
+            if (!gameState.gameRunning) return;
+            
+            gameState.paused = !gameState.paused;
+            
+            if (gameState.paused) {
+                pauseScreen.classList.remove('hidden');
+            } else {
+                pauseScreen.classList.add('hidden');
+                gameLoop();
+            }
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        resumeBtn.addEventListener('click', togglePause);
+        
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.gameRunning) return;
+            
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (gameState.direction.y !== 1) gameState.nextDirection = { x: 0, y: -1 };
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (gameState.direction.y !== -1) gameState.nextDirection = { x: 0, y: 1 };
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (gameState.direction.x !== 1) gameState.nextDirection = { x: -1, y: 0 };
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (gameState.direction.x !== -1) gameState.nextDirection = { x: 1, y: 0 };
+                    break;
+                case ' ':
+                    togglePause();
+                    break;
+            }
+        });
+        
+        // Initialize the game
+        initGame();
+    </script>
+</body>
+</html>
