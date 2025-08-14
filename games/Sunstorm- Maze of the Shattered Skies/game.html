@@ -1,0 +1,632 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunstorm: Maze of the Shattered Skies</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #8B4513;
+            box-shadow: 0 0 20px rgba(139, 69, 19, 0.7);
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #FFD700;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        #start-screen, #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #FFD700;
+            text-align: center;
+            z-index: 10;
+        }
+        #game-over {
+            display: none;
+        }
+        button {
+            background-color: #8B4513;
+            color: #FFD700;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        button:hover {
+            background-color: #A0522D;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #000;
+        }
+        p {
+            font-size: 20px;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1024" height="720"></canvas>
+    
+    <div id="ui">
+        <div>Gold: <span id="gold">0</span></div>
+        <div>Time: <span id="time">0</span>s</div>
+        <div>Lives: <span id="lives">3</span></div>
+    </div>
+
+    <div id="start-screen">
+        <h1>SUNSTORM: MAZE OF THE SHATTERED SKIES</h1>
+        <p>Navigate your pirate ship through the chaotic floating maze of broken islands and stormy skies. Collect gold coins, avoid deadly obstacles, and survive as long as possible!</p>
+        <p>Use arrow keys or touch controls to move your ship.</p>
+        <button id="startButton">START GAME</button>
+    </div>
+
+    <div id="game-over">
+        <h1>GAME OVER</h1>
+        <p>The storm has claimed you!</p>
+        <p>Gold Collected: <span id="final-gold">0</span></p>
+        <p>Time Survived: <span id="final-time">0</span>s</p>
+        <button id="restartButton">PLAY AGAIN</button>
+    </div>
+
+    <script>
+        // Game setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const goldDisplay = document.getElementById('gold');
+        const timeDisplay = document.getElementById('time');
+        const livesDisplay = document.getElementById('lives');
+        const finalGoldDisplay = document.getElementById('final-gold');
+        const finalTimeDisplay = document.getElementById('final-time');
+
+        // Game state
+        let gameRunning = false;
+        let player = { x: 50, y: 50, width: 32, height: 32, speed: 4 };
+        let goldCoins = [];
+        let enemies = [];
+        let traps = [];
+        let powerUps = [];
+        let obstacles = [];
+        let sunstorms = [];
+        let score = 0;
+        let time = 0;
+        let lives = 3;
+        let keys = {};
+        let lastTime = 0;
+        let grid = [];
+        const gridSize = 64;
+        const rows = Math.floor(canvas.height / gridSize);
+        const cols = Math.floor(canvas.width / gridSize);
+
+        // Initialize game
+        function initGame() {
+            player = { x: 50, y: 50, width: 32, height: 32, speed: 4 };
+            goldCoins = [];
+            enemies = [];
+            traps = [];
+            powerUps = [];
+            obstacles = [];
+            sunstorms = [];
+            score = 0;
+            time = 0;
+            lives = 3;
+            
+            // Generate initial grid
+            generateGrid();
+            
+            // Add some coins
+            for (let i = 0; i < 20; i++) {
+                addCoin();
+            }
+            
+            // Add some enemies
+            for (let i = 0; i < 5; i++) {
+                addEnemy();
+            }
+            
+            // Add some traps
+            for (let i = 0; i < 3; i++) {
+                addTrap();
+            }
+            
+            // Add some power-ups
+            for (let i = 0; i < 2; i++) {
+                addPowerUp();
+            }
+            
+            updateUI();
+        }
+
+        // Generate maze grid
+        function generateGrid() {
+            grid = [];
+            for (let y = 0; y < rows; y++) {
+                const row = [];
+                for (let x = 0; x < cols; x++) {
+                    // Randomly decide if cell is a platform
+                    if (Math.random() > 0.3) {
+                        row.push(1); // Platform
+                    } else {
+                        row.push(0); // Empty space
+                    }
+                }
+                grid.push(row);
+            }
+            
+            // Ensure start position is clear
+            grid[1][1] = 1;
+        }
+
+        // Add a gold coin
+        function addCoin() {
+            let x, y;
+            let validPosition = false;
+            
+            while (!validPosition) {
+                x = Math.floor(Math.random() * (cols - 2)) + 1;
+                y = Math.floor(Math.random() * (rows - 2)) + 1;
+                
+                // Make sure it's on a platform
+                if (grid[y][x] === 1) {
+                    validPosition = true;
+                }
+            }
+            
+            goldCoins.push({
+                x: x * gridSize + gridSize/2,
+                y: y * gridSize + gridSize/2,
+                radius: 8,
+                collected: false
+            });
+        }
+
+        // Add an enemy pirate
+        function addEnemy() {
+            let x, y;
+            let validPosition = false;
+            
+            while (!validPosition) {
+                x = Math.floor(Math.random() * (cols - 2)) + 1;
+                y = Math.floor(Math.random() * (rows - 2)) + 1;
+                
+                if (grid[y][x] === 1 && 
+                    Math.sqrt((x - 1)**2 + (y - 1)**2) > 3) {
+                    validPosition = true;
+                }
+            }
+            
+            enemies.push({
+                x: x * gridSize + gridSize/2,
+                y: y * gridSize + gridSize/2,
+                width: 32,
+                height: 32,
+                speed: 1 + Math.random() * 2
+            });
+        }
+
+        // Add a trap
+        function addTrap() {
+            let x, y;
+            let validPosition = false;
+            
+            while (!validPosition) {
+                x = Math.floor(Math.random() * (cols - 2)) + 1;
+                y = Math.floor(Math.random() * (rows - 2)) + 1;
+                
+                if (grid[y][x] === 1 && 
+                    Math.sqrt((x - 1)**2 + (y - 1)**2) > 3 &&
+                    !isNearCoinOrEnemy(x, y)) {
+                    validPosition = true;
+                }
+            }
+            
+            traps.push({
+                x: x * gridSize,
+                y: y * gridSize,
+                width: gridSize,
+                height: gridSize,
+                type: Math.random() > 0.5 ? 'whirlpool' : 'cannon'
+            });
+        }
+
+        // Add a power-up
+        function addPowerUp() {
+            let x, y;
+            let validPosition = false;
+            
+            while (!validPosition) {
+                x = Math.floor(Math.random() * (cols - 2)) + 1;
+                y = Math.floor(Math.random() * (rows - 2)) + 1;
+                
+                if (grid[y][x] === 1 && 
+                    Math.sqrt((x - 1)**2 + (y - 1)**2) > 3 &&
+                    !isNearCoinOrEnemy(x, y)) {
+                    validPosition = true;
+                }
+            }
+            
+            powerUps.push({
+                x: x * gridSize + gridSize/2,
+                y: y * gridSize + gridSize/2,
+                width: 24,
+                height: 24,
+                type: Math.random() > 0.67 ? 'speed' : 
+                      Math.random() > 0.5 ? 'shield' : 'invincibility'
+            });
+        }
+
+        // Check if position is near coins or enemies
+        function isNearCoinOrEnemy(x, y) {
+            for (let coin of goldCoins) {
+                const dx = Math.abs(coin.x / gridSize - x);
+                const dy = Math.abs(coin.y / gridSize - y);
+                if (dx < 2 && dy < 2) return true;
+            }
+            
+            for (let enemy of enemies) {
+                const dx = Math.abs(enemy.x / gridSize - x);
+                const dy = Math.abs(enemy.y / gridSize - y);
+                if (dx < 2 && dy < 2) return true;
+            }
+            
+            return false;
+        }
+
+        // Update UI
+        function updateUI() {
+            goldDisplay.textContent = score;
+            timeDisplay.textContent = Math.floor(time);
+            livesDisplay.textContent = lives;
+        }
+
+        // Draw game elements
+        function drawGame() {
+            // Clear canvas
+            ctx.fillStyle = '#1a3c66';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw sunstorm background effect
+            drawSunstorm();
+            
+            // Draw platforms
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    if (grid[y][x] === 1) {
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                        
+                        // Add platform details
+                        ctx.fillStyle = '#A0522D';
+                        ctx.fillRect(x * gridSize + 2, y * gridSize + 2, gridSize - 4, gridSize - 4);
+                    }
+                }
+            }
+            
+            // Draw gold coins
+            for (let coin of goldCoins) {
+                if (!coin.collected) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#DAA520';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, coin.radius - 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Draw enemies
+            for (let enemy of enemies) {
+                ctx.fillStyle = '#8B0000';
+                ctx.fillRect(enemy.x - enemy.width/2, enemy.y - enemy.height/2, enemy.width, enemy.height);
+                
+                // Enemy eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(enemy.x - 10, enemy.y - 10, 6, 6);
+                ctx.fillRect(enemy.x + 4, enemy.y - 10, 6, 6);
+            }
+            
+            // Draw traps
+            for (let trap of traps) {
+                if (trap.type === 'whirlpool') {
+                    ctx.fillStyle = '#00008B';
+                    ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                    
+                    ctx.fillStyle = '#FF00FF';
+                    ctx.beginPath();
+                    ctx.arc(trap.x + gridSize/2, trap.y + gridSize/2, gridSize/3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#4B0082';
+                    ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                    
+                    // Cannon
+                    ctx.fillStyle = '#696969';
+                    ctx.fillRect(trap.x + gridSize/2 - 5, trap.y + gridSize - 15, 10, 15);
+                }
+            }
+            
+            // Draw power-ups
+            for (let power of powerUps) {
+                if (power.type === 'speed') {
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(power.x - power.width/2, power.y - power.height/2, power.width, power.height);
+                } else if (power.type === 'shield') {
+                    ctx.fillStyle = '#0000FF';
+                    ctx.fillRect(power.x - power.width/2, power.y - power.height/2, power.width, power.height);
+                } else {
+                    ctx.fillStyle = '#FFFF00';
+                    ctx.fillRect(power.x - power.width/2, power.y - power.height/2, power.width, power.height);
+                }
+            }
+            
+            // Draw player
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(player.x - player.width/2, player.y - player.height/2, player.width, player.height);
+            
+            // Player details
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(player.x - 10, player.y - 10, 6, 6);
+            ctx.fillRect(player.x + 4, player.y - 10, 6, 6);
+        }
+
+        // Draw sunstorm background
+        function drawSunstorm() {
+            // Draw sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a3c66');
+            gradient.addColorStop(1, '#4B0082');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw sun rays
+            for (let i = 0; i < 20; i++) {
+                const angle = (i * Math.PI / 10) + time;
+                const x = canvas.width/2 + Math.cos(angle) * 300;
+                const y = canvas.height/4 + Math.sin(angle) * 300;
+                
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width/2, canvas.height/4);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+            
+            // Draw clouds
+            for (let i = 0; i < 10; i++) {
+                const x = (i * 200 + time * 0.5) % (canvas.width + 200) - 100;
+                const y = 50 + Math.sin(i) * 30;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.arc(x + 15, y - 10, 15, 0, Math.PI * 2);
+                ctx.arc(x + 30, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Update game state
+        function updateGame(deltaTime) {
+            if (!gameRunning) return;
+            
+            time += deltaTime;
+            
+            // Handle input
+            let moveX = 0;
+            let moveY = 0;
+            
+            if (keys['ArrowLeft'] || keys['a']) moveX = -1;
+            if (keys['ArrowRight'] || keys['d']) moveX = 1;
+            if (keys['ArrowUp'] || keys['w']) moveY = -1;
+            if (keys['ArrowDown'] || keys['s']) moveY = 1;
+            
+            // Move player
+            if (moveX !== 0 || moveY !== 0) {
+                const newX = player.x + moveX * player.speed;
+                const newY = player.y + moveY * player.speed;
+                
+                // Check collisions with platforms
+                if (isValidPosition(newX, newY)) {
+                    player.x = newX;
+                    player.y = newY;
+                }
+            }
+            
+            // Update enemies
+            for (let enemy of enemies) {
+                enemy.x += (Math.random() - 0.5) * 2;
+                enemy.y += (Math.random() - 0.5) * 2;
+                
+                // Keep enemies on platforms
+                const gridX = Math.floor(enemy.x / gridSize);
+                const gridY = Math.floor(enemy.y / gridSize);
+                
+                if (gridY >= 0 && gridY < rows && gridX >= 0 && gridX < cols) {
+                    if (grid[gridY][gridX] === 0) {
+                        enemy.x -= (Math.random() - 0.5) * 10;
+                        enemy.y -= (Math.random() - 0.5) * 10;
+                    }
+                }
+            }
+            
+            // Check coin collection
+            for (let coin of goldCoins) {
+                if (!coin.collected) {
+                    const dx = player.x - coin.x;
+                    const dy = player.y - coin.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < player.width/2 + coin.radius) {
+                        coin.collected = true;
+                        score += 10;
+                        addCoin(); // Add a new coin
+                    }
+                }
+            }
+            
+            // Check trap collisions
+            for (let trap of traps) {
+                const dx = player.x - (trap.x + gridSize/2);
+                const dy = player.y - (trap.y + gridSize/2);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < player.width/2 + gridSize/2) {
+                    // Handle trap effect
+                    lives--;
+                    updateUI();
+                    if (lives <= 0) {
+                        endGame();
+                    }
+                    break;
+                }
+            }
+            
+            // Check power-up collection
+            for (let power of powerUps) {
+                const dx = player.x - power.x;
+                const dy = player.y - power.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < player.width/2 + power.width/2) {
+                    // Apply power-up effect
+                    if (power.type === 'speed') {
+                        player.speed = 6;
+                        setTimeout(() => { player.speed = 4; }, 5000);
+                    } else if (power.type === 'shield') {
+                        // Implement shield logic
+                    } else if (power.type === 'invincibility') {
+                        // Implement invincibility logic
+                    }
+                    
+                    // Remove power-up
+                    const index = powerUps.indexOf(power);
+                    if (index > -1) {
+                        powerUps.splice(index, 1);
+                    }
+                }
+            }
+            
+            updateUI();
+        }
+
+        // Check if position is valid (on platform)
+        function isValidPosition(x, y) {
+            const gridX = Math.floor(x / gridSize);
+            const gridY = Math.floor(y / gridSize);
+            
+            if (gridX < 0 || gridX >= cols || gridY < 0 || gridY >= rows) {
+                return false;
+            }
+            
+            return grid[gridY][gridX] === 1;
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            
+            updateGame(deltaTime);
+            drawGame();
+            
+            if (gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Start game
+        function startGame() {
+            initGame();
+            gameRunning = true;
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            requestAnimationFrame(gameLoop);
+        }
+
+        // End game
+        function endGame() {
+            gameRunning = false;
+            finalGoldDisplay.textContent = score;
+            finalTimeDisplay.textContent = Math.floor(time);
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // Keyboard input handling
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Touch controls for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            // Simple direction detection
+            const dx = x - player.x;
+            const dy = y - player.y;
+            
+            if (Math.abs(dx) > Math.abs(dy)) {
+                keys[dx > 0 ? 'ArrowRight' : 'ArrowLeft'] = true;
+            } else {
+                keys[dy > 0 ? 'ArrowDown' : 'ArrowUp'] = true;
+            }
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+            keys['ArrowUp'] = false;
+            keys['ArrowDown'] = false;
+        });
+    </script>
+</body>
+</html>
