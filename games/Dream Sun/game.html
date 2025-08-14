@@ -1,0 +1,326 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dream Sun</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #gameContainer {
+            position: relative;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+        }
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1024px;
+            height: 720px;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            pointer-events: auto;
+        }
+        #gameOverScreen {
+            display: none;
+        }
+        button {
+            background-color: #ffcc00;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        h1 {
+            color: #ffcc00;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 20px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1024" height="720"></canvas>
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="lives">Lives: 3</div>
+        </div>
+        <div id="startScreen">
+            <h1>Dream Sun</h1>
+            <p>Collect sun shards to survive. Create safe zones to protect yourself from dark storms.</p>
+            <button id="startButton">Start Game</button>
+        </div>
+        <div id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p>Your score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Play Again</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/melonjs@6.1.0/dist/melonjs.min.js"></script>
+    <script>
+        // Game variables
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let sunShards = 0;
+        let safeZones = [];
+        let darkStorms = [];
+        let particles = [];
+
+        // Preload assets
+        const assets = [
+            { name: "sunling", src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" },
+            { name: "sunShard", src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" },
+            { name: "darkStorm", src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" },
+            { name: "safeZone", src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" },
+            { name: "background", src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" }
+        ];
+
+        // Initialize game
+        window.onload = function() {
+            const canvas = document.getElementById("gameCanvas");
+            const game = new me.Game(
+                "DreamSun",
+                canvas,
+                1024,
+                720,
+                { renderer: me.video.CANVAS, fps: 60 }
+            );
+
+            // Start screen
+            const startScreen = document.getElementById("startScreen");
+            const startButton = document.getElementById("startButton");
+            startButton.addEventListener("click", function() {
+                startScreen.style.display = "none";
+                gameRunning = true;
+                score = 0;
+                lives = 3;
+                sunShards = 0;
+                safeZones = [];
+                darkStorms = [];
+                particles = [];
+                updateUI();
+            });
+
+            // Game over screen
+            const gameOverScreen = document.getElementById("gameOverScreen");
+            const restartButton = document.getElementById("restartButton");
+            restartButton.addEventListener("click", function() {
+                gameOverScreen.style.display = "none";
+                gameRunning = true;
+                score = 0;
+                lives = 3;
+                sunShards = 0;
+                safeZones = [];
+                darkStorms = [];
+                particles = [];
+                updateUI();
+            });
+
+            // Update UI
+            function updateUI() {
+                document.getElementById("score").textContent = "Score: " + score;
+                document.getElementById("lives").textContent = "Lives: " + lives;
+            }
+
+            // Create game objects
+            class Sunling extends me.Entity {
+                constructor(x, y) {
+                    super(x, y, { width: 50, height: 50 });
+                    this.body.setVelocity(3, 3);
+                    this.renderable = new me.Sprite(0, 0, { image: assets[0].src, width: 50, height: 50 });
+                    this.addAnimation("idle", [0]);
+                    this.setCurrentAnimation("idle");
+                }
+
+                update(dt) {
+                    if (gameRunning) {
+                        // Movement
+                        const keys = me.input.keys;
+                        if (keys["LEFT"] || keys["A"]) this.body.vel.x = -this.body.maxVel.x;
+                        else if (keys["RIGHT"] || keys["D"]) this.body.vel.x = this.body.maxVel.x;
+                        else this.body.vel.x = 0;
+
+                        if (keys["UP"] || keys["W"]) this.body.vel.y = -this.body.maxVel.y;
+                        else if (keys["DOWN"] || keys["S"]) this.body.vel.y = this.body.maxVel.y;
+                        else this.body.vel.y = 0;
+
+                        // Boundary check
+                        if (this.pos.x < 0) this.pos.x = 0;
+                        if (this.pos.x > 1024 - this.width) this.pos.x = 1024 - this.width;
+                        if (this.pos.y < 0) this.pos.y = 0;
+                        if (this.pos.y > 720 - this.height) this.pos.y = 720 - this.height;
+
+                        // Collect sun shards
+                        for (let i = me.game.world.children.length - 1; i >= 0; i--) {
+                            const child = me.game.world.children[i];
+                            if (child instanceof SunShard && this.collidesWith(child)) {
+                                me.game.world.removeChild(child);
+                                sunShards++;
+                                score += 10;
+                                updateUI();
+                            }
+                        }
+
+                        // Create safe zones
+                        if (me.input.isKeyPressed("SPACE") && sunShards > 0) {
+                            safeZones.push(new SafeZone(this.pos.x, this.pos.y));
+                            sunShards--;
+                            updateUI();
+                        }
+
+                        // Check collisions with dark storms
+                        for (let i = darkStorms.length - 1; i >= 0; i--) {
+                            if (this.collidesWith(darkStorms[i])) {
+                                lives--;
+                                updateUI();
+                                if (lives <= 0) {
+                                    gameOverScreen.style.display = "flex";
+                                    document.getElementById("finalScore").textContent = score;
+                                    gameRunning = false;
+                                }
+                                darkStorms.splice(i, 1);
+                            }
+                        }
+
+                        // Update particles
+                        for (let i = particles.length - 1; i >= 0; i--) {
+                            particles[i].update(dt);
+                            if (particles[i].life <= 0) {
+                                particles.splice(i, 1);
+                            }
+                        }
+                    }
+
+                    return super.update(dt);
+                }
+            }
+
+            class SunShard extends me.Entity {
+                constructor(x, y) {
+                    super(x, y, { width: 20, height: 20 });
+                    this.renderable = new me.Sprite(0, 0, { image: assets[1].src, width: 20, height: 20 });
+                    this.addAnimation("idle", [0]);
+                    this.setCurrentAnimation("idle");
+                }
+            }
+
+            class DarkStorm extends me.Entity {
+                constructor(x, y) {
+                    super(x, y, { width: 80, height: 80 });
+                    this.renderable = new me.Sprite(0, 0, { image: assets[2].src, width: 80, height: 80 });
+                    this.addAnimation("idle", [0]);
+                    this.setCurrentAnimation("idle");
+                    this.body.setVelocity(1, 1);
+                }
+
+                update(dt) {
+                    // Simple movement pattern
+                    this.pos.x += this.body.vel.x;
+                    this.pos.y += this.body.vel.y;
+
+                    // Boundary check
+                    if (this.pos.x < 0 || this.pos.x > 1024 - this.width) this.body.vel.x *= -1;
+                    if (this.pos.y < 0 || this.pos.y > 720 - this.height) this.body.vel.y *= -1;
+
+                    return super.update(dt);
+                }
+            }
+
+            class SafeZone extends me.Entity {
+                constructor(x, y) {
+                    super(x, y, { width: 150, height: 150 });
+                    this.renderable = new me.Sprite(0, 0, { image: assets[3].src, width: 150, height: 150 });
+                    this.addAnimation("idle", [0]);
+                    this.setCurrentAnimation("idle");
+                    this.life = 200; // Frames to live
+                }
+
+                update(dt) {
+                    this.life--;
+                    return super.update(dt);
+                }
+            }
+
+            class Background extends me.Entity {
+                constructor() {
+                    super(0, 0, { width: 1024, height: 720 });
+                    this.renderable = new me.Sprite(0, 0, { image: assets[4].src, width: 1024, height: 720 });
+                }
+            }
+
+            // Game state
+            game.on("ready", function() {
+                // Add background
+                me.game.world.addChild(new Background());
+
+                // Add Sunling
+                const sunling = new Sunling(512, 360);
+                me.game.world.addChild(sunling);
+
+                // Add some initial sun shards
+                for (let i = 0; i < 5; i++) {
+                    const shard = new SunShard(Math.random() * 1000, Math.random() * 700);
+                    me.game.world.addChild(shard);
+                }
+
+                // Add dark storms
+                for (let i = 0; i < 3; i++) {
+                    const storm = new DarkStorm(Math.random() * 1000, Math.random() * 700);
+                    darkStorms.push(storm);
+                    me.game.world.addChild(storm);
+                }
+
+                // Add particles
+                for (let i = 0; i < 50; i++) {
+                    particles.push({
+                        x: Math.random() * 1024,
+                        y: Math.random() * 720,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        life: 100
+                    });
+                }
+
+                // Game loop update
+                me.game.world.addChild(new me.Entity(0, 0, { width: 1024, height: 720 }));
+            });
+
+            // Input handling
+            me.input.bindKey(me.input.KEY.LEFT, "LEFT");
+            me.input.bindKey(me.input.KEY.RIGHT, "RIGHT");
+            me.input.bindKey(me.input.KEY.UP, "UP");
+            me.input.bindKey(me.input.KEY.DOWN, "DOWN");
+            me.input.bindKey(me.input.KEY.SPACE, "SPACE");
+        };
+    </script>
+</body>
+</html>

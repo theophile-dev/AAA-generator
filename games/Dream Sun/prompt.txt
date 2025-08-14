@@ -1,0 +1,86 @@
+
+Task
+
+Create an HTML5 canvas game based on the game description provided below.
+Constraints
+
+    Single file only: One .html file containing all HTML, CSS, and JavaScript.
+
+    Relatively small game
+
+    Canvas size: 1024 × 720.
+
+    Images: Image dimensions are indicated in each asset’s name. You may resize images at runtime to fit gameplay.
+
+    Offline-ready: The file must run locally in a browser with no additional setup.
+
+Frameworks to use
+    MelonJS  
+
+No music or sound effects   
+
+Assets
+    List of available images :
+    path: images/512x512_dream_sun_1.png description: A glowing Sunling floating on a floating island in a dreamlike, pastel-colored world with soft lighting.
+path: images/512x512_dream_sun_10.png description: A low-poly, serene landscape with bioluminescent plants and shifting light patterns in the background.
+path: images/378x505_dream_sun_11.png description: The Sunling collecting a sun shard from a glowing plant, with a soft glow around it.
+path: images/512x512_dream_sun_12.png description: A dark storm approaching the Sunling as it tries to create a safe zone with collected energy.
+path: images/512x512_dream_sun_13.png description: A peaceful scene of the Sunling nurturing a darkened area, restoring light to a barren landscape.
+path: images/512x512_dream_sun_14.png description: A leaderboard showing high scores with the Sunling and a glowing sun in the background.
+path: images/512x494_dream_sun_15.png description: A close-up of the Sunling with a soft, glowing aura and a sun shard in its possession.
+path: images/512x512_dream_sun_16.png description: A procedurally generated world with floating islands, light beams, and a soft gradient sky.
+path: images/512x512_dream_sun_17.png description: The Sunling moving through a low-poly environment with bioluminescent plants and gentle light effects.
+path: images/512x512_dream_sun_18.png description: A darkened area being restored by the Sunling, with light returning to the landscape.
+path: images/512x512_dream_sun_19.png description: The Sunling in a calm, safe zone surrounded by glowing plants and floating islands.
+path: images/469x470_dream_sun_2.png description: A sunset scene with the Sunling at the edge of a floating island, bathed in warm light.
+path: images/512x512_dream_sun_20.png description: A serene, dreamlike sky with soft clouds and a glowing sun, reflecting on a calm body of water.
+path: images/457x474_dream_sun_3.png description: A close-up of the Sunling's glowing body with light rays radiating outward.
+path: images/512x512_dream_sun_4.png description: The Sunling creating a safe zone by placing a glowing light orb in the center of a dark area.
+path: images/512x512_dream_sun_5.png description: A peaceful, surreal landscape with floating islands, light beams, and a soft gradient sky.
+path: images/512x512_dream_sun_6.png description: The Sunling navigating through a procedurally generated world with shifting light patterns.
+path: images/512x512_dream_sun_7.png description: A dark storm approaching the Sunling, with lightning and shadows in the background.
+path: images/512x512_dream_sun_8.png description: The Sunling in a calm, safe zone with glowing plants and a soft, dreamlike atmosphere.
+path: images/512x512_dream_sun_9.png description: A peaceful, serene scene of the Sunling resting on a floating island with a glowing sun in the background.
+
+Output Requirements
+
+    A complete, runnable single HTML file with embedded <style> and <script>.
+
+    Clear initialization code that sets up the 1024×720 canvas and game loop.
+
+    Basic input handling (keyboard/mouse/touch as appropriate).
+
+    Include minimal UI (start/restart, score/lives, instructions).
+
+Deliverable
+
+Return only the single HTML file content.
+
+Game Description
+**Game Title:** *Dream Sun*
+
+**Genre:** Simple Survival Game
+
+**Concept:**  
+*Dream Sun* is a minimalist, atmospheric survival game where players take control of a small, glowing creature called a *Sunling* that lives in a dreamlike world shaped by the sun's warmth. The goal is to survive as long as possible by collecting energy, avoiding environmental hazards, and nurturing the dream world to keep it alive.
+
+**Gameplay Mechanics:**  
+- Players move their *Sunling* across a procedurally generated, low-poly world filled with floating islands, bioluminescent plants, and shifting light patterns.  
+- The world is powered by the sun, which rises and sets, affecting the environment and the *Sunling*'s abilities.  
+- *Sunlings* can collect "sun shards" by interacting with the environment, which increase their health and allow them to create temporary safe zones.  
+- The player must manage their energy, as the sun's light fades over time, and the world begins to collapse into darkness.  
+- Basic movement is intuitive, with simple touch or click controls for direction and interaction.
+
+**Objectives:**  
+- Survive as long as possible by collecting energy and managing the environment.  
+- Create safe zones to protect the *Sunling* from environmental dangers like dark storms or collapsing terrain.  
+- Nurture the dream world by restoring light to darkened areas, which helps grow new resources and safe spaces.  
+- Achieve a high score by surviving longer than previous players, with a leaderboard showing the longest survival time.
+
+**Unique Features:**  
+- **Dreamlike Aesthetic:** The game uses a soft, pastel color palette with gentle lighting and fluid animations to create a calming, dreamy atmosphere.  
+- **Procedural World Generation:** Every playthrough offers a new, unique world with different hazards and resources, encouraging replayability.  
+- **Light and Darkness Balance:** The game emphasizes the balance between light and darkness, with the player actively working to maintain harmony in the dream world.  
+- **Minimalist Controls:** The gameplay is designed to be accessible to all ages, with no complex mechanics—just simple interactions that feel rewarding and satisfying.
+
+*Dream Sun* is a peaceful, engaging survival experience that blends exploration, resource management, and environmental care in a beautiful, surreal world.
